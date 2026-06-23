@@ -1,8 +1,9 @@
 <script>
-const AUTH_SERVER = "https://sgtour4-auth.vercel.app";
+const AUTH_SERVER = "https://discord-auth-server-six.vercel.app";
 const AUTH_TOKEN_KEY = "sg-discord-token";
 const AUTH_USER_KEY = "sg-discord-user";
 const AUTH_STATE_KEY = "sg-discord-oauth-state";
+const AUTH_SITE = "sgtour4";
 
 const params = new URLSearchParams(window.location.search);
 const code = params.get("code");
@@ -34,7 +35,7 @@ async function finishDiscordLogin() {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ code })
+    body: JSON.stringify({ code, site: AUTH_SITE })
   });
 
   const payload = await response.json().catch(() => ({}));
