@@ -1,0 +1,293 @@
+html[data-theme="original"],
+html[data-theme="dark"] {
+  --accent: #ff9bb3;
+  --accent-rgb: 255 155 179;
+  --page-bg:
+    radial-gradient(circle at 10% 0%, rgba(255 132 176 / 0.32), transparent 35%),
+    radial-gradient(circle at 90% 10%, rgba(255 179 209 / 0.18), transparent 40%),
+    radial-gradient(circle at 30% 42%, rgba(255 118 170 / 0.18), transparent 45%),
+    radial-gradient(circle at 72% 62%, rgba(255 165 204 / 0.16), transparent 48%),
+    linear-gradient(180deg, #1a0f18 0%, #120b12 45%, #09070c 100%);
+  --nav-bg: rgba(33, 18, 29, 0.64);
+  --nav-border: rgba(255, 190, 217, 0.18);
+  --nav-link-border: rgba(255, 190, 217, 0.16);
+  --nav-link-bg: rgba(44, 25, 38, 0.72);
+  --nav-link-color: #ffe3ee;
+  --nav-link-hover-bg: rgba(64, 35, 53, 0.88);
+  --nav-link-active-color: #ffffff;
+  --glass-bg: rgba(33, 18, 29, 0.48);
+  --glass-border: rgba(255, 190, 217, 0.18);
+  --card-bg: linear-gradient(180deg, rgba(46, 25, 39, 0.82), rgba(26, 15, 24, 0.72));
+  --card-border: rgba(255, 190, 217, 0.18);
+  --panel-bg: rgba(58, 33, 48, 0.74);
+  --panel-border: rgba(255, 190, 217, 0.16);
+  --picker-bg: rgba(45, 26, 38, 0.84);
+  --ink: #fff0f6;
+  --hero-ink: #fff1f7;
+  --muted: rgba(255, 221, 235, 0.72);
+  --soft: #d9abc0;
+  --community-ink: #f5d8e5;
+  --score-separator: #ffb7d1;
+  --stat-bg: rgba(255, 255, 255, 0.08);
+  --stat-border: rgba(255, 190, 217, 0.14);
+  --pill-bg: rgba(60, 33, 47, 0.84);
+  --discord-a: #738adb;
+  --discord-b: #5865f2;
+  --footer-color: rgba(255, 215, 230, 0.62);
+  --scrollbar-track: rgba(44, 25, 38, 0.82);
+  --scrollbar-thumb: rgba(255, 190, 217, 0.42);
+  --toggle-bg: rgba(56, 29, 42, 0.76);
+  --toggle-border: rgba(255, 190, 217, 0.22);
+  --toggle-color: #fff1f7;
+  --toggle-hover-bg: rgba(86, 47, 65, 0.92);
+  --toggle-hover-border: rgba(255, 155, 179, 0.36);
+  --tab-shell-bg: linear-gradient(180deg, rgba(40, 22, 34, 0.9), rgba(19, 11, 17, 0.84));
+  --tab-card-bg: linear-gradient(180deg, rgba(67, 38, 53, 0.78), rgba(27, 16, 24, 0.92));
+  --tab-card-active-bg: linear-gradient(180deg, rgba(116, 64, 90, 0.94), rgba(54, 28, 42, 0.96));
+  --tab-kicker-color: #ffd7e5;
+  --tab-state-color: #ffe7f0;
+  --tab-note-color: #f0cedd;
+  --submit-btn-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 200, 218, 0.82));
+  --submit-btn-border: rgba(255 155 179 / 0.6);
+  --submit-btn-color: #2a1620;
+  --submit-btn-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 10px 26px rgba(255, 155, 179, 0.16);
+  --submit-btn-hover-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 214, 228, 0.9));
+  --submit-btn-hover-border: rgba(255 155 179 / 0.82);
+  --submit-btn-hover-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    0 16px 36px rgba(255, 155, 179, 0.26);
+  --submit-btn-disabled-bg: linear-gradient(180deg, rgba(120, 82, 101, 0.42), rgba(66, 42, 55, 0.46));
+  --submit-btn-disabled-border: rgba(255 190 217 / 0.18);
+  --submit-btn-disabled-color: rgba(255, 227, 238, 0.48);
+}
+
+html[data-theme="old"],
+html[data-theme="black"] {
+  --accent: #38bdf8;
+  --accent-rgb: 56 189 248;
+  --page-bg:
+    radial-gradient(circle at 16% 4%, rgba(56 189 248 / 0.18), transparent 34%),
+    radial-gradient(circle at 84% 12%, rgba(14 165 233 / 0.16), transparent 32%),
+    radial-gradient(circle at 50% 0%, rgba(15 23 42 / 0.2), transparent 48%),
+    linear-gradient(180deg, #08111f 0%, #050913 42%, #020307 100%);
+  --nav-bg: rgba(3, 7, 18, 0.68);
+  --nav-border: rgba(255, 255, 255, 0.08);
+  --nav-link-border: rgba(255, 255, 255, 0.08);
+  --nav-link-bg: rgba(255, 255, 255, 0.04);
+  --nav-link-color: #e8f7ff;
+  --nav-link-hover-bg: rgba(15, 23, 42, 0.92);
+  --nav-link-active-color: #ffffff;
+  --glass-bg: rgba(8, 17, 31, 0.5);
+  --glass-border: rgba(125, 211, 252, 0.18);
+  --card-bg: linear-gradient(180deg, rgba(17, 24, 39, 0.82), rgba(4, 8, 16, 0.76));
+  --card-border: rgba(125, 211, 252, 0.16);
+  --panel-bg: rgba(15, 23, 42, 0.78);
+  --panel-border: rgba(125, 211, 252, 0.16);
+  --picker-bg: rgba(10, 18, 32, 0.9);
+  --ink: #f4fbff;
+  --hero-ink: #f4fbff;
+  --muted: rgba(191, 219, 254, 0.74);
+  --soft: rgba(191, 219, 254, 0.64);
+  --community-ink: #dbeafe;
+  --score-separator: #7dd3fc;
+  --stat-bg: rgba(255, 255, 255, 0.05);
+  --stat-border: rgba(125, 211, 252, 0.12);
+  --pill-bg: rgba(15, 23, 42, 0.86);
+  --discord-a: #4c6fff;
+  --discord-b: #3156ff;
+  --footer-color: rgba(191, 219, 254, 0.62);
+  --scrollbar-track: rgba(10, 18, 32, 0.92);
+  --scrollbar-thumb: rgba(56, 189, 248, 0.42);
+  --toggle-bg: rgba(255, 255, 255, 0.04);
+  --toggle-border: rgba(255, 255, 255, 0.12);
+  --toggle-color: #f4fbff;
+  --toggle-hover-bg: rgba(56, 189, 248, 0.12);
+  --toggle-hover-border: rgba(56, 189, 248, 0.34);
+  --tab-shell-bg: linear-gradient(180deg, rgba(12, 26, 42, 0.94), rgba(6, 14, 26, 0.88));
+  --tab-card-bg: linear-gradient(180deg, rgba(24, 45, 70, 0.78), rgba(10, 21, 36, 0.94));
+  --tab-card-active-bg: linear-gradient(180deg, rgba(20, 70, 108, 0.96), rgba(8, 28, 49, 0.98));
+  --tab-kicker-color: #bfe9ff;
+  --tab-state-color: #e1f6ff;
+  --tab-note-color: rgba(219, 238, 255, 0.78);
+  --submit-btn-bg: linear-gradient(180deg, rgba(213, 239, 255, 0.94), rgba(102, 188, 241, 0.82));
+  --submit-btn-border: rgba(56 189 248 / 0.72);
+  --submit-btn-color: #082032;
+  --submit-btn-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 12px 30px rgba(56, 189, 248, 0.18);
+  --submit-btn-hover-bg: linear-gradient(180deg, rgba(233, 247, 255, 0.98), rgba(128, 206, 250, 0.88));
+  --submit-btn-hover-border: rgba(125 211 252 / 0.92);
+  --submit-btn-hover-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.84),
+    0 18px 38px rgba(56, 189, 248, 0.28);
+  --submit-btn-disabled-bg: linear-gradient(180deg, rgba(31, 52, 73, 0.68), rgba(14, 26, 42, 0.78));
+  --submit-btn-disabled-border: rgba(125 211 252 / 0.18);
+  --submit-btn-disabled-color: rgba(219, 238, 255, 0.42);
+  --live-hero-bg:
+    radial-gradient(circle at top center, rgba(56 189 248 / 0.16), transparent 46%),
+    linear-gradient(180deg, rgba(24, 65, 99, 0.28), transparent 82%);
+}
+
+html {
+  color-scheme: dark;
+}
+
+.theme-hero-header {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at top center, rgba(var(--accent-rgb) / 0.18), transparent 54%),
+    linear-gradient(180deg, rgba(var(--accent-rgb) / 0.16), rgba(var(--accent-rgb) / 0.08) 58%, transparent 100%);
+}
+
+.theme-hero-header::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 112px;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.12) 58%, rgba(0, 0, 0, 0.22) 100%);
+}
+
+.theme-accent-text {
+  color: var(--accent) !important;
+}
+
+.theme-title-glow {
+  text-shadow:
+    0 0 12px rgba(var(--accent-rgb) / 0.52),
+    0 0 28px rgba(var(--accent-rgb) / 0.34),
+    0 0 54px rgba(var(--accent-rgb) / 0.18);
+}
+
+.live-hero-header {
+  background: var(--live-hero-bg, linear-gradient(180deg, rgba(254, 202, 202, 0.4), transparent));
+}
+
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition:
+    background-color 320ms ease,
+    color 320ms ease,
+    border-color 320ms ease,
+    box-shadow 320ms ease,
+    text-shadow 320ms ease,
+    background 380ms ease,
+    filter 320ms ease,
+    opacity 320ms ease !important;
+}
+
+.theme-toggle {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  width: 172px;
+  min-height: 42px;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--toggle-border);
+  background: var(--toggle-bg);
+  color: var(--toggle-color);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 6px 26px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  appearance: none;
+  flex: 0 0 auto;
+  overflow: hidden;
+  transition:
+    transform 220ms ease,
+    background 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.theme-toggle::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  height: calc(100% - 8px);
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgba(var(--accent-rgb) / 0.28), rgba(var(--accent-rgb) / 0.16));
+  border: 1px solid rgba(var(--accent-rgb) / 0.26);
+  box-shadow:
+    0 4px 18px rgba(var(--accent-rgb) / 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition:
+    transform 260ms ease,
+    background 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.theme-toggle[data-current-theme="old"]::before,
+.theme-toggle[data-current-theme="black"]::before {
+  transform: translateX(calc(100% + 2px));
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  background: var(--toggle-hover-bg);
+  border-color: var(--toggle-hover-border);
+  box-shadow:
+    0 10px 30px rgba(var(--accent-rgb) / 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.theme-toggle:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(var(--accent-rgb) / 0.38),
+    0 12px 28px rgba(var(--accent-rgb) / 0.18);
+}
+
+.theme-toggle-option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 10px;
+  position: relative;
+  z-index: 1;
+  color: rgba(255, 255, 255, 0.56);
+  transition: color 220ms ease, text-shadow 220ms ease;
+}
+
+.theme-toggle[data-current-theme="original"] [data-theme-option="original"],
+.theme-toggle[data-current-theme="old"] [data-theme-option="old"],
+.theme-toggle[data-current-theme="black"] [data-theme-option="old"] {
+  color: #ffffff;
+  text-shadow: 0 0 14px rgba(var(--accent-rgb) / 0.34);
+}
+
+.theme-toggle[data-current-theme="original"] [data-theme-option="old"],
+.theme-toggle[data-current-theme="old"] [data-theme-option="original"],
+.theme-toggle[data-current-theme="black"] [data-theme-option="original"] {
+  color: rgba(255, 255, 255, 0.56);
+}
+
+@media (max-width: 640px) {
+  .theme-toggle {
+    width: 150px;
+    min-height: 40px;
+    font-size: 8px;
+    letter-spacing: 0.09em;
+  }
+}

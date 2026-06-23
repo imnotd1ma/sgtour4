@@ -1,0 +1,5002 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="original">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPRING BREAKOUT | Predicts</title>
+  <script>
+    (function () {
+      try {
+        var savedTheme = localStorage.getItem("sg-theme-preference");
+        document.documentElement.dataset.theme = savedTheme === "old" || savedTheme === "black" ? "old" : "original";
+      } catch (error) {
+        document.documentElement.dataset.theme = "original";
+      }
+    }());
+  </script>
+
+  <style>
+    body {
+      visibility: visible;
+    }
+
+    html[data-auth-state="checking"] body {
+      visibility: hidden;
+    }
+  </style>
+
+  <script>
+    const AUTH_SERVER = "https://discord-auth-server-six.vercel.app";
+    const AUTH_TOKEN_KEY = "sg-discord-token";
+    const AUTH_USER_KEY = "sg-discord-user";
+    const IS_LOCAL_MODE = ["localhost", "127.0.0.1"].includes(window.location.hostname) || window.location.protocol === "file:";
+    const LOCAL_USER = {
+      id: "local-dev-user",
+      username: "LocalDev",
+      global_name: "Local Dev",
+      name: "Local Dev",
+      avatar: ""
+    };
+
+    function readStoredAuthToken() {
+      try {
+        return localStorage.getItem(AUTH_TOKEN_KEY) || "";
+      } catch (error) {
+        console.warn("Unable to read auth token", error);
+        return "";
+      }
+    }
+
+    function readStoredAuthUser() {
+      try {
+        const stored = localStorage.getItem(AUTH_USER_KEY);
+        return stored ? JSON.parse(stored) : null;
+      } catch (error) {
+        console.warn("Unable to read auth user", error);
+        return null;
+      }
+    }
+
+    function persistAuthUser(user) {
+      try {
+        if (user) {
+          localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+        } else {
+          localStorage.removeItem(AUTH_USER_KEY);
+        }
+      } catch (error) {
+        console.warn("Unable to persist auth user", error);
+      }
+    }
+
+    function clearStoredAuth() {
+      try {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.removeItem(AUTH_USER_KEY);
+      } catch (error) {
+        console.warn("Unable to clear auth storage", error);
+      }
+    }
+
+    function buildAuthHeaders() {
+      const token = readStoredAuthToken();
+      return token ? { Authorization: `Bearer ${token}` } : {};
+    }
+
+    function showPage() {
+      document.documentElement.dataset.authState = "ready";
+      document.body?.style.setProperty("visibility", "visible");
+    }
+
+    function fetchWithTimeout(resource, options = {}, timeoutMs = 8000) {
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
+      return fetch(resource, {
+        ...options,
+        signal: controller.signal
+      }).finally(() => {
+        window.clearTimeout(timeoutId);
+      });
+    }
+
+    const storedAuthUser = readStoredAuthUser();
+    const hasStoredSession = IS_LOCAL_MODE || Boolean(readStoredAuthToken()) || Boolean(storedAuthUser);
+    window.__authUser = storedAuthUser;
+    document.documentElement.dataset.authState = hasStoredSession ? "cached" : "checking";
+
+    window.__authPromise = IS_LOCAL_MODE
+      ? (() => { window.__authUser = LOCAL_USER; persistAuthUser(LOCAL_USER); return Promise.resolve(LOCAL_USER); })()
+      : fetchWithTimeout(`${AUTH_SERVER}/me`, {
+          credentials: "include",
+          headers: buildAuthHeaders()
+        }, 6000)
+        .then(async (res) => {
+          if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+              clearStoredAuth();
+            }
+
+            const error = new Error(res.status === 401 || res.status === 403 ? "Unauthorized" : `Auth failed: ${res.status}`);
+            error.status = res.status;
+            throw error;
+          }
+
+          return await res.json();
+        })
+        .then((user) => {
+          window.__authUser = user;
+          persistAuthUser(user);
+          return user;
+        })
+        .catch((err) => {
+          console.error("Auth error:", err);
+          const status = Number(err?.status || 0);
+          const isUnauthorized = status === 401 || status === 403 || err?.message === "Unauthorized";
+
+          if (storedAuthUser && !isUnauthorized) {
+            console.warn("Using cached auth user while auth server is unavailable.");
+            window.__authUser = storedAuthUser;
+            return storedAuthUser;
+          }
+
+          clearStoredAuth();
+          window.location.href = "/sgtour3/login.html";
+          return null;
+        })
+        .finally(() => {
+          showPage();
+        });
+  </script>
+  <link rel="icon" href="images/icon.png" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+  <style>
+    :root{
+      --accent:#ff9bb3;
+      --accent-rgb:255 155 179;
+      --page-bg:
+        radial-gradient(circle at 10% 0%, rgba(255,132,176,0.32), transparent 35%),
+        radial-gradient(circle at 90% 10%, rgba(255,179,209,0.18), transparent 40%),
+        radial-gradient(circle at 30% 42%, rgba(255,118,170,0.18), transparent 45%),
+        radial-gradient(circle at 72% 62%, rgba(255,165,204,0.16), transparent 48%),
+        linear-gradient(180deg, #1a0f18 0%, #120b12 45%, #09070c 100%);
+      --nav-bg: rgba(33,18,29,0.64);
+      --nav-border: rgba(255,190,217,0.18);
+      --nav-link-border: rgba(255,190,217,0.16);
+      --nav-link-bg: rgba(44,25,38,0.72);
+      --nav-link-color: #ffe3ee;
+      --nav-link-hover-bg: rgba(64,35,53,0.88);
+      --nav-link-active-color: #ffffff;
+      --glass-bg: rgba(33,18,29,0.48);
+      --glass-border: rgba(255,190,217,0.18);
+      --card-bg: linear-gradient(180deg, rgba(46,25,39,0.82), rgba(26,15,24,0.72));
+      --card-border: rgba(255,190,217,0.18);
+      --panel-bg: rgba(58,33,48,0.74);
+      --panel-border: rgba(255,190,217,0.16);
+      --picker-bg: rgba(45,26,38,0.84);
+      --ink: #fff0f6;
+      --muted: #f2bfd1;
+      --soft: #d9abc0;
+      --score-separator: #ffb7d1;
+      --community-ink: #f5d8e5;
+      --scrollbar-track: rgba(44,25,38,0.82);
+      --scrollbar-thumb: rgba(255,190,217,0.42);
+    }
+
+    body{
+      background: var(--page-bg);
+      background-attachment: fixed;
+      color: #ffffff;
+    }
+
+    .glow{
+      text-shadow:
+        0 0 10px rgba(var(--accent-rgb) / 0.6),
+        0 0 20px rgba(var(--accent-rgb) / 0.4);
+    }
+
+    .top-nav{
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      backdrop-filter: blur(16px);
+      background: var(--nav-bg);
+      border-bottom: 1px solid var(--nav-border);
+    }
+
+    .nav-link{
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--nav-link-border);
+      background: var(--nav-link-bg);
+      backdrop-filter: blur(12px);
+      transition: all .25s ease;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-size: 11px;
+      color: var(--nav-link-color);
+      box-shadow:
+        0 4px 20px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .nav-link:hover{
+      transform: translateY(-2px) scale(1.03);
+      background: var(--nav-link-hover-bg);
+      border-color: rgba(var(--accent-rgb) / 0.5);
+      box-shadow:
+        0 10px 35px rgba(var(--accent-rgb) / 0.25),
+        0 0 20px rgba(var(--accent-rgb) / 0.2);
+    }
+
+    .nav-link.active{
+      background: rgba(var(--accent-rgb) / 0.25);
+      border-color: rgba(var(--accent-rgb) / 0.7);
+      box-shadow: 0 0 25px rgba(var(--accent-rgb) / 0.7);
+      color: var(--nav-link-active-color);
+    }
+
+    .nav-shell{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .nav-left,
+    .nav-center,
+    .nav-right{
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-center{
+      margin-left: auto;
+      justify-content: flex-end;
+    }
+
+    .nav-right{
+      flex: 0 0 auto;
+      justify-content: flex-end;
+    }
+
+    .brand-badge{
+      color: var(--nav-link-color);
+      font-weight: 900;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .auth-chip{
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px 8px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--nav-link-border);
+      background: var(--nav-link-bg);
+      color: var(--nav-link-color);
+      backdrop-filter: blur(12px);
+      box-shadow:
+        0 4px 20px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+      min-width: 0;
+    }
+
+    .auth-avatar{
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      object-fit: cover;
+      border: 1px solid rgba(var(--accent-rgb) / 0.42);
+      background: rgba(var(--accent-rgb) / 0.18);
+      flex: 0 0 auto;
+    }
+
+    .auth-name{
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing: .03em;
+      max-width: 160px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .logout-btn{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--nav-link-border);
+      background: var(--nav-link-bg);
+      color: var(--nav-link-color);
+      backdrop-filter: blur(12px);
+      transition: all .25s ease;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-size: 11px;
+      box-shadow:
+        0 4px 20px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .logout-btn:hover{
+      transform: translateY(-2px) scale(1.03);
+      background: var(--nav-link-hover-bg);
+      border-color: rgba(var(--accent-rgb) / 0.5);
+      box-shadow:
+        0 10px 35px rgba(var(--accent-rgb) / 0.25),
+        0 0 20px rgba(var(--accent-rgb) / 0.2);
+    }
+
+    .live-dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #ff2d2d;
+      box-shadow: 0 0 12px rgba(255,45,45,0.55);
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .live-dot::after{
+      content:"";
+      position:absolute;
+      inset:-7px;
+      border-radius:999px;
+      border:1px solid rgba(255,45,45,0.45);
+      animation: pulse 1.5s ease-out infinite;
+    }
+
+    @keyframes pulse{
+      0%{ transform: scale(0.65); opacity: .9; }
+      100%{ transform: scale(1.3); opacity: 0; }
+    }
+
+    .glass-card{
+      position: relative;
+      background: var(--glass-bg);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--glass-border);
+      border-radius: 30px;
+      box-shadow:
+        0 18px 55px rgba(var(--accent-rgb) / 0.18),
+        inset 0 1px 0 rgba(255,255,255,0.7);
+      overflow: hidden;
+    }
+
+    .glass-card::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: radial-gradient(circle at top left, rgba(var(--accent-rgb) / 0.24), transparent 55%);
+      pointer-events:none;
+    }
+
+    .section-kicker{
+      color: var(--accent);
+      letter-spacing: .34em;
+      text-transform: uppercase;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.68);
+      color: #2b1d24;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      line-height: 1.2;
+      text-transform: uppercase;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
+      text-align: center;
+    }
+
+    .prediction-grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity .28s ease, transform .28s ease;
+    }
+
+    .prediction-grid > *{
+      min-width: 0;
+    }
+
+    .prediction-grid.is-hydrating{
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+    }
+
+    .prediction-group-loading{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height: 72px;
+    }
+
+    .prediction-group-loading[hidden]{
+      display:none;
+    }
+
+    .tournament-grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      position: relative;
+      overflow: visible;
+      isolation: isolate;
+    }
+
+    .tournament-card{
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      position: relative;
+      z-index: 0;
+      isolation: isolate;
+      min-height:220px;
+      padding: 24px;
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.12);
+      box-shadow: 0 20px 50px rgba(var(--accent-rgb) / 0.14), inset 0 1px 0 rgba(255,255,255,0.18);
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .tournament-card.dropdown-open{
+      z-index: 70;
+    }
+
+    .tournament-card:hover{
+      transform: translateY(-3px);
+      border-color: rgba(var(--accent-rgb) / 0.5);
+      box-shadow: 0 30px 60px rgba(var(--accent-rgb) / 0.14), inset 0 1px 0 rgba(255,255,255,0.22);
+    }
+
+    .tournament-card-title{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      margin-bottom: 20px;
+      color: var(--ink);
+      font-weight: 900;
+      font-size: 1rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .tournament-card-icon{
+      width: 40px;
+      height: 40px;
+      border-radius: 18px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(var(--accent-rgb) / 0.18);
+      color: var(--nav-link-active-color);
+      font-size: 1.2rem;
+    }
+
+    .tournament-card-options{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .tournament-option-btn{
+      border-radius: 18px;
+      border: 1px solid var(--panel-border);
+      background: var(--panel-bg);
+      color: var(--ink);
+      padding: 14px 16px;
+      font-weight: 900;
+      font-size: 0.95rem;
+      line-height: 1.25;
+      text-align: center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+      transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
+      cursor: pointer;
+      white-space: normal;
+    }
+
+    .tournament-option-btn:hover{
+      transform: translateY(-2px);
+      border-color: rgba(var(--accent-rgb) / 0.55);
+      box-shadow: 0 10px 28px rgba(var(--accent-rgb) / 0.18);
+    }
+
+    .tournament-option-btn.active{
+      background: rgba(var(--accent-rgb) / 0.24);
+      border-color: rgba(var(--accent-rgb) / 0.70);
+      box-shadow: 0 0 24px rgba(var(--accent-rgb) / 0.25);
+      color: #000;
+    }
+
+    .tournament-card-options button{
+      min-height: 52px;
+    }
+
+    .tournament-summary{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 18px 20px;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.14);
+    }
+
+    .prediction-group{
+      border-radius: 30px;
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 18px;
+      background: rgba(255,255,255,0.20);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.42);
+      overflow: visible;
+    }
+
+    .predictions-surface{
+      overflow: visible;
+      isolation: isolate;
+    }
+
+    .prediction-group[data-group="upcoming"]{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.26), rgba(255,240,245,0.18));
+    }
+
+    .prediction-group[data-group="scheduled"]{
+      background:
+        linear-gradient(180deg, rgba(219, 230, 255, 0.18), rgba(184, 198, 232, 0.12));
+      border-color: rgba(97, 118, 168, 0.18);
+    }
+
+    .prediction-group[data-group="active"]{
+      background:
+        linear-gradient(180deg, rgba(255, 225, 190, 0.22), rgba(255, 194, 145, 0.14));
+      border-color: rgba(191, 122, 63, 0.18);
+    }
+
+    .prediction-group[data-group="closed"]{
+      background:
+        linear-gradient(180deg, rgba(170,170,170,0.12), rgba(120,120,120,0.10));
+      border-color: rgba(80,80,80,0.14);
+    }
+
+    .group-title{
+      color: var(--ink);
+    }
+
+    .group-note{
+      color: var(--soft);
+    }
+
+    .predict-card{
+      position: relative;
+      padding: 18px;
+      border-radius: 22px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(20px);
+      box-shadow:
+        0 14px 45px rgba(var(--accent-rgb) / 0.18),
+        inset 0 1px 0 rgba(255,255,255,0.75);
+      overflow: visible;
+    }
+
+    .predict-card::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: radial-gradient(circle at bottom right, rgba(var(--accent-rgb) / 0.20), transparent 45%);
+      pointer-events:none;
+    }
+
+    .predict-card > *{
+      position: relative;
+      z-index: 1;
+    }
+
+    .match-board{
+      display:grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .match-board.no-score-preview{
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .team-panel{
+      text-align:center;
+      min-width: 0;
+    }
+
+    .team-logo{
+      width: 84px;
+      height: 84px;
+      margin: 0 auto;
+      border-radius: 24px;
+      border: 1px solid var(--glass-border);
+      background: var(--panel-bg);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:
+        0 12px 30px rgba(var(--accent-rgb) / 0.20),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+      overflow:hidden;
+    }
+
+    .team-logo img{
+      width: 78%;
+      height: 78%;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 16px rgba(var(--accent-rgb) / 0.18));
+    }
+
+    .team-logo.fallback{
+      color: var(--accent);
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-shadow: 0 0 16px rgba(var(--accent-rgb) / 0.45);
+    }
+
+    .score-preview{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 8px;
+    }
+
+    .score-slot{
+      width: 54px;
+      height: 46px;
+      border-radius: 16px;
+      border: 1px solid var(--panel-border);
+      background: var(--panel-bg);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: color-mix(in srgb, var(--ink) 34%, transparent);
+      font-size: 24px;
+      font-weight: 900;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+    }
+
+    .divider-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      line-height: 1.25;
+      text-transform: uppercase;
+    }
+
+    .match-team-name{
+      margin-top: 12px;
+      color: var(--ink);
+      font-size: clamp(1.1rem, 0.75vw + 0.9rem, 1.45rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      overflow-wrap: anywhere;
+      text-wrap: balance;
+    }
+
+    .match-team-subtitle{
+      margin-top: 8px;
+      color: var(--soft);
+      font-size: 12px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+      text-wrap: balance;
+    }
+
+    .divider-row::before,
+    .divider-row::after{
+      content:"";
+      flex:1 1 auto;
+      height:1px;
+      background: linear-gradient(90deg, transparent, rgba(0,0,0,0.12), transparent);
+    }
+
+    .option-btn,
+    .score-btn,
+    .player-btn,
+    .submit-btn,
+    .toggle-btn,
+    .tab-btn{
+      transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
+    }
+
+    .option-btn,
+    .score-btn,
+    .player-btn,
+    .toggle-btn,
+    .tab-btn{
+      width:100%;
+      border-radius: 18px;
+      border: 1px solid var(--panel-border);
+      background: var(--panel-bg);
+      color: var(--ink);
+      font-weight: 900;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+    }
+
+    .option-btn{
+      padding: 12px 12px;
+      font-size: 14px;
+      line-height: 1.3;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .score-btn{
+      padding: 12px 12px;
+      font-size: 18px;
+    }
+
+    .player-btn{
+      padding: 12px 10px;
+      font-size: 14px;
+      line-height: 1.25;
+      white-space: normal;
+    }
+
+    .toggle-btn{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 14px;
+      padding: 13px 14px;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    .prediction-tabs-shell{
+      position: sticky;
+      top: 84px;
+      z-index: 70;
+      border-radius: 32px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.16);
+      background:
+        radial-gradient(circle at top right, rgba(var(--accent-rgb) / 0.16), transparent 34%),
+        var(--tab-shell-bg);
+      box-shadow:
+        0 28px 60px rgba(0,0,0,0.24),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+      backdrop-filter: blur(18px);
+    }
+
+    .prediction-tabs-header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .prediction-tab-switcher{
+      width: 100%;
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .tab-btn{
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      min-height: 164px;
+      padding: 22px 22px 24px;
+      border-radius: 28px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.18);
+      background:
+        var(--tab-card-bg);
+      color: var(--ink);
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      justify-content:flex-start;
+      gap: 10px;
+      text-align:left;
+      white-space: normal;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.05),
+        0 12px 28px rgba(0,0,0,0.18);
+      transition:
+        transform .22s ease,
+        border-color .22s ease,
+        box-shadow .22s ease,
+        background .22s ease;
+    }
+
+    .tab-btn::before{
+      content:"";
+      position:absolute;
+      inset: 0 0 auto 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb) / 0.66), transparent);
+      pointer-events: none;
+    }
+
+    .tab-btn::after{
+      content:"";
+      position:absolute;
+      inset: auto -40px -40px auto;
+      width: 126px;
+      height: 126px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(var(--accent-rgb) / 0.22), transparent 70%);
+      opacity: .9;
+      pointer-events: none;
+    }
+
+    .tab-btn-kicker{
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--tab-kicker-color);
+    }
+
+    .tab-btn-state{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.16);
+      background: rgba(var(--accent-rgb) / 0.10);
+      color: var(--tab-state-color);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .tab-btn-title{
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -.02em;
+    }
+
+    .tab-btn-note{
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--tab-note-color);
+      text-transform: none;
+      letter-spacing: 0;
+      text-wrap: balance;
+    }
+
+    .tab-btn.active{
+      background:
+        var(--tab-card-active-bg);
+      border-color: rgba(var(--accent-rgb) / 0.64);
+      color: #ffffff;
+      box-shadow:
+        0 18px 38px rgba(var(--accent-rgb) / 0.18),
+        0 0 0 1px rgba(var(--accent-rgb) / 0.06),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .tab-btn.active .tab-btn-kicker{
+      color: #ffffff;
+    }
+
+    .tab-btn.active .tab-btn-state{
+      border-color: rgba(var(--accent-rgb) / 0.30);
+      background: rgba(var(--accent-rgb) / 0.22);
+      color: #ffffff;
+    }
+
+    .tab-btn.is-disabled{
+      opacity: 0.82;
+    }
+
+    .tab-btn.is-disabled .tab-btn-state{
+      border-color: rgba(135, 148, 170, 0.18);
+      background: rgba(135, 148, 170, 0.12);
+      color: #c4afbb;
+    }
+
+    .toggle-btn:hover,
+    .option-btn:hover,
+    .score-btn:hover,
+    .player-btn:hover,
+    .submit-btn:hover,
+    .tab-btn:hover{
+      transform: translateY(-2px);
+      border-color: rgba(var(--accent-rgb) / 0.55);
+      box-shadow:
+        0 14px 32px rgba(var(--accent-rgb) / 0.16),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .option-btn.active,
+    .score-btn.active,
+    .player-btn.active,
+    .toggle-btn.active{
+      background: rgba(var(--accent-rgb) / 0.24);
+      border-color: rgba(var(--accent-rgb) / 0.70);
+      box-shadow: 0 0 24px rgba(var(--accent-rgb) / 0.25);
+      color: #000;
+    }
+
+    .predict-card[data-match-status="upcoming"] .option-btn.active{
+      color: #ffffff;
+    }
+
+    .player-select-shell{
+      position: relative;
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+      z-index: 1;
+    }
+
+    .tournament-card.dropdown-open .player-select-shell,
+    .match-player-card.dropdown-open .player-select-shell{
+      z-index: 140;
+    }
+
+    .match-player-grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+
+    .match-player-card{
+      position: relative;
+      min-width: 0;
+      z-index: 0;
+    }
+
+    .match-player-card.dropdown-open{
+      z-index: 80;
+    }
+
+    .predict-card.dropdown-open{
+      z-index: 30;
+    }
+
+    .match-player-trigger{
+      min-height: 80px;
+      padding: 14px 14px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(28, 35, 53, 0.96), rgba(16, 22, 36, 1));
+      border: 1px solid rgba(255,255,255,0.07);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 16px 36px rgba(10, 14, 24, 0.22);
+      color: #eff4ff;
+    }
+
+    .match-player-trigger:hover{
+      background: linear-gradient(180deg, rgba(31, 39, 58, 0.95), rgba(20, 26, 42, 1));
+    }
+
+    .match-player-trigger.active{
+      border-color: rgba(var(--accent-rgb) / 0.78);
+      box-shadow:
+        0 0 24px rgba(var(--accent-rgb) / 0.22),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    .match-player-trigger.selected{
+      border-color: rgba(var(--accent-rgb) / 0.95);
+      box-shadow:
+        0 0 28px rgba(var(--accent-rgb) / 0.24),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    .match-player-trigger .player-select-label{
+      display: block;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .match-player-trigger .player-select-arrow{
+      opacity: 0.55;
+      font-size: 0.95rem;
+    }
+
+    .match-player-copy{
+      min-width: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .match-player-team{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      color: rgba(239, 244, 255, 0.70);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      min-width: 0;
+    }
+
+    .match-player-team::before{
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(var(--accent-rgb) / 0.56);
+      box-shadow: 0 0 12px rgba(var(--accent-rgb) / 0.24);
+      flex: 0 0 auto;
+    }
+
+    .match-player-value{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+      font-size: 14px;
+      font-weight: 900;
+      color: #f7fbff;
+      line-height: 1.2;
+    }
+
+    .match-player-value strong{
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .match-player-empty{
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 800;
+      color: rgba(235, 240, 255, 0.56);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      line-height: 1.2;
+    }
+
+    .match-player-icon{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.10);
+      color: #f8fbff;
+      font-size: 13px;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
+
+    .player-select-btn{
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid var(--panel-border);
+      background: var(--panel-bg);
+      color: var(--ink);
+      font-weight: 900;
+      text-align: left;
+      transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease, color .2s ease;
+      cursor: pointer;
+    }
+
+    .match-player-trigger .player-select-arrow{
+      align-self: center;
+      font-size: 0.9rem;
+      opacity: 0.48;
+    }
+
+    .player-select-btn:hover{
+      transform: translateY(-1px);
+      border-color: rgba(var(--accent-rgb) / 0.55);
+      box-shadow: 0 10px 28px rgba(var(--accent-rgb) / 0.18);
+    }
+
+    .player-select-btn.active{
+      border-color: rgba(var(--accent-rgb) / 0.72);
+      box-shadow: 0 0 24px rgba(var(--accent-rgb) / 0.22);
+    }
+
+    .player-select-btn.selected{
+      border-color: rgba(var(--accent-rgb) / 0.95);
+      background: rgba(var(--accent-rgb) / 0.16);
+      box-shadow: 0 0 28px rgba(var(--accent-rgb) / 0.35);
+      color: #ffffff;
+    }
+
+    .player-select-btn.selected strong{
+      font-weight: 900;
+      color: #ffffff;
+    }
+
+    .player-select-btn.correct{
+      background: linear-gradient(180deg, rgba(111,255,145,0.42), rgba(111,255,145,0.26));
+      border-color: rgba(54,178,84,0.90);
+      color: #0f4f22;
+      box-shadow:
+        0 0 0 2px rgba(111,255,145,0.22),
+        0 0 26px rgba(111,255,145,0.26),
+        inset 0 1px 0 rgba(255,255,255,0.48);
+    }
+
+    .player-select-btn.correct strong{
+      color: #0f4f22;
+    }
+
+    .player-select-btn.incorrect{
+      background: linear-gradient(180deg, rgba(255,111,145,0.34), rgba(255,111,145,0.22));
+      border-color: rgba(194,54,92,0.88);
+      color: #6e1029;
+      box-shadow:
+        0 0 0 2px rgba(255,111,145,0.18),
+        0 0 24px rgba(255,111,145,0.22),
+        inset 0 1px 0 rgba(255,255,255,0.42);
+    }
+
+    .player-select-btn.incorrect strong{
+      color: #6e1029;
+    }
+
+    .player-select-label{
+      flex: 1 1 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: inherit;
+    }
+
+    .player-select-btn:not(.selected) .player-select-label::before{
+      content: "+";
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      border: 1px solid currentColor;
+      font-size: 0.9rem;
+      opacity: 0.85;
+    }
+
+    .player-select-row{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .player-select-clear{
+      width: 38px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.35);
+      background: rgba(var(--accent-rgb) / 0.20);
+      color: #ffffff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: transform .2s ease, background .2s ease;
+      flex: 0 0 auto;
+    }
+
+    .player-select-clear:hover{
+      transform: scale(1.05);
+      background: rgba(var(--accent-rgb) / 0.32);
+    }
+
+    .player-select-arrow{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: currentColor;
+      opacity: 0.8;
+      font-size: 1.2rem;
+      flex: 0 0 auto;
+    }
+
+    .player-dropdown{
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      right: 0;
+      padding: 14px;
+      border-radius: 24px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.45);
+      background: rgba(15, 9, 20, 0.96);
+      box-shadow: 0 30px 60px rgba(var(--accent-rgb) / 0.22);
+      max-height: min(260px, calc(100vh - 220px));
+      overflow: auto;
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
+      z-index: 220;
+    }
+
+    .player-dropdown.open{
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .player-dropdown .player-grid{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .player-dropdown button{
+      text-align: left;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: #ffffff;
+      transition: border-color .2s ease, background .2s ease, transform .2s ease;
+    }
+
+    .player-dropdown button:hover{
+      background: rgba(var(--accent-rgb) / 0.18);
+      border-color: rgba(var(--accent-rgb) / 0.55);
+      transform: translateY(-1px);
+    }
+
+    .player-dropdown button.active{
+      background: rgba(var(--accent-rgb) / 0.18);
+      border-color: rgba(var(--accent-rgb) / 0.72);
+      box-shadow: 0 0 18px rgba(var(--accent-rgb) / 0.18);
+    }
+
+    .player-dropdown::-webkit-scrollbar{
+      width: 10px;
+    }
+
+    .player-dropdown::-webkit-scrollbar-track{
+      background: rgba(255,255,255,0.08);
+    }
+
+    .player-dropdown::-webkit-scrollbar-thumb{
+      background: rgba(var(--accent-rgb) / 0.48);
+      border-radius: 999px;
+    }
+
+    .player-grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .player-team-grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .player-team-card{
+      border-radius: 22px;
+      border: 1px solid var(--panel-border);
+      background: var(--panel-bg);
+      padding: 16px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+    }
+
+    .player-team-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      color: var(--ink);
+    }
+
+    .player-team-name{
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .player-team-note{
+      color: var(--soft);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .rules-card{
+      border-radius: 28px;
+      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.22);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.42);
+      padding: 22px;
+    }
+
+    .rules-grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .rules-item{
+      border-radius: 20px;
+      border: 1px solid var(--panel-border);
+      background: var(--panel-bg);
+      padding: 16px;
+      color: var(--ink);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+    }
+
+    .prediction-meta-item.tournament-correct{
+      border-color: rgba(111, 255, 145, 0.36);
+      background: rgba(111, 255, 145, 0.10);
+      box-shadow: inset 0 1px 0 rgba(111, 255, 145, 0.18);
+    }
+
+    .prediction-meta-item.tournament-correct .prediction-meta-value{
+      color: #6dff91;
+    }
+
+    .prediction-meta-item.tournament-incorrect{
+      border-color: rgba(255, 111, 145, 0.30);
+      background: rgba(255, 111, 145, 0.08);
+      box-shadow: inset 0 1px 0 rgba(255, 111, 145, 0.14);
+    }
+
+    .prediction-meta-item.tournament-incorrect .prediction-meta-value{
+      color: #ff6f91;
+    }
+
+    .rules-value{
+      display:block;
+      font-size: 28px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .rules-label{
+      display:block;
+      margin-top: 8px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      color: var(--soft);
+    }
+
+    .rules-note{
+      color: var(--soft);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .dev-code-block{
+      margin-top: 16px;
+      padding: 16px 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(119, 137, 179, 0.22);
+      background: rgba(18, 24, 39, 0.95);
+      color: #f3f6ff;
+      font-size: 13px;
+      line-height: 1.65;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .standings-card{
+      border-radius: 28px;
+      border: 1px solid rgba(119, 137, 179, 0.22);
+      background:
+        linear-gradient(180deg, rgba(23, 28, 43, 0.94), rgba(12, 16, 27, 0.94));
+      color: #f3f6ff;
+      box-shadow:
+        0 20px 50px rgba(5, 8, 16, 0.24),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+      padding: 22px;
+    }
+
+    .standings-card .section-kicker,
+    .standings-card .theme-heading,
+    .standings-card .rules-note{
+      color: #f3f6ff;
+    }
+
+    .standings-card .rules-note{
+      opacity: .78;
+    }
+
+    .standings-table{
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+    }
+
+    .standings-row{
+      display:grid;
+      grid-template-columns: minmax(64px, 0.34fr) minmax(220px, 1.8fr) repeat(3, minmax(72px, 0.5fr));
+      gap: 12px;
+      align-items:center;
+      padding: 14px 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(135, 154, 199, 0.16);
+      background: rgba(255,255,255,0.05);
+      color: #f3f6ff;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .standings-row.head{
+      background: rgba(255,255,255,0.03);
+      color: rgba(225, 232, 250, 0.62);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .standings-row.team{
+      backdrop-filter: blur(12px);
+    }
+
+    .standings-team{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .standings-place{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width: 44px;
+      min-height: 44px;
+      margin: 0 auto;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 202, 111, 0.18);
+      background: linear-gradient(180deg, rgba(255, 202, 111, 0.18), rgba(255,255,255,0.06));
+      color: #ffca6f;
+      font-size: 15px;
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .standings-team-name{
+      font-size: 15px;
+      font-weight: 900;
+      line-height: 1.3;
+      word-break: break-word;
+      color: #f7f9ff;
+    }
+
+    .standings-team-logo{
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      border: 1px solid rgba(171, 191, 238, 0.14);
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+      flex: 0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    .standings-team-logo img{
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 6px;
+      filter: drop-shadow(0 8px 14px rgba(0,0,0,0.18));
+    }
+
+    .standings-team-logo.fallback{
+      color: rgba(229, 236, 252, 0.76);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .standings-value{
+      text-align: center;
+      font-size: 16px;
+      font-weight: 900;
+      color: #edf2ff;
+    }
+
+    .standings-value.points{
+      color: #ffca6f;
+    }
+
+    .submit-btn{
+      width:100%;
+      border-radius: 16px;
+      border: 1px solid var(--submit-btn-border);
+      background: var(--submit-btn-bg);
+      color: var(--submit-btn-color);
+      box-shadow: var(--submit-btn-shadow);
+      padding: 15px 16px;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    .submit-btn:hover:not(:disabled){
+      border-color: var(--submit-btn-hover-border);
+      background: var(--submit-btn-hover-bg);
+      box-shadow: var(--submit-btn-hover-shadow);
+    }
+
+    .submit-btn:disabled{
+      opacity:1;
+      border-color: var(--submit-btn-disabled-border);
+      background: var(--submit-btn-disabled-bg);
+      color: var(--submit-btn-disabled-color);
+      cursor:not-allowed;
+      transform:none;
+      box-shadow:none;
+    }
+
+    .option-btn:disabled,
+    .score-btn:disabled,
+    .player-btn:disabled,
+    .toggle-btn:disabled{
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .predict-card.locked{
+      opacity: .96;
+    }
+
+    .predict-card[data-match-status="upcoming"]{
+      box-shadow:
+        0 18px 55px rgba(var(--accent-rgb) / 0.22),
+        inset 0 1px 0 rgba(255,255,255,0.75);
+    }
+
+    .predict-card[data-match-status="scheduled"]{
+      background:
+        linear-gradient(180deg, rgba(227, 235, 255, 0.44), rgba(189, 204, 238, 0.22));
+      border-color: rgba(113, 136, 194, 0.18);
+      box-shadow:
+        0 16px 42px rgba(77, 101, 160, 0.14),
+        inset 0 1px 0 rgba(255,255,255,0.72);
+    }
+
+    .predict-card[data-match-status="scheduled"] .option-btn,
+    .predict-card[data-match-status="scheduled"] .score-btn,
+    .predict-card[data-match-status="scheduled"] .player-btn,
+    .predict-card[data-match-status="scheduled"] .toggle-btn{
+      background: rgba(230, 237, 255, 0.62);
+      border-color: rgba(113, 136, 194, 0.20);
+      color: rgba(44, 59, 105, 0.82);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.58);
+    }
+
+    .predict-card[data-match-status="active"]{
+      background:
+        linear-gradient(180deg, rgba(255, 236, 214, 0.48), rgba(255, 206, 154, 0.22));
+      border-color: rgba(191, 122, 63, 0.18);
+      box-shadow:
+        0 16px 40px rgba(191, 122, 63, 0.16),
+        inset 0 1px 0 rgba(255,255,255,0.75);
+    }
+
+    .predict-card[data-match-status="closed"],
+    .predict-card[data-match-status="missed"]{
+      opacity: .92;
+      background:
+        linear-gradient(180deg, rgba(222,222,222,0.30), rgba(170,170,170,0.18));
+      border-color: rgba(110,110,110,0.18);
+      box-shadow:
+        0 10px 28px rgba(90,90,90,0.10),
+        inset 0 1px 0 rgba(255,255,255,0.55);
+    }
+
+    .predict-card[data-match-status="missed"]{
+      filter: saturate(.72);
+    }
+
+    .predict-card.locked .option-btn,
+    .predict-card.locked .score-btn,
+    .predict-card.locked .player-btn,
+    .predict-card.locked .toggle-btn{
+      cursor: default;
+      opacity: .72;
+    }
+
+    .predict-card[data-match-status="closed"] .option-btn,
+    .predict-card[data-match-status="closed"] .score-btn,
+    .predict-card[data-match-status="closed"] .player-btn,
+    .predict-card[data-match-status="closed"] .toggle-btn,
+    .predict-card[data-match-status="missed"] .option-btn,
+    .predict-card[data-match-status="missed"] .score-btn,
+    .predict-card[data-match-status="missed"] .player-btn,
+    .predict-card[data-match-status="missed"] .toggle-btn{
+      background: rgba(235,235,235,0.62);
+      border-color: rgba(110,110,110,0.14);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);
+      color: rgba(40,40,40,0.78);
+    }
+
+    .predict-card[data-match-status="closed"] .option-btn.active:not(.correct):not(.incorrect),
+    .predict-card[data-match-status="closed"] .score-btn.active:not(.correct):not(.incorrect),
+    .predict-card[data-match-status="closed"] .player-btn.active:not(.correct):not(.incorrect),
+    .predict-card[data-match-status="closed"] .toggle-btn.active:not(.correct):not(.incorrect),
+    .predict-card[data-match-status="missed"] .option-btn.active:not(.correct):not(.incorrect),
+    .predict-card[data-match-status="missed"] .score-btn.active:not(.correct):not(.incorrect),
+    .predict-card[data-match-status="missed"] .player-btn.active:not(.correct):not(.incorrect),
+    .predict-card[data-match-status="missed"] .toggle-btn.active:not(.correct):not(.incorrect){
+      background: rgba(210,210,210,0.74);
+      border-color: rgba(100,100,100,0.20);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
+      color: rgba(20,20,20,0.82);
+    }
+
+    .predict-card[data-match-status="closed"] .option-btn.correct,
+    .predict-card[data-match-status="closed"] .score-btn.correct,
+    .predict-card[data-match-status="closed"] .player-btn.correct,
+    .predict-card[data-match-status="closed"] .toggle-btn.correct,
+    .predict-card[data-match-status="missed"] .option-btn.correct,
+    .predict-card[data-match-status="missed"] .score-btn.correct,
+    .predict-card[data-match-status="missed"] .player-btn.correct,
+    .predict-card[data-match-status="missed"] .toggle-btn.correct{
+      background: linear-gradient(180deg, rgba(111,255,145,0.42), rgba(111,255,145,0.26));
+      border-color: rgba(54,178,84,0.90);
+      color: #0f4f22;
+      box-shadow:
+        0 0 0 2px rgba(111,255,145,0.22),
+        0 0 26px rgba(111,255,145,0.26),
+        inset 0 1px 0 rgba(255,255,255,0.48);
+    }
+
+    .predict-card[data-match-status="closed"] .option-btn.incorrect,
+    .predict-card[data-match-status="closed"] .score-btn.incorrect,
+    .predict-card[data-match-status="closed"] .player-btn.incorrect,
+    .predict-card[data-match-status="closed"] .toggle-btn.incorrect,
+    .predict-card[data-match-status="missed"] .option-btn.incorrect,
+    .predict-card[data-match-status="missed"] .score-btn.incorrect,
+    .predict-card[data-match-status="missed"] .player-btn.incorrect,
+    .predict-card[data-match-status="missed"] .toggle-btn.incorrect{
+      background: linear-gradient(180deg, rgba(255,111,145,0.34), rgba(255,111,145,0.22));
+      border-color: rgba(194,54,92,0.88);
+      color: #6e1029;
+      box-shadow:
+        0 0 0 2px rgba(255,111,145,0.18),
+        0 0 24px rgba(255,111,145,0.22),
+        inset 0 1px 0 rgba(255,255,255,0.42);
+    }
+
+    .predict-card[data-match-status="closed"] .toggle-btn:hover,
+    .predict-card[data-match-status="closed"] .option-btn:hover,
+    .predict-card[data-match-status="closed"] .score-btn:hover,
+    .predict-card[data-match-status="closed"] .player-btn:hover,
+    .predict-card[data-match-status="missed"] .toggle-btn:hover,
+    .predict-card[data-match-status="missed"] .option-btn:hover,
+    .predict-card[data-match-status="missed"] .score-btn:hover,
+    .predict-card[data-match-status="missed"] .player-btn:hover{
+      transform: none;
+      border-color: rgba(110,110,110,0.14);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);
+    }
+
+    .prediction-status{
+      border-radius: 18px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.35);
+      background: rgba(var(--accent-rgb) / 0.12);
+      color: var(--community-ink);
+      padding: 12px 14px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .prediction-status[data-state="saved"]{
+      background: rgba(111, 255, 145, 0.10);
+      border-color: rgba(111, 255, 145, 0.28);
+    }
+
+    .prediction-status[data-state="closed"]{
+      background: rgba(111, 255, 145, 0.12);
+      border-color: rgba(111, 255, 145, 0.30);
+    }
+
+    .prediction-status[data-state="missed"]{
+      background: rgba(255, 168, 111, 0.12);
+      border-color: rgba(255, 168, 111, 0.32);
+    }
+
+    .prediction-status[data-state="locked"]{
+      background: rgba(255, 214, 111, 0.12);
+      border-color: rgba(255, 214, 111, 0.32);
+    }
+
+    .prediction-status[data-state="scheduled"]{
+      background: rgba(143, 170, 255, 0.12);
+      border-color: rgba(143, 170, 255, 0.30);
+    }
+
+    .prediction-status[data-state="sending"]{
+      background: rgba(255, 214, 111, 0.12);
+      border-color: rgba(255, 214, 111, 0.32);
+    }
+
+    .prediction-status[data-state="error"]{
+      background: rgba(255, 111, 145, 0.12);
+      border-color: rgba(255, 111, 145, 0.30);
+    }
+
+    .prediction-meta{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .prediction-meta-item{
+      border-radius: 16px;
+      border: 1px solid var(--panel-border);
+      background: var(--panel-bg);
+      padding: 10px 12px;
+      color: var(--ink);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+    }
+
+    .prediction-meta-label{
+      display:block;
+      margin-bottom: 6px;
+      color: var(--soft);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .prediction-meta-value{
+      display:block;
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .prediction-outcome{
+      border-radius: 22px;
+      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.36);
+      padding: 16px;
+    }
+
+    .result-chip{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.65);
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .result-chip.success{
+      background: rgba(111, 255, 145, 0.18);
+      border-color: rgba(111, 255, 145, 0.36);
+      color: #13642a;
+    }
+
+    .result-chip.fail{
+      background: rgba(255, 111, 145, 0.16);
+      border-color: rgba(255, 111, 145, 0.34);
+      color: #8d1734;
+    }
+
+    .match-result-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      line-height: 1.2;
+      text-transform: uppercase;
+      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.72);
+      color: var(--ink);
+      text-align: center;
+    }
+
+    .match-result-pill[data-variant="upcoming"]{
+      background: rgba(255,255,255,0.78);
+    }
+
+    .match-result-pill[data-variant="scheduled"]{
+      background: rgba(143, 170, 255, 0.16);
+      border-color: rgba(143, 170, 255, 0.32);
+      color: #38528d;
+    }
+
+    .match-result-pill[data-variant="active"]{
+      background: rgba(255, 214, 111, 0.18);
+      border-color: rgba(255, 214, 111, 0.34);
+      color: #8f5d0f;
+    }
+
+    .match-result-pill[data-variant="closed"]{
+      background: rgba(111, 255, 145, 0.14);
+      border-color: rgba(111, 255, 145, 0.30);
+      color: #13642a;
+    }
+
+    .match-result-pill[data-variant="missed"]{
+      background: rgba(255, 168, 111, 0.16);
+      border-color: rgba(255, 168, 111, 0.34);
+      color: #8f4e0f;
+    }
+
+    .option-btn.correct,
+    .score-btn.correct,
+    .player-btn.correct,
+    .toggle-btn.correct{
+      background: rgba(111, 255, 145, 0.20);
+      border-color: rgba(111, 255, 145, 0.45);
+      color: #13642a;
+      box-shadow: 0 0 24px rgba(111, 255, 145, 0.18);
+    }
+
+    .option-btn.incorrect,
+    .score-btn.incorrect,
+    .player-btn.incorrect,
+    .toggle-btn.incorrect{
+      background: rgba(255, 111, 145, 0.16);
+      border-color: rgba(255, 111, 145, 0.34);
+      color: #8d1734;
+      box-shadow: 0 0 24px rgba(255, 111, 145, 0.16);
+    }
+
+    .community-row{
+      display:grid;
+      grid-template-columns: minmax(140px, 1fr) minmax(180px, 1.2fr) minmax(150px, 1fr) minmax(130px, 1fr);
+      gap: 14px;
+      padding: 14px 0;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      color: var(--community-ink);
+    }
+
+    .leaderboard-card{
+      border-radius: 28px;
+      border: 1px solid rgba(119, 137, 179, 0.22);
+      background:
+        linear-gradient(180deg, rgba(18, 24, 38, 0.96), rgba(10, 14, 24, 0.96));
+      color: #f3f6ff;
+      box-shadow:
+        0 20px 50px rgba(5, 8, 16, 0.24),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .leaderboard-card .section-kicker,
+    .leaderboard-card .theme-heading{
+      color: #f3f6ff;
+    }
+
+    .leaderboard-card .theme-muted{
+      color: rgba(225, 232, 250, 0.66);
+    }
+
+    .leaderboard-card .pill{
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(135, 154, 199, 0.22);
+      color: #f3f6ff;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .leaderboard-head,
+    .leaderboard-row{
+      display:grid;
+      grid-template-columns: 72px minmax(0, 1fr) minmax(72px, 0.35fr) minmax(72px, 0.35fr) minmax(72px, 0.45fr);
+      gap: 14px;
+      align-items:center;
+    }
+
+    .leaderboard-head.compact,
+    .leaderboard-row.compact{
+      grid-template-columns: 72px minmax(0, 1fr) minmax(72px, 0.35fr) minmax(72px, 0.45fr);
+    }
+
+    .leaderboard-head{
+      color: rgba(225, 232, 250, 0.66);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      padding: 0 16px;
+    }
+
+    .leaderboard-row{
+      padding: 14px 16px;
+      border: 1px solid rgba(135, 154, 199, 0.16);
+      background: rgba(255,255,255,0.05);
+      color: #f3f6ff;
+      border-radius: 20px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .leaderboard-rank{
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      border: 1px solid rgba(135, 154, 199, 0.28);
+      background: rgba(135, 154, 199, 0.12);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 900;
+      color: #f3f6ff;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .leaderboard-empty{
+      padding: 20px 0 8px;
+      color: rgba(225, 232, 250, 0.72);
+      text-align:center;
+      font-weight: 700;
+    }
+
+    .leaderboard-user{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .leaderboard-name{
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 900;
+    }
+
+    .leaderboard-avatar{
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      object-fit: cover;
+      border: 1px solid rgba(135, 154, 199, 0.28);
+      background: rgba(255,255,255,0.08);
+      flex: 0 0 auto;
+    }
+
+    .leaderboard-points{
+      text-align: center;
+      font-size: 16px;
+      font-weight: 900;
+      color: #ffca6f;
+    }
+
+    .submit-shell{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .submit-copy{
+      color: var(--soft);
+      max-width: 720px;
+      line-height: 1.6;
+    }
+
+    .theme-heading{
+      color: var(--ink);
+    }
+
+    .theme-muted{
+      color: var(--muted);
+    }
+
+    .theme-soft{
+      color: var(--soft);
+    }
+
+    .theme-score-separator{
+      color: var(--score-separator);
+    }
+
+    html[data-theme="original"] .top-nav .text-white\/80,
+    html[data-theme="dark"] .top-nav .text-white\/80{
+      color: rgba(255, 236, 243, 0.86);
+    }
+
+    @keyframes fadeIn{
+      from{ opacity:0; transform: translateY(-4px); }
+      to{ opacity:1; transform: translateY(0); }
+    }
+
+    ::-webkit-scrollbar{
+      height: 10px;
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track{
+      background: var(--scrollbar-track);
+    }
+
+    ::-webkit-scrollbar-thumb{
+      background: var(--scrollbar-thumb);
+      border-radius: 999px;
+    }
+
+    @media (max-width: 1440px){
+      .prediction-grid{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 980px){
+      .prediction-grid{
+        grid-template-columns: 1fr;
+      }
+
+      .prediction-tabs-shell{
+        top: 72px;
+      }
+
+      .prediction-tab-switcher{
+        grid-template-columns: 1fr;
+      }
+
+      .nav-shell{
+        flex-wrap: wrap;
+      }
+
+      .nav-center{
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .nav-right{
+        margin-left: auto;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+    }
+
+    @media (max-width: 768px){
+      .match-board{
+        grid-template-columns: 1fr;
+      }
+
+      .score-preview{
+        order: 2;
+      }
+
+      .team-logo{
+        width: 92px;
+        height: 92px;
+        border-radius: 24px;
+      }
+
+      .score-slot{
+        width: 60px;
+        height: 50px;
+        font-size: 24px;
+      }
+
+      .player-grid{
+        grid-template-columns: 1fr;
+      }
+
+      .player-team-grid,
+      .match-player-grid,
+      .rules-grid{
+        grid-template-columns: 1fr;
+      }
+
+      .prediction-meta{
+        grid-template-columns: 1fr;
+      }
+
+      .standings-row{
+        grid-template-columns: minmax(56px, 0.45fr) 1fr 1fr;
+      }
+
+      .standings-row.head{
+        display:none;
+      }
+
+      .standings-place{
+        grid-row: 1 / span 2;
+        align-self: stretch;
+        width: 100%;
+      }
+
+      .standings-team{
+        grid-column: 2 / -1;
+      }
+
+      .community-row{
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      .leaderboard-head{
+        display:none;
+      }
+
+      .leaderboard-row{
+        grid-template-columns: 56px minmax(0, 1fr) minmax(52px, auto) minmax(52px, auto) minmax(52px, auto);
+        gap: 12px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="styles/theme-switcher.css">
+</head>
+
+<body class="font-sans min-h-screen">
+  <div class="top-nav">
+    <div class="w-full px-6 py-3 nav-shell">
+      <div class="nav-left">
+        <span class="brand-badge text-white/80">SG Tournament</span>
+      </div>
+
+      <nav class="nav-center flex items-center gap-3 flex-wrap">
+        <a class="nav-link" href="index.html">Teams</a>
+        <a class="nav-link active" href="live.html"><span class="live-dot" aria-hidden="true"></span>Predicts</a>
+        <a class="nav-link" href="playoff.html">Bracket</a>
+      </nav>
+
+      <div class="nav-right">
+        <div id="authChip" class="auth-chip" hidden>
+          <img id="authAvatar" class="auth-avatar" alt="Аватар профиля">
+          <span id="authName" class="auth-name"></span>
+        </div>
+        <button id="logoutButton" class="logout-btn" type="button">Выйти</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="live-hero-header text-center py-16">
+    <div class="max-w-5xl mx-auto px-6">
+      <p class="section-kicker">Центр предиктов</p>
+      <h1 class="mt-4 text-5xl md:text-6xl font-black tracking-tighter theme-heading glow">
+        LIVE <span class="theme-accent-text theme-title-glow">ПРЕДИКТЫ</span>
+      </h1>
+      <div class="h-1 w-28 mx-auto mt-4 rounded-full glow" style="background: rgb(var(--accent-rgb));"></div>
+      <p class="mt-6 theme-muted text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
+        Выбирай победителя матча, точный счёт серии и топ-фраггера, а затем отправляй все предикты одной кнопкой внизу блока.
+      </p>
+    </div>
+  </header>
+
+  <main class="max-w-[1560px] mx-auto px-6 pb-16 space-y-8">
+    <section class="glass-card p-5 md:p-7 animate__animated animate__fadeInUp">
+      <div class="prediction-tabs-header">
+        <div>
+          <p class="section-kicker">Навигация</p>
+          <h2 class="mt-2 text-3xl md:text-4xl font-black tracking-tight theme-heading">Все предикты в одном месте</h2>
+          <p class="rules-note mt-4 max-w-3xl">Здесь собраны предстоящие матчи, турнирные предикты и рейтинг игроков. Турнирная сетка вынесена в раздел Playoff.</p>
+        </div>
+        <span class="pill">3 раздела</span>
+      </div>
+      <div class="prediction-tabs-shell mt-8 p-4 md:p-5">
+        <div class="prediction-tab-switcher">
+        <button id="matchTabButton" type="button" class="tab-btn active">
+          <span class="tab-btn-kicker">Раздел 01</span>
+          <span class="tab-btn-state">Ближайшие и текущие</span>
+          <span class="tab-btn-title">Предикты матчей</span>
+          <span class="tab-btn-note">Все карточки матчей в одном месте: от ближайших встреч до уже завершённых серий.</span>
+        </button>
+        <button id="tournamentTabButton" type="button" class="tab-btn">
+          <span class="tab-btn-kicker">Раздел 02</span>
+          <span id="tournamentTabState" class="tab-btn-state">Приём открыт</span>
+          <span class="tab-btn-title">Предикты турнира</span>
+          <span class="tab-btn-note">Выбери чемпиона, MVP и ключевые итоги турнира в отдельной удобной подборке.</span>
+        </button>
+        <button id="leaderboardTabButton" type="button" class="tab-btn">
+          <span class="tab-btn-kicker">Раздел 03</span>
+          <span class="tab-btn-state">Лидеры и очки</span>
+          <span class="tab-btn-title">Таблица лидеров</span>
+          <span class="tab-btn-note">Положение лидеров по предиктам и понятные правила начисления очков за предикты.</span>
+        </button>
+      </div>
+      </div>
+    </section>
+
+    <div id="matchPredictionsView" class="space-y-8">
+      <section class="glass-card predictions-surface p-5 md:p-7 animate__animated animate__fadeInUp">
+        <div class="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <p class="section-kicker">Матчи</p>
+            <h2 class="mt-2 text-3xl md:text-4xl font-black tracking-tight theme-heading">Карточки матчей</h2>
+          </div>
+        </div>
+
+        <div class="mt-8 space-y-6">
+          <div class="prediction-group" data-group="upcoming">
+            <div class="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <h3 class="group-title text-2xl md:text-3xl font-black tracking-tight">Предстоящие матчи</h3>
+                <p class="group-note mt-2 text-sm">Здесь матчи до старта. Для них можно заполнить и отправить предикт.</p>
+              </div>
+            </div>
+            <div id="upcomingMatchesGrid" class="prediction-grid mt-6"></div>
+            <div id="upcomingMatchesLoading" class="prediction-status prediction-group-loading mt-4" data-state="sending" hidden>Загрузка предиктов...</div>
+            <div id="upcomingSubmitShell" class="mt-6 submit-shell">
+              <div>
+                <div id="upcomingSubmitStatus" class="prediction-status" data-state="editing">Заполни предикты на матчи выше и отправь их одной кнопкой.</div>
+              </div>
+              <button id="submitUpcomingButton" type="button" class="submit-btn">Отправить все предикты</button>
+            </div>
+          </div>
+
+          <div class="prediction-group" data-group="active">
+            <div class="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <h3 class="group-title text-2xl md:text-3xl font-black tracking-tight">Активные матчи</h3>
+                <p class="group-note mt-2 text-sm">Здесь матчи, которые уже идут. Предикты на них уже закрыты.</p>
+              </div>
+            </div>
+            <div id="activeMatchesGrid" class="prediction-grid mt-6"></div>
+            <div id="activeMatchesLoading" class="prediction-status prediction-group-loading mt-4" data-state="sending" hidden>Загрузка предиктов...</div>
+          </div>
+
+          <div class="prediction-group" data-group="closed">
+            <div class="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <h3 class="group-title text-2xl md:text-3xl font-black tracking-tight">Завершённые матчи</h3>
+                <p class="group-note mt-2 text-sm">Здесь показываются матчи с уже известным исходом.</p>
+              </div>
+            </div>
+            <div id="closedMatchesGrid" class="prediction-grid mt-6"></div>
+            <div id="closedMatchesLoading" class="prediction-status prediction-group-loading mt-4" data-state="sending" hidden>Загрузка предиктов...</div>
+          </div>
+
+          <div class="prediction-group" data-group="scheduled">
+            <div class="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <h3 class="group-title text-2xl md:text-3xl font-black tracking-tight">Запланированные матчи</h3>
+                <p class="group-note mt-2 text-sm">Здесь матчи запланированы, но предикт на них ещё не открыт.</p>
+              </div>
+            </div>
+            <div id="scheduledMatchesGrid" class="prediction-grid mt-6"></div>
+            <div id="scheduledMatchesLoading" class="prediction-status prediction-group-loading mt-4" data-state="sending" hidden>Загрузка предиктов...</div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <section id="tournamentPredictionsView" class="glass-card predictions-surface p-5 md:p-7 animate__animated animate__fadeInUp hidden">
+      <div class="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <p class="section-kicker">Турнир</p>
+          <h2 class="mt-2 text-3xl md:text-4xl font-black tracking-tight theme-heading">Предикты турнира</h2>
+        </div>
+        <span class="pill">Турнирные предикты</span>
+      </div>
+
+      <section id="tournamentResultCard" class="rules-card mt-8"></section>
+
+      <div id="tournamentPredictionGrid" class="mt-8 tournament-grid"></div>
+
+      <div class="mt-8 flex justify-end">
+        <button id="submitTournamentPredictionButton" type="button" class="submit-btn">Отправить предикт турнира</button>
+      </div>
+
+      <div class="mt-4 tournament-summary">
+        <div id="tournamentPredictionStatus" class="prediction-status" data-state="editing">Выбери все пункты и отправь турнирный предикт.</div>
+      </div>
+    </section>
+
+    <div id="leaderboardView" class="space-y-8 hidden">
+      <section class="rules-card animate__animated animate__fadeInUp">
+        <p class="section-kicker">Как считаются очки за предикты</p>
+        <h3 class="mt-2 text-2xl font-black tracking-tight theme-heading">Система начисления за матч</h3>
+        <div id="scoringRulesSummary" class="rules-grid mt-5"></div>
+        <p id="scoringRulesNote" class="rules-note mt-4"></p>
+      </section>
+
+      <section class="rules-card animate__animated animate__fadeInUp">
+        <p class="section-kicker">Турнирные очки</p>
+        <h3 class="mt-2 text-2xl font-black tracking-tight theme-heading">Система начисления за турнир</h3>
+        <div id="tournamentScoringRulesSummary" class="rules-grid mt-5"></div>
+        <p id="tournamentScoringRulesNote" class="rules-note mt-4"></p>
+      </section>
+
+      <section id="playerLeaderboardSection" class="glass-card leaderboard-card p-5 md:p-7 animate__animated animate__fadeInUp">
+        <div class="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <p class="section-kicker">Рейтинг</p>
+            <h2 class="mt-2 text-3xl md:text-4xl font-black tracking-tight theme-heading">Рейтинг предиктов</h2>
+          </div>
+          <button id="refreshLeaderboardButton" type="button" class="pill">Обновить</button>
+        </div>
+
+        <div id="leaderboardHead" class="mt-6 leaderboard-head">
+          <div>Место</div>
+          <div>Игрок</div>
+          <div>Матчи</div>
+          <div>Турнир</div>
+          <div>Всего</div>
+        </div>
+
+        <div id="leaderboardTable"></div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyILFKyqrVxOQkwT2k9a_YGdSy0jb6-YsUwga3gC2ahD31u98jvv0VL5A99Rccnc-w/exec";
+    const LIVE_PAGE_FLAGS = {
+      tournamentPredictionsOpen: false // Fast switch: set to false to instantly close tournament predictions.
+    };
+    const leaderboardTable = document.getElementById("leaderboardTable");
+    const leaderboardHead = document.getElementById("leaderboardHead");
+    const upcomingMatchesGrid = document.getElementById("upcomingMatchesGrid");
+    const upcomingMatchesLoading = document.getElementById("upcomingMatchesLoading");
+    const scheduledMatchesGrid = document.getElementById("scheduledMatchesGrid");
+    const scheduledMatchesLoading = document.getElementById("scheduledMatchesLoading");
+    const activeMatchesGrid = document.getElementById("activeMatchesGrid");
+    const activeMatchesLoading = document.getElementById("activeMatchesLoading");
+    const closedMatchesGrid = document.getElementById("closedMatchesGrid");
+    const closedMatchesLoading = document.getElementById("closedMatchesLoading");
+    const teamStandingsTable = document.getElementById("teamStandingsTable");
+    const refreshLeaderboardButton = document.getElementById("refreshLeaderboardButton");
+    const matchTabButton = document.getElementById("matchTabButton");
+    const tournamentTabButton = document.getElementById("tournamentTabButton");
+    const leaderboardTabButton = document.getElementById("leaderboardTabButton");
+    const tournamentTabState = document.getElementById("tournamentTabState");
+    const tournamentPredictionGrid = document.getElementById("tournamentPredictionGrid");
+    const submitTournamentPredictionButton = document.getElementById("submitTournamentPredictionButton");
+    const tournamentResultCard = document.getElementById("tournamentResultCard");
+    const scoringRulesSummary = document.getElementById("scoringRulesSummary");
+    const scoringRulesNote = document.getElementById("scoringRulesNote");
+    const predictionsTable = leaderboardTable;
+    const upcomingSubmitShell = document.getElementById("upcomingSubmitShell");
+    const upcomingSubmitStatus = document.getElementById("upcomingSubmitStatus");
+    const submitUpcomingButton = document.getElementById("submitUpcomingButton");
+
+    const SCORING_RULES = {
+      winner: 2,
+      exactScore: 2,
+      bestPlayer: 1
+    };
+
+    const TOURNAMENT_SCORING_RULES = {
+      champion_team: 8,
+      mvp_player: 5,
+      best_kd_player: 3,
+      worst_kd_player: 2,
+      frag_leader: 3,
+      assist_leader: 2,
+      most_frequent_map: 3,
+      most_infrequent_map: 2
+    };
+    const STANDINGS_RULES = {
+      win: 3,
+      loss: 0
+    };
+
+    const TEAM_PLAYERS = {
+      pv: ["ImNotDima", "Lam4uk"],
+      amk: ["han4k", "s1mp1k"],
+      cz9: ["Crazy_crib", "Mexa"],
+      loss: ["Loss", "WIN_Dizel"],
+      zbc: ["Takumi", "Pasha"],
+      klb: ["Klat4er", "Bulava"],
+      egz: ["Egor T.", "Zero"],
+      dq: ["KriKkK", "igrok6574"]
+    };
+
+    function resolveMatchPlayers(players) {
+      if (Array.isArray(players)) {
+        return players;
+      }
+
+      if (typeof players !== "string") {
+        return [];
+      }
+
+      return players
+        .split("+")
+        .map((teamKey) => teamKey.trim().toLowerCase())
+        .flatMap((teamKey) => TEAM_PLAYERS[teamKey] || []);
+    }
+
+    const matches = [
+      // `format` controls score behavior:
+      // BO1 -> score is set automatically to 1:0, no score buttons
+      // BO3 -> 2:0 / 2:1
+      // `players`: array of names or shorthand like "dq+amk"
+      // for 4-player teams: first team goes before `+`, second after `+`
+      // `status` controls the lifecycle:
+      // upcoming -> shown in "Предстоящие", prediction is open
+      // active -> shown in "Активные", prediction is closed
+      // completed -> shown in "Завершённые", fill `result` to count standings
+      // `result` template: { winner: "Team A", score: "?:?", best: "PlayerName" } or `null` if not completed or no result
+      // BO1 results can omit `score`; "1:0" is still used internally for saved predictions and Google Sheet data.
+      
+    ];
+
+    function getMatchFormat(match) {
+      return String(match?.format || "").trim().toUpperCase();
+    }
+
+    function getAutoScore(match) {
+      return getMatchFormat(match) === "BO1" ? "1:0" : "";
+    }
+
+    function canAwardExactScore(match) {
+      return getMatchFormat(match) === "BO3";
+    }
+
+    function getScoreOptions(match) {
+      if (Array.isArray(match?.scoreOptions) && match.scoreOptions.length) {
+        return match.scoreOptions;
+      }
+
+      switch (getMatchFormat(match)) {
+        case "BO1":
+          return [];
+        case "BO3":
+          return ["2:0", "2:1"];
+        default:
+          return ["2:0", "2:1"];
+      }
+    }
+
+    function normalizeMatchScoreState(match) {
+      const currentState = state[match?.id];
+      if (!currentState || !match) {
+        return;
+      }
+
+      const autoScore = getAutoScore(match);
+      if (autoScore) {
+        currentState.score = currentState.winner ? autoScore : "";
+        return;
+      }
+
+      const scoreOptions = getScoreOptions(match);
+      if (currentState.score && scoreOptions.length && !scoreOptions.includes(currentState.score)) {
+        currentState.score = "";
+      }
+    }
+
+    function getMatchPlayersByTeam(match) {
+      const players = resolveMatchPlayers(match?.players);
+      const splitIndex = Number.isInteger(match?.playerSplitIndex)
+        ? match.playerSplitIndex
+        : Math.ceil(players.length / 2);
+
+      return {
+        teamA: players.slice(0, splitIndex),
+        teamB: players.slice(splitIndex)
+      };
+    }
+
+    const MATCH_PHASES = ["upcoming", "scheduled", "active", "completed"];
+
+    function isValidMatchResult(match) {
+      const result = match?.result;
+      return Boolean(result?.winner && result?.best && (result.score || getAutoScore(match)));
+    }
+
+    function normalizeMatchResult(match) {
+      if (!isValidMatchResult(match)) {
+        return null;
+      }
+
+      return {
+        ...match.result,
+        score: String(match.result.score || getAutoScore(match))
+      };
+    }
+
+    function shouldDisplayMatchScore(match) {
+      return getMatchFormat(match) !== "BO1";
+    }
+
+    const matchResults = Object.fromEntries(
+      matches
+        .map((match) => [match.id, normalizeMatchResult(match)])
+        .filter(([, result]) => result)
+    );
+
+    const state = Object.fromEntries(
+      matches.map((match) => [
+        match.id,
+        {
+          winner: "",
+          score: "",
+          player: "",
+          locked: false,
+          submittedAt: ""
+        }
+      ])
+    );
+
+    const standingsTeamNames = Array.from(new Set(
+      matches.flatMap((match) => [match.teamA.name, match.teamB.name])
+    ))
+      .filter((teamName) => teamName && teamName !== "TBD")
+      .sort((a, b) => a.localeCompare(b, "ru"));
+
+    const teamDirectory = new Map();
+    matches.forEach((match) => {
+      [match.teamA, match.teamB].forEach((team) => {
+        if (!team?.name || team.name === "TBD" || teamDirectory.has(team.name)) {
+          return;
+        }
+
+        teamDirectory.set(team.name, {
+          name: team.name,
+          subtitle: team.subtitle || "",
+          logo: team.logo || ""
+        });
+      });
+    });
+
+    function setMatchGridsHydrating(isHydrating) {
+      [
+        [upcomingMatchesGrid, upcomingMatchesLoading],
+        [scheduledMatchesGrid, scheduledMatchesLoading],
+        [activeMatchesGrid, activeMatchesLoading],
+        [closedMatchesGrid, closedMatchesLoading]
+      ].forEach(([grid, loading]) => {
+        if (!grid) {
+          return;
+        }
+
+        grid.classList.toggle("is-hydrating", isHydrating);
+        grid.setAttribute("aria-busy", isHydrating ? "true" : "false");
+
+        if (loading) {
+          loading.hidden = !isHydrating;
+          loading.setAttribute("aria-hidden", isHydrating ? "false" : "true");
+        }
+      });
+    }
+
+    function syncRenderedMatchCards() {
+      document.querySelectorAll("[data-match-id]").forEach((card) => {
+        const match = matches.find((item) => item.id === card.dataset.matchId);
+        if (match) {
+          syncCardState(card, match);
+        }
+      });
+    }
+
+    const allPlayers = ["ImNotDima", "s1mp1k", "ds_swanson", "Zero", "Loss", "han4k", "WIN_Dizel", "KriKkK",
+      "Crazy_crib", "Mexa", "Egor T.", "lam4uk", "semen", "Klat4er", "strew", "igrok6574",
+      "Quzzix", "Dev1n", "Little", "Davidosik", "azbuca", "mamont_pirce", "Patoshka", "Megaglist"
+    ];
+
+    const tournamentState = {
+      champion_team: "",
+      mvp_player: "",
+      best_kd_player: "",
+      worst_kd_player: "",
+      frag_leader: "",
+      assist_leader: "",
+      most_frequent_map: "",
+      most_infrequent_map: ""
+    };
+
+    const tournamentResults = null;
+    // Keep `null` while the tournament is still running.
+    // Once the final tournament outcome is known, replace it with:
+    // {
+    //   champion_team: "LOSSTEAM",
+    //   mvp_player: "Nickname",
+    //   best_kd_player: "Nickname",
+    //   worst_kd_player: "Nickname",
+    //   frag_leader: "Nickname",
+    //   assist_leader: "Nickname",
+    //   most_frequent_map: "Mirage",
+    //   most_infrequent_map: "Train"
+    // }
+    // This object is the single place where you will fill tournament results for the final summary/table.
+
+    const tournamentCategories = [
+      {
+        key: "champion_team",
+        label: "Победитель турнира",
+        icon: "🏆",
+        options: ["LOSSTEAM", "PEPEVISION", "ZBc", "CZ9", "DQTEAM", "AMK"],
+        placeholder: "Выберите команду"
+      },
+      {
+        key: "mvp_player",
+        label: "MVP турнира",
+        icon: "⭐",
+        options: allPlayers,
+        placeholder: "Выберите игрока"
+      },
+      {
+        key: "best_kd_player",
+        label: "Лучший K/D турнира",
+        icon: "📈",
+        options: allPlayers,
+        placeholder: "Выберите игрока"
+      },
+      {
+        key: "worst_kd_player",
+        label: "Худший K/D турнира",
+        icon: "📉",
+        options: allPlayers,
+        placeholder: "Выберите игрока"
+      },
+      {
+        key: "frag_leader",
+        label: "Топ-фрагер турнира",
+        icon: "🔫",
+        options: allPlayers,
+        placeholder: "Выберите игрока"
+      },
+      {
+        key: "assist_leader",
+        label: "Топ-ассист турнира",
+        icon: "🤝",
+        options: allPlayers,
+        placeholder: "Выберите игрока"
+      },
+      {
+        key: "most_frequent_map",
+        label: "Самая популярная карта",
+        icon: "🗺️",
+        options: ["Anubis", "Overpass", "Inferno", "Mirage", "Dust2", "Nuke", "Ancient", "Train", "Vertigo", "Cache"],
+        placeholder: "Выберите карту"
+      },
+      {
+        key: "most_infrequent_map",
+        label: "Самая непопулярная карта",
+        icon: "🗺️",
+        options: ["Anubis", "Overpass", "Inferno", "Mirage", "Dust2", "Nuke", "Ancient", "Train", "Vertigo", "Cache"],
+        placeholder: "Выберите карту"
+      }
+    ];
+
+    const tournamentPredictionKeys = tournamentCategories.map((category) => category.key);
+    const tournamentPersistence = {
+      locked: false,
+      persistedFields: tournamentPredictionKeys.reduce((acc, key) => {
+        acc[key] = false;
+        return acc;
+      }, {})
+    };
+
+    function areTournamentPredictionsOpen() {
+      return LIVE_PAGE_FLAGS.tournamentPredictionsOpen;
+    }
+
+    function syncTournamentTabState() {
+      if (!tournamentTabButton || !tournamentTabState) {
+        return;
+      }
+
+      const predictionsOpen = areTournamentPredictionsOpen();
+      tournamentTabState.textContent = predictionsOpen ? "Предикты открыты" : "Предикты закрыты";
+      tournamentTabButton.classList.toggle("is-disabled", !predictionsOpen);
+    }
+
+    function isTournamentFieldLocked(key) {
+      return tournamentPersistence.locked || Boolean(tournamentPersistence.persistedFields[key]);
+    }
+
+    function isTournamentFullyPersisted() {
+      return tournamentPredictionKeys.every((key) => Boolean(tournamentPersistence.persistedFields[key]));
+    }
+
+    function renderTournamentPredictionCards() {
+      const grid = document.getElementById("tournamentPredictionGrid");
+      if (!grid) {
+        return;
+      }
+
+      const predictionsOpen = areTournamentPredictionsOpen();
+
+      grid.innerHTML = tournamentCategories.map((category) => {
+        const fieldLocked = isTournamentFieldLocked(category.key);
+        const controlDisabled = fieldLocked || !predictionsOpen;
+        const selected = tournamentState[category.key];
+        const placeholder = selected
+          ? `<strong>${escapeHtml(selected)}</strong>`
+          : escapeHtml(category.placeholder || "Выбрать игрока");
+        const stateBadge = fieldLocked
+          ? `<span class="text-[11px] opacity-70 ml-2">сохранено</span>`
+          : !predictionsOpen
+            ? `<span class="text-[11px] opacity-70 ml-2">закрыто</span>`
+            : "";
+        const disabledAttr = controlDisabled ? " disabled" : "";
+        const showClear = selected && predictionsOpen && !fieldLocked && !tournamentPersistence.locked;
+
+        return `
+          <div class="tournament-card">
+            <div class="tournament-card-title">
+              <span class="tournament-card-icon">${escapeHtml(category.icon)}</span>
+              ${escapeHtml(category.label)}
+            </div>
+            <div class="player-select-shell">
+              <div class="player-select-row">
+                <button type="button" class="player-select-btn${selected ? " selected" : ""}${controlDisabled ? " locked" : ""}" data-action="toggle-player-dropdown" data-key="${escapeHtml(category.key)}" aria-expanded="false"${disabledAttr}>
+                  <span class="player-select-label">${placeholder}</span>
+                  ${stateBadge}
+                  <span class="player-select-arrow">в–ѕ</span>
+                </button>
+                ${showClear ? `<button type="button" class="player-select-clear" data-action="clear-selection" data-key="${escapeHtml(category.key)}" aria-label="Сбросить выбор">×</button>` : ""}
+              </div>
+              <div class="player-dropdown" data-dropdown-key="${escapeHtml(category.key)}">
+                <div class="player-grid">
+                  ${category.options.map((value) => `
+                    <button type="button" class="player-btn" data-key="${escapeHtml(category.key)}" data-value="${escapeHtml(value)}" data-action="select-player"${disabledAttr}>${escapeHtml(value)}</button>
+                  `).join("")}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      syncTournamentPredictionState();
+    }
+
+    function closeAllPlayerDropdowns() {
+      document.querySelectorAll(".player-dropdown.open").forEach((dropdown) => {
+        dropdown.classList.remove("open");
+      });
+      document.querySelectorAll(".match-player-card.dropdown-open, .predict-card.dropdown-open, .tournament-card.dropdown-open").forEach((element) => {
+        element.classList.remove("dropdown-open");
+      });
+      document.querySelectorAll(".player-select-btn.active").forEach((button) => {
+        button.classList.remove("active");
+        button.setAttribute("aria-expanded", "false");
+      });
+    }
+
+    function togglePlayerDropdown(key) {
+      const dropdown = document.querySelector(`.player-dropdown[data-dropdown-id="${CSS.escape(key)}"], .player-dropdown[data-dropdown-key="${CSS.escape(key)}"]`);
+      if (!dropdown) {
+        return;
+      }
+
+      const isMatchDropdown = dropdown.hasAttribute("data-dropdown-id");
+      const toggle = document.querySelector(`.player-select-btn[data-dropdown-id="${CSS.escape(key)}"], .player-select-btn[data-key="${CSS.escape(key)}"]`);
+
+      if (isMatchDropdown) {
+        const card = toggle ? toggle.closest("[data-match-id]") : null;
+        const matchId = card?.dataset.matchId || "";
+        const match = matchId ? getMatchById(matchId) : null;
+
+        if (!match) {
+          return;
+        }
+
+        const matchStatus = getMatchStatus(match.id);
+        if (state[match.id]?.locked || matchStatus !== "upcoming" || isMatchTemplate(match)) {
+          return;
+        }
+      } else if (!areTournamentPredictionsOpen() || isTournamentFieldLocked(key)) {
+        return;
+      }
+
+      const isOpen = dropdown.classList.contains("open");
+      closeAllPlayerDropdowns();
+      dropdown.classList.toggle("open", !isOpen);
+      if (toggle) {
+        toggle.classList.toggle("active", !isOpen);
+        toggle.setAttribute("aria-expanded", String(!isOpen));
+        const matchPlayerCard = toggle.closest(".match-player-card");
+        const predictCard = toggle.closest(".predict-card");
+        if (matchPlayerCard) {
+          matchPlayerCard.classList.toggle("dropdown-open", !isOpen);
+        }
+        if (predictCard) {
+          predictCard.classList.toggle("dropdown-open", !isOpen);
+        }
+        const tournamentCard = toggle.closest(".tournament-card");
+        if (tournamentCard) {
+          tournamentCard.classList.toggle("dropdown-open", !isOpen);
+        }
+      }
+    }
+
+    function setTournamentPredictionValue(key, value) {
+      if (!Object.prototype.hasOwnProperty.call(tournamentState, key)) {
+        return;
+      }
+      if (!areTournamentPredictionsOpen() || isTournamentFieldLocked(key)) {
+        return;
+      }
+      tournamentState[key] = value;
+      renderTournamentPredictionCards();
+      syncTournamentPredictionState();
+    }
+
+    function clearTournamentPredictionValue(key) {
+      if (!Object.prototype.hasOwnProperty.call(tournamentState, key)) {
+        return;
+      }
+      if (!areTournamentPredictionsOpen() || isTournamentFieldLocked(key)) {
+        return;
+      }
+      tournamentState[key] = "";
+      renderTournamentPredictionCards();
+      syncTournamentPredictionState();
+    }
+
+    function clearMatchPlayer(matchId) {
+      if (!state[matchId]) {
+        return;
+      }
+      clearMatchFeedback(matchId);
+      state[matchId].player = "";
+      closeAllPlayerDropdowns();
+      const card = document.querySelector(`[data-match-id="${CSS.escape(matchId)}"]`);
+      const match = matches.find((item) => item.id === matchId);
+      if (card && match) {
+        syncCardState(card, match);
+      }
+    }
+
+    function switchPredictionTab(tabName) {
+      const views = {
+        match: document.getElementById("matchPredictionsView"),
+        tournament: document.getElementById("tournamentPredictionsView"),
+        leaderboard: document.getElementById("leaderboardView")
+      };
+      const tabs = {
+        match: document.getElementById("matchTabButton"),
+        tournament: document.getElementById("tournamentTabButton"),
+        leaderboard: document.getElementById("leaderboardTabButton")
+      };
+
+      Object.entries(views).forEach(([name, view]) => {
+        view?.classList.toggle("hidden", name !== tabName);
+      });
+
+      Object.entries(tabs).forEach(([name, tab]) => {
+        tab?.classList.toggle("active", name === tabName);
+      });
+
+      syncTournamentTabState();
+      closeAllPlayerDropdowns();
+
+      if (tabName === "tournament") {
+        renderTournamentResultCard();
+      }
+
+      if (tabName === "leaderboard") {
+        loadLeaderboard();
+      }
+    }
+
+    function renderTournamentResultCard() {
+      if (!tournamentResultCard) {
+        return;
+      }
+
+      if (!tournamentResults) {
+        tournamentResultCard.innerHTML = `
+          <p class="section-kicker">Итоги турнира</p>
+          <h3 class="mt-2 text-2xl font-black tracking-tight theme-heading">Финальная сводка появится после завершения турнира</h3>
+          <p class="rules-note mt-4">Когда будут известны официальные итоги, здесь автоматически появятся чемпион, MVP и остальные ключевые результаты.</p>
+        `;
+        return;
+      }
+
+      const userProfile = getCurrentUserProfile();
+      const userPrediction = userProfile ? loadUserTournamentPrediction() : null;
+      const hasUserPrediction = userPrediction && userPrediction.champion_team;
+
+      const comparisonRows = tournamentCategories.map((category) => {
+        const resultValue = tournamentResults[category.key] || "Не указано";
+        const userValue = hasUserPrediction ? (userPrediction[category.key] || "—") : "—";
+        const isCorrect = hasUserPrediction && String(userPrediction[category.key]).trim() === String(resultValue).trim();
+        const points = TOURNAMENT_SCORING_RULES[category.key] || 0;
+
+        return {
+          ...category,
+          resultValue,
+          userValue,
+          isCorrect,
+          points
+        };
+      });
+
+      const totalEarned = comparisonRows.reduce((sum, row) => sum + (row.isCorrect ? row.points : 0), 0);
+      const totalMax = comparisonRows.reduce((sum, row) => sum + row.points, 0);
+
+      tournamentResultCard.innerHTML = `
+        <p class="section-kicker">Итоги турнира</p>
+        <h3 class="mt-2 text-2xl font-black tracking-tight theme-heading">Финальные результаты</h3>
+        <div class="prediction-meta mt-5">
+          ${comparisonRows.map((row) => `
+            <div class="prediction-meta-item">
+              <span class="prediction-meta-label">${escapeHtml(row.label)}</span>
+              <span class="prediction-meta-value">${escapeHtml(row.resultValue)}</span>
+            </div>
+          `).join("")}
+        </div>
+        ${hasUserPrediction ? `
+          <div class="mt-6">
+            <p class="section-kicker">Твой предикт</p>
+            <h3 class="mt-2 text-2xl font-black tracking-tight theme-heading">Сравнение с итогами</h3>
+            <div class="prediction-meta mt-5">
+              ${comparisonRows.map((row) => `
+                <div class="prediction-meta-item ${row.isCorrect ? 'tournament-correct' : 'tournament-incorrect'}">
+                  <span class="prediction-meta-label">${escapeHtml(row.label)}</span>
+                  <span class="prediction-meta-value">${escapeHtml(row.userValue)}</span>
+                </div>
+              `).join("")}
+            </div>
+            <div class="mt-4 flex items-center gap-3 flex-wrap">
+              ${comparisonRows.map((row) => `
+                <span class="result-chip ${row.isCorrect ? 'success' : 'fail'}">${escapeHtml(row.label)}: ${row.isCorrect ? 'Верно' : 'Мимо'} (+${row.isCorrect ? row.points : 0}/${row.points})</span>
+              `).join("")}
+            </div>
+            <div class="prediction-status mt-4" data-state="${totalEarned > 0 ? 'saved' : 'missed'}">
+              Набрано ${totalEarned} из ${totalMax} очков за турнирный предикт.
+            </div>
+          </div>
+        ` : `
+          <div class="mt-4 prediction-status" data-state="editing">Ты ещё не заполнял турнирный предикт.</div>
+        `}
+      `;
+    }
+
+    function loadUserTournamentPrediction() {
+      try {
+        const stored = localStorage.getItem("sg-tournament-prediction");
+        if (stored) {
+          return JSON.parse(stored);
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function renderScoringSummary() {
+      if (scoringRulesSummary) {
+        scoringRulesSummary.innerHTML = [
+          { value: SCORING_RULES.winner, label: "За победителя" },
+          { value: SCORING_RULES.exactScore, label: "За точный счёт BO3" },
+          { value: SCORING_RULES.bestPlayer, label: "За топ-фраггера" }
+        ].map((item) => `
+          <div class="rules-item">
+            <span class="rules-value">+${escapeHtml(item.value)}</span>
+            <span class="rules-label">${escapeHtml(item.label)}</span>
+          </div>
+        `).join("");
+      }
+
+      if (scoringRulesNote) {
+        const maxPoints = SCORING_RULES.winner + SCORING_RULES.exactScore + SCORING_RULES.bestPlayer;
+        scoringRulesNote.textContent = `Максимум за один матч: до ${maxPoints} очков. +${SCORING_RULES.exactScore} за точный счёт начисляется только в BO3. Для BO1 счёт 1:0 подставляется автоматически после выбора победителя.`;
+      }
+    }
+
+    function renderTournamentScoringSummary() {
+      const el = document.getElementById("tournamentScoringRulesSummary");
+      const noteEl = document.getElementById("tournamentScoringRulesNote");
+
+      if (el) {
+        const labels = {
+          champion_team: "Победитель турнира",
+          mvp_player: "MVP турнира",
+          best_kd_player: "Лучший K/D",
+          worst_kd_player: "Худший K/D",
+          frag_leader: "Топ-фрагер",
+          assist_leader: "Топ-ассист",
+          most_frequent_map: "Самая частая карта",
+          most_infrequent_map: "Самая редкая карта"
+        };
+
+        el.innerHTML = Object.entries(TOURNAMENT_SCORING_RULES).map(([key, value]) => `
+          <div class="rules-item">
+            <span class="rules-value">+${escapeHtml(value)}</span>
+            <span class="rules-label">${escapeHtml(labels[key] || key)}</span>
+          </div>
+        `).join("");
+      }
+
+      if (noteEl) {
+        const maxPoints = Object.values(TOURNAMENT_SCORING_RULES).reduce((a, b) => a + b, 0);
+        noteEl.textContent = `Максимум за турнирный предикт: ${maxPoints} очков. Очки за турнир суммируются с очками за матчи в общей таблице лидеров.`;
+      }
+    }
+
+    function getMatchById(matchId) {
+      return matches.find((item) => item.id === matchId) || null;
+    }
+
+    function isMatchTemplate(match) {
+      return Boolean(match?.template);
+    }
+
+    function getMatchPhase(match) {
+      const phase = String(match?.status || "").trim().toLowerCase();
+      if (MATCH_PHASES.includes(phase)) {
+        return phase;
+      }
+
+      return getMatchResult(match?.id) ? "completed" : "upcoming";
+    }
+
+    function renderStandingsTeamLogo(team) {
+      if (team?.logo) {
+        return `
+          <div class="standings-team-logo">
+            <img src="${escapeHtml(team.logo)}" alt="${escapeHtml(team.name)} logo">
+          </div>
+        `;
+      }
+
+      const initials = String(team?.name || "")
+        .split(" ")
+        .map((word) => word[0] || "")
+        .join("")
+        .slice(0, 3)
+        .toUpperCase();
+
+      return `<div class="standings-team-logo fallback">${escapeHtml(initials || "TBD")}</div>`;
+    }
+
+    function buildTeamStandings() {
+      const rows = standingsTeamNames.map((teamName) => {
+        const team = teamDirectory.get(teamName) || { name: teamName, subtitle: "", logo: "" };
+        return {
+          ...team,
+          wins: 0,
+          losses: 0,
+          points: 0
+        };
+      });
+
+      const standingsMap = new Map(rows.map((row) => [row.name, row]));
+
+      matches.forEach((match) => {
+        if (getMatchPhase(match) !== "completed") {
+          return;
+        }
+
+        const result = getMatchResult(match.id);
+        if (!result) {
+          return;
+        }
+
+        const winnerName = result.winner;
+        const loserName = winnerName === match.teamA.name
+          ? match.teamB.name
+          : winnerName === match.teamB.name
+            ? match.teamA.name
+            : "";
+
+        const winnerRow = standingsMap.get(winnerName);
+        const loserRow = standingsMap.get(loserName);
+
+        if (!winnerRow || !loserRow) {
+          return;
+        }
+
+        winnerRow.wins += 1;
+        winnerRow.points += STANDINGS_RULES.win;
+        loserRow.losses += 1;
+        loserRow.points += STANDINGS_RULES.loss;
+      });
+
+      return rows.sort((a, b) => {
+        if (b.points !== a.points) {
+          return b.points - a.points;
+        }
+        if (b.wins !== a.wins) {
+          return b.wins - a.wins;
+        }
+        if (a.losses !== b.losses) {
+          return a.losses - b.losses;
+        }
+        return a.name.localeCompare(b.name, "ru");
+      }).map((team, index) => ({
+        ...team,
+        place: index + 1
+      }));
+    }
+
+    function renderTeamStandings() {
+      if (!teamStandingsTable) {
+        return;
+      }
+
+      teamStandingsTable.innerHTML = buildTeamStandings().map((team) => `
+        <div class="standings-row team">
+          <div class="standings-place" aria-label="Место ${escapeHtml(team.place)}">#${escapeHtml(team.place)}</div>
+          <div class="standings-team">
+            ${renderStandingsTeamLogo(team)}
+            <div class="standings-team-name">${escapeHtml(team.name)}</div>
+          </div>
+          <div class="standings-value">${escapeHtml(team.wins)}</div>
+          <div class="standings-value">${escapeHtml(team.losses)}</div>
+          <div class="standings-value points">${escapeHtml(team.points)}</div>
+        </div>
+      `).join("");
+    }
+
+    function getMatchPlayerDropdownId(matchId, teamKey) {
+      return `${matchId}:${teamKey}`;
+    }
+
+    function getMatchSelectedPlayerTeam(match) {
+      const selectedPlayer = state[match.id]?.player || "";
+      if (!selectedPlayer) {
+        return "";
+      }
+
+      const playersByTeam = getMatchPlayersByTeam(match);
+      if (playersByTeam.teamA.includes(selectedPlayer)) {
+        return "teamA";
+      }
+      if (playersByTeam.teamB.includes(selectedPlayer)) {
+        return "teamB";
+      }
+
+      return "";
+    }
+
+    function renderMatchPlayerPicker(match, teamKey, teamName, players) {
+      const selectedPlayer = state[match.id]?.player || "";
+      const selectedTeam = getMatchSelectedPlayerTeam(match);
+      const isSelectedTeam = selectedTeam === teamKey && Boolean(selectedPlayer);
+      const dropdownId = getMatchPlayerDropdownId(match.id, teamKey);
+      const buttonContent = `
+        <span class="match-player-copy">
+          <span class="match-player-team">${escapeHtml(teamName)}</span>
+          ${isSelectedTeam
+            ? `
+              <span class="match-player-value">
+                <span class="match-player-icon">🏆</span>
+                <strong>${escapeHtml(selectedPlayer)}</strong>
+              </span>
+            `
+            : `<span class="match-player-empty">Игрок не выбран</span>`}
+        </span>
+      `;
+
+      return `
+        <div class="match-player-card">
+          <div class="player-select-shell">
+            <button type="button" class="player-select-btn match-player-trigger${isSelectedTeam ? " selected" : ""}" data-action="toggle-player-dropdown" data-dropdown-id="${escapeHtml(dropdownId)}" data-player-team="${escapeHtml(teamKey)}" aria-expanded="false">
+              <span class="player-select-label" data-player-label="${escapeHtml(teamKey)}">${buttonContent}</span>
+              <span class="player-select-arrow">▾</span>
+            </button>
+            <div class="player-dropdown" data-dropdown-id="${escapeHtml(dropdownId)}">
+              <div class="player-grid">
+                ${players.map((player) => `
+                  <button type="button" class="player-btn" data-action="player" data-value="${escapeHtml(player)}">${escapeHtml(player)}</button>
+                `).join("")}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    function getMatchOpenHint(matchId) {
+      const match = getMatchById(matchId);
+      if (isMatchTemplate(match)) {
+        return "Это пустой шаблон предстоящего матча. Заполни команды, дату, игроков и потом меняй status на active или completed.";
+      }
+      return getScoreOptions(match).length
+        ? "Выбери победителя, счёт и топ-фраггера, затем отправь предикт."
+        : "Выбери победителя и топ-фраггера, затем отправь предикт.";
+    }
+
+    function getMatchStatusDetails(matchId) {
+      const match = getMatchById(matchId);
+      const currentState = state[matchId];
+      if (!currentState) {
+        return {
+          state: "editing",
+          text: getMatchOpenHint(matchId)
+        };
+      }
+
+      if (currentState.statusText) {
+        return {
+          state: currentState.statusState || "editing",
+          text: currentState.statusText
+        };
+      }
+
+      if (currentState.locked) {
+        return {
+          state: "saved",
+          text: "Предикт сохранён. Изменить его уже нельзя."
+        };
+      }
+
+      if (getMatchPhase(match) === "active") {
+        return {
+          state: "locked",
+          text: hasPrediction(matchId)
+            ? "Матч уже идёт. Твой предикт сохранён и ждёт результата."
+            : "Матч уже идёт. Приём предиктов на него закрыт."
+        };
+      }
+
+      if (getMatchPhase(match) === "scheduled") {
+        return {
+          state: "scheduled",
+          text: "Матч запланирован, но приём предиктов на него ещё не открыт."
+        };
+      }
+
+      if (currentState.winner || currentState.score || currentState.player) {
+        return {
+          state: "editing",
+          text: "Предикт заполнен частично. Проверь выбор и отправь его."
+        };
+      }
+
+      return {
+        state: "editing",
+        text: getMatchOpenHint(matchId)
+      };
+    }
+
+    function setMatchFeedback(matchId, text, stateType = "editing") {
+      if (!state[matchId]) {
+        return;
+      }
+
+      state[matchId].statusText = text;
+      state[matchId].statusState = stateType;
+    }
+
+    function clearMatchFeedback(matchId) {
+      if (!state[matchId]) {
+        return;
+      }
+
+      state[matchId].statusText = "";
+      state[matchId].statusState = "";
+    }
+
+    function setTournamentFeedback(text, stateType = "editing") {
+      const status = document.getElementById("tournamentPredictionStatus");
+      if (!status) {
+        return;
+      }
+
+      status.dataset.state = stateType;
+      status.textContent = text;
+    }
+
+    function syncTournamentPredictionState() {
+      const status = document.getElementById("tournamentPredictionStatus");
+      const submitButton = document.getElementById("submitTournamentPredictionButton");
+      const hasAllFields = tournamentPredictionKeys.every((key) => Boolean(tournamentState[key]));
+      const predictionsOpen = areTournamentPredictionsOpen();
+
+      if (status) {
+        if (!predictionsOpen && !tournamentPersistence.locked) {
+          setTournamentFeedback("Приём турнирных предиктов сейчас закрыт.", "locked");
+        } else if (tournamentPersistence.locked) {
+          setTournamentFeedback("Предикт турнира сохранён.", "saved");
+        } else if (hasAllFields) {
+          setTournamentFeedback("Все поля заполнены. Можно отправлять турнирный предикт.", "saved");
+        } else {
+          setTournamentFeedback("Выбери все пункты, чтобы отправить предикт турнира.", "editing");
+        }
+      }
+
+      if (submitButton) {
+        if (!predictionsOpen && !tournamentPersistence.locked) {
+          submitButton.disabled = true;
+          submitButton.textContent = "Турнирные предикты закрыты";
+        } else if (tournamentPersistence.locked) {
+          submitButton.disabled = true;
+          submitButton.textContent = "Предикт сохранён";
+        } else {
+          submitButton.disabled = !hasAllFields;
+          submitButton.textContent = "Отправить предикт турнира";
+        }
+      }
+    }
+
+    async function loadTournamentPredictions() {
+      try {
+        const user = await window.__authPromise;
+        const profile = user ? getCurrentUserProfile() : null;
+
+        if (!profile?.id) {
+          syncTournamentPredictionState();
+          return;
+        }
+
+        try {
+          const data = await fetchJson(`${GOOGLE_SCRIPT_URL}?mode=my_tournament_predictions&user_id=${encodeURIComponent(profile.id)}`);
+          const rows = extractPredictionRows(data);
+          const prediction = rows[0];
+
+          if (prediction) {
+            tournamentPredictionKeys.forEach((key) => {
+              const value = prediction[key] || "";
+              tournamentState[key] = value;
+              tournamentPersistence.persistedFields[key] = Boolean(value);
+            });
+            tournamentPersistence.locked = isTournamentFullyPersisted();
+
+            try {
+              localStorage.setItem("sg-tournament-prediction", JSON.stringify({
+                champion_team: tournamentState.champion_team,
+                mvp_player: tournamentState.mvp_player,
+                best_kd_player: tournamentState.best_kd_player,
+                worst_kd_player: tournamentState.worst_kd_player,
+                frag_leader: tournamentState.frag_leader,
+                assist_leader: tournamentState.assist_leader,
+                most_frequent_map: tournamentState.most_frequent_map,
+                most_infrequent_map: tournamentState.most_infrequent_map,
+                user_id: profile.id
+              }));
+            } catch (e) {}
+          }
+        } catch (error) {
+          // Fallback to localStorage
+          const local = loadUserTournamentPrediction();
+          if (local && local.user_id === profile.id) {
+            tournamentPredictionKeys.forEach((key) => {
+              const value = local[key] || "";
+              tournamentState[key] = value;
+              tournamentPersistence.persistedFields[key] = Boolean(value);
+            });
+            tournamentPersistence.locked = isTournamentFullyPersisted();
+          }
+        }
+
+        renderTournamentPredictionCards();
+      } catch (error) {
+        console.warn("Failed to load tournament predictions", error);
+      } finally {
+        syncTournamentPredictionState();
+      }
+    }
+
+    async function sendTournamentPrediction() {
+      const profile = getCurrentUserProfile();
+
+      if (!profile) {
+        setTournamentFeedback("Не удалось определить пользователя Discord.", "error");
+        return;
+      }
+
+      if (!areTournamentPredictionsOpen()) {
+        setTournamentFeedback("Турнирные предикты сейчас закрыты.", "locked");
+        return;
+      }
+
+      if (tournamentPersistence.locked) {
+        setTournamentFeedback("Полный предикт уже сохранён. Изменения недоступны.", "error");
+        return;
+      }
+
+      if (!tournamentState.champion_team || !tournamentState.mvp_player || !tournamentState.best_kd_player || !tournamentState.worst_kd_player || !tournamentState.frag_leader || !tournamentState.assist_leader || !tournamentState.most_frequent_map || !tournamentState.most_infrequent_map) {
+        setTournamentFeedback("Сначала заполни все поля предикта турнира.", "error");
+        return;
+      }
+
+      const payload = {
+        mode: "submit_tournament_prediction",
+        user_id: profile.id,
+        username: profile.username,
+        name: profile.name,
+        avatar_url: profile.avatar_url,
+        champion_team: tournamentState.champion_team,
+        mvp_player: tournamentState.mvp_player,
+        best_kd_player: tournamentState.best_kd_player,
+        worst_kd_player: tournamentState.worst_kd_player,
+        frag_leader: tournamentState.frag_leader,
+        assist_leader: tournamentState.assist_leader,
+        most_frequent_map: tournamentState.most_frequent_map,
+        most_infrequent_map: tournamentState.most_infrequent_map
+      };
+
+      const button = document.getElementById("submitTournamentPredictionButton");
+      if (button) {
+        button.disabled = true;
+        button.textContent = "Отправка...";
+      }
+      setTournamentFeedback("Сохраняем предикт турнира...", "sending");
+
+      try {
+        const res = await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const text = await res.text();
+        let result = {};
+
+        try {
+          result = JSON.parse(text);
+        } catch {
+          result = { raw: text };
+        }
+
+        if (!res.ok) {
+          throw new Error(result.error || text || "Request failed");
+        }
+
+        // Persist locally for tournament result comparison
+        try {
+          localStorage.setItem("sg-tournament-prediction", JSON.stringify({
+            champion_team: tournamentState.champion_team,
+            mvp_player: tournamentState.mvp_player,
+            best_kd_player: tournamentState.best_kd_player,
+            worst_kd_player: tournamentState.worst_kd_player,
+            frag_leader: tournamentState.frag_leader,
+            assist_leader: tournamentState.assist_leader,
+            most_frequent_map: tournamentState.most_frequent_map,
+            most_infrequent_map: tournamentState.most_infrequent_map,
+            user_id: profile.id
+          }));
+        } catch (e) {
+          console.warn("Unable to persist tournament prediction locally", e);
+        }
+
+        setTournamentFeedback("Предикт турнира сохранён.", "saved");
+        await loadTournamentPredictions();
+        renderTournamentResultCard();
+      } catch (error) {
+        console.error(error);
+        setTournamentFeedback(`Ошибка: ${error.message}`, "error");
+      } finally {
+        syncTournamentPredictionState();
+      }
+    }
+
+    function hasPrediction(matchId) {
+      const currentState = state[matchId];
+      const match = getMatchById(matchId);
+      const resolvedScore = currentState?.score || getAutoScore(match);
+      return Boolean(currentState && currentState.winner && resolvedScore && currentState.player);
+    }
+
+    function getMatchResult(matchId) {
+      return matchResults[matchId] || null;
+    }
+
+    function getMatchStatus(matchId) {
+      const match = getMatchById(matchId);
+      const phase = getMatchPhase(match);
+
+      if (phase === "upcoming") {
+        return "upcoming";
+      }
+
+      if (phase === "scheduled") {
+        return "scheduled";
+      }
+
+      if (phase === "active") {
+        return "active";
+      }
+
+      if (!getMatchResult(matchId)) {
+        return "active";
+      }
+
+      return hasPrediction(matchId) ? "closed" : "missed";
+    }
+
+    function getStatusRank(matchId) {
+      return {
+        upcoming: 0,
+        scheduled: 1,
+        active: 2,
+        closed: 3,
+        missed: 4
+      }[getMatchStatus(matchId)] ?? 99;
+    }
+
+    function getOrderedMatches() {
+      return [...matches].sort((a, b) => {
+        const rankDelta = getStatusRank(a.id) - getStatusRank(b.id);
+
+        if (rankDelta !== 0) {
+          return rankDelta;
+        }
+
+        return matches.findIndex((item) => item.id === a.id) - matches.findIndex((item) => item.id === b.id);
+      });
+    }
+
+    function getMatchStatusLabel(matchId) {
+      const status = getMatchStatus(matchId);
+
+      if (status === "upcoming") {
+        return "Предстоящий";
+      }
+
+      if (status === "scheduled") {
+        return "Скоро откроется";
+      }
+
+      if (status === "active") {
+        return "Матч идёт";
+      }
+
+      if (status === "closed") {
+        return "Матч завершён";
+      }
+
+      return "Приём закрыт";
+    }
+
+    function getResultComparison(matchId) {
+      const currentState = state[matchId];
+      const result = getMatchResult(matchId);
+
+      if (!currentState || !result || !hasPrediction(matchId)) {
+        return null;
+      }
+
+      return {
+        winner: isSameChoiceValue(currentState.winner, result.winner),
+        score: currentState.score === result.score,
+        player: isSameChoiceValue(currentState.player, result.best)
+      };
+    }
+
+    function getResultChip(label, isCorrect) {
+      const text = isCorrect ? "Верно" : "Мимо";
+      const variant = isCorrect ? "success" : "fail";
+      return `<span class="result-chip ${variant}">${escapeHtml(label)}: ${text}</span>`;
+    }
+
+    function isSameChoiceValue(left, right) {
+      return String(left || "").trim().toLowerCase() === String(right || "").trim().toLowerCase();
+    }
+
+    function renderPredictionOutcome(matchId) {
+      const result = getMatchResult(matchId);
+      const currentState = state[matchId];
+      const match = getMatchById(matchId);
+      const showScore = shouldDisplayMatchScore(match);
+
+      if (!result) {
+        return "";
+      }
+
+      const resultScoreItem = showScore ? `
+              <div class="prediction-meta-item">
+                <span class="prediction-meta-label">Счёт</span>
+                <span class="prediction-meta-value">${escapeHtml(result.score)}</span>
+              </div>
+      ` : "";
+      if (!hasPrediction(matchId)) {
+        return `
+          <div class="prediction-outcome space-y-4">
+            <div class="divider-row">Результат матча</div>
+            <div class="prediction-meta">
+              <div class="prediction-meta-item">
+                <span class="prediction-meta-label">Победитель</span>
+                <span class="prediction-meta-value">${escapeHtml(result.winner)}</span>
+              </div>
+              ${resultScoreItem}
+              <div class="prediction-meta-item">
+                <span class="prediction-meta-label">Топ фрагер</span>
+                <span class="prediction-meta-value">${escapeHtml(result.best)}</span>
+              </div>
+            </div>
+            <div class="prediction-status" data-status data-state="missed">Предикт на этот матч не был отправлен до начала игры.</div>
+          </div>
+        `;
+      }
+
+      const comparison = getResultComparison(matchId);
+
+      return `
+        <div class="prediction-outcome space-y-4">
+          <div class="divider-row">Результаты матча</div>
+          <div class="prediction-meta">
+            <div class="prediction-meta-item">
+              <span class="prediction-meta-label">Победитель</span>
+              <span class="prediction-meta-value">${escapeHtml(result.winner)}</span>
+            </div>
+            ${resultScoreItem}
+            <div class="prediction-meta-item">
+              <span class="prediction-meta-label">Топ фрагер</span>
+              <span class="prediction-meta-value">${escapeHtml(result.best)}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            ${getResultChip("Победитель", comparison?.winner)}
+            ${showScore ? getResultChip("Счёт", comparison?.score) : ""}
+            ${getResultChip("Игрок", comparison?.player)}
+          </div>
+          <div class="prediction-status" data-status data-state="closed">Матч завершён. Ниже видно, какие пункты совпали с итогом.</div>
+        </div>
+      `;
+    }
+
+    function renderActivePredictionState(matchId) {
+      const currentState = state[matchId];
+      const match = getMatchById(matchId);
+      const showScore = shouldDisplayMatchScore(match);
+
+      if (!hasPrediction(matchId)) {
+        return `
+          <div class="prediction-status" data-status data-state="locked">Матч уже начался. Новые предикты на него больше не принимаются.</div>
+        `;
+      }
+
+      const scoreItem = showScore ? `
+            <div class="prediction-meta-item">
+              <span class="prediction-meta-label">Счёт</span>
+              <span class="prediction-meta-value">${escapeHtml(currentState.score)}</span>
+            </div>
+      ` : "";
+
+      return `
+        <div class="prediction-outcome space-y-4">
+          <div class="divider-row">Твой сохранённый предикт</div>
+          <div class="prediction-meta">
+            <div class="prediction-meta-item">
+              <span class="prediction-meta-label">Победитель</span>
+              <span class="prediction-meta-value">${escapeHtml(currentState.winner)}</span>
+            </div>
+            ${scoreItem}
+            <div class="prediction-meta-item">
+              <span class="prediction-meta-label">Топ фрагер</span>
+              <span class="prediction-meta-value">${escapeHtml(currentState.player)}</span>
+            </div>
+          </div>
+          <div class="prediction-status" data-status data-state="locked">Матч уже идёт. Ниже появится результат после завершения.</div>
+        </div>
+      `;
+    }
+
+    function renderPredictionFooter(matchId) {
+      const matchStatus = getMatchStatus(matchId);
+
+      if (matchStatus === "upcoming") {
+        return "";
+      }
+
+      if (matchStatus === "scheduled") {
+        return `
+          <div class="prediction-status" data-status data-state="scheduled">Матч запланирован, но предикт на него ещё не открыт</div>
+        `;
+      }
+
+      if (matchStatus === "active") {
+        return renderActivePredictionState(matchId);
+      }
+
+      return renderPredictionOutcome(matchId);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function renderLogo(team) {
+      if (team.logo) {
+        return `
+          <div class="team-logo">
+            <img src="${escapeHtml(team.logo)}" alt="${escapeHtml(team.name)} logo">
+          </div>
+        `;
+      }
+
+      const initials = team.name
+        .split(" ")
+        .map((word) => word[0] || "")
+        .join("")
+        .slice(0, 3)
+        .toUpperCase();
+
+      return `<div class="team-logo fallback">${escapeHtml(initials)}</div>`;
+    }
+
+    function renderMatches(options = {}) {
+      const animateCards = options.animate !== false;
+      const markupByStatus = {
+        upcoming: [],
+        scheduled: [],
+        active: [],
+        closed: [],
+        missed: []
+      };
+
+      getOrderedMatches().forEach((match) => {
+        const status = getMatchStatus(match.id);
+        const hideScorePreview = !shouldDisplayMatchScore(match) && (status === "closed" || status === "missed");
+        const scoreOptions = getScoreOptions(match);
+        const scoreButtons = scoreOptions.map((score) => `
+              <button type="button" class="score-btn" data-action="score" data-value="${escapeHtml(score)}">${escapeHtml(score)}</button>
+            `).join("");
+        const scoreSection = scoreOptions.length ? `
+            <div class="divider-row">Итоговый счёт выбранной команды</div>
+
+            <div class="grid ${scoreOptions.length > 1 ? "md:grid-cols-2" : "grid-cols-1"} gap-4">
+              ${scoreButtons}
+            </div>
+        ` : "";
+        const markup = `
+        <article class="predict-card${animateCards ? " animate__animated animate__fadeInUp" : ""}" data-match-id="${escapeHtml(match.id)}" data-match-status="${escapeHtml(status)}">
+          <div class="flex items-center justify-between gap-4 flex-wrap">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="pill">${escapeHtml(match.format)}</span>
+              <span class="pill">${escapeHtml(match.stage)}</span>
+              <span class="pill">${escapeHtml(match.date)}</span>
+            </div>
+            <div class="match-result-pill" data-variant="${escapeHtml(status)}">${escapeHtml(getMatchStatusLabel(match.id))}</div>
+          </div>
+
+          <div class="mt-5 match-board${hideScorePreview ? " no-score-preview" : ""}">
+            <div class="team-panel">
+              ${renderLogo(match.teamA)}
+              <div class="match-team-name">${escapeHtml(match.teamA.name)}</div>
+              <div class="match-team-subtitle">${escapeHtml(match.teamA.subtitle)}</div>
+            </div>
+
+            ${hideScorePreview ? "" : `<div class="score-preview">
+              <div class="score-slot" data-score-a>-</div>
+              <div class="theme-score-separator text-4xl font-black">:</div>
+              <div class="score-slot" data-score-b>-</div>
+            </div>`}
+
+            <div class="team-panel">
+              ${renderLogo(match.teamB)}
+              <div class="match-team-name">${escapeHtml(match.teamB.name)}</div>
+              <div class="match-team-subtitle">${escapeHtml(match.teamB.subtitle)}</div>
+            </div>
+          </div>
+
+          <div class="mt-6 space-y-5">
+            <div class="divider-row">Кто выиграет в матче?</div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+              <button type="button" class="option-btn" data-action="winner" data-value="${escapeHtml(match.teamA.name)}">${escapeHtml(match.teamA.name)}</button>
+              <button type="button" class="option-btn" data-action="winner" data-value="${escapeHtml(match.teamB.name)}">${escapeHtml(match.teamB.name)}</button>
+            </div>
+
+            ${scoreSection}
+
+            <div class="divider-row">Больше всего киллов за матч</div>
+
+            ${(() => {
+              const playersByTeam = getMatchPlayersByTeam(match);
+              return `
+                <div class="match-player-grid">
+                  ${renderMatchPlayerPicker(match, "teamA", match.teamA.name, playersByTeam.teamA)}
+                  ${renderMatchPlayerPicker(match, "teamB", match.teamB.name, playersByTeam.teamB)}
+                </div>
+              `;
+            })()}
+
+            ${renderPredictionFooter(match.id)}
+          </div>
+        </article>
+      `;
+
+        markupByStatus[status].push(markup);
+      });
+
+      upcomingMatchesGrid.innerHTML = markupByStatus.upcoming.join("") || `
+        <div class="prediction-status" data-state="saved">Сейчас нет предстоящих матчей.</div>
+      `;
+
+      scheduledMatchesGrid.innerHTML = markupByStatus.scheduled.join("") || `
+        <div class="prediction-status" data-state="scheduled">Сейчас нет запланированных матчей.</div>
+      `;
+
+      activeMatchesGrid.innerHTML = markupByStatus.active.join("") || `
+        <div class="prediction-status" data-state="locked">Сейчас нет активных матчей.</div>
+      `;
+
+      closedMatchesGrid.innerHTML = [...markupByStatus.closed, ...markupByStatus.missed].join("") || `
+        <div class="prediction-status" data-state="editing">Пока нет завершённых матчей.</div>
+      `;
+    }
+
+    function refreshScorePreview(card, match) {
+      const currentState = state[match.id];
+      const scoreA = card.querySelector("[data-score-a]");
+      const scoreB = card.querySelector("[data-score-b]");
+      const matchStatus = getMatchStatus(match.id);
+
+      if (!scoreA || !scoreB) {
+        return;
+      }
+
+      if (!shouldDisplayMatchScore(match) && (matchStatus === "closed" || matchStatus === "missed")) {
+        scoreA.textContent = "-";
+        scoreB.textContent = "-";
+        return;
+      }
+
+      if (!currentState.winner || !currentState.score) {
+        scoreA.textContent = "-";
+        scoreB.textContent = "-";
+        return;
+      }
+
+      const [winnerScore, loserScore] = currentState.score.split(":");
+
+      if (currentState.winner === match.teamA.name) {
+        scoreA.textContent = winnerScore;
+        scoreB.textContent = loserScore;
+      } else {
+        scoreA.textContent = loserScore;
+        scoreB.textContent = winnerScore;
+      }
+    }
+
+    function setActiveButtons(card, selector, value) {
+      card.querySelectorAll(selector).forEach((button) => {
+        button.classList.toggle("active", isSameChoiceValue(button.dataset.value, value));
+      });
+    }
+
+    function normalizePrediction(raw) {
+      if (!raw || typeof raw !== "object") {
+        return null;
+      }
+
+      const matchId = raw.match_id || raw.matchId || raw.id || "";
+      const match = getMatchById(matchId);
+      const winner = raw.winner || raw.predicted_winner || raw.team || "";
+      const score = raw.score || raw.predicted_score || raw.series_score || getAutoScore(match) || "";
+      const player = raw.best || raw.best_player || raw.top_fragger || raw.player || "";
+
+      if (!matchId || !winner || !player) {
+        return null;
+      }
+
+      if (!score && getScoreOptions(match).length) {
+        return null;
+      }
+
+      return {
+        match_id: String(matchId),
+        winner: String(winner),
+        score: String(score),
+        best: String(player),
+        submitted_at: raw.submitted_at || raw.timestamp || raw.created_at || "",
+        username: raw.username || raw.user || raw.name || "",
+        avatar_url: raw.avatar_url || raw.avatar || ""
+      };
+    }
+
+    function applyPredictionToState(matchId, prediction, options = {}) {
+      const currentState = state[matchId];
+      const match = getMatchById(matchId);
+
+      if (!currentState || !prediction) {
+        return;
+      }
+
+      currentState.winner = prediction.winner;
+      currentState.score = prediction.score || getAutoScore(match) || currentState.score || "";
+      currentState.player = prediction.best;
+      currentState.submittedAt = prediction.submitted_at || currentState.submittedAt || "";
+
+      if (options.locked) {
+        currentState.locked = true;
+      }
+    }
+
+    function getStatusText(matchId) {
+      const matchStatus = getMatchStatus(matchId);
+
+      if (matchStatus === "active") {
+        return hasPrediction(matchId)
+          ? "Матч уже идёт. Твой предикт сохранён и ждёт результата."
+          : "Матч уже идёт. Приём предиктов на этот матч уже закрыт.";
+      }
+
+      if (matchStatus === "missed") {
+        return "Приём предиктов на этот матч уже закрыт.";
+      }
+
+      if (matchStatus === "closed") {
+        return "Матч завершён.";
+      }
+
+      return getMatchStatusDetails(matchId).text;
+    }
+
+    function syncCardState(card, match) {
+      normalizeMatchScoreState(match);
+      const currentState = state[match.id];
+      const submitButton = card.querySelector('[data-action="submit"]');
+      const status = card.querySelector("[data-status]");
+      const result = getMatchResult(match.id);
+      const comparison = getResultComparison(match.id);
+      const matchStatus = getMatchStatus(match.id);
+      const isEditingLocked = currentState.locked || Boolean(result) || matchStatus === "scheduled" || matchStatus === "active" || isMatchTemplate(match);
+      const isSending = currentState.statusState === "sending";
+      const selectedTeam = getMatchSelectedPlayerTeam(match);
+
+      setActiveButtons(card, '[data-action="winner"]', currentState.winner);
+      setActiveButtons(card, '[data-action="score"]', currentState.score);
+      setActiveButtons(card, '[data-action="player"]', currentState.player);
+      refreshScorePreview(card, match);
+
+      card.classList.toggle("locked", Boolean(currentState.locked));
+      card.dataset.matchStatus = matchStatus;
+
+      card.querySelectorAll("button").forEach((button) => {
+        if (button.dataset.action === "submit") {
+          return;
+        }
+
+        button.disabled = Boolean(isEditingLocked);
+        button.classList.remove("correct", "incorrect");
+      });
+
+      card.querySelectorAll("[data-player-team]").forEach((button) => {
+        const teamKey = button.dataset.playerTeam;
+        const label = button.querySelector(`[data-player-label="${teamKey}"]`);
+        const isSelectedTeam = teamKey === selectedTeam && Boolean(currentState.player);
+
+        button.classList.toggle("selected", isSelectedTeam);
+        button.classList.remove("correct", "incorrect");
+
+        if (label) {
+          const teamName = teamKey === "teamA" ? match.teamA.name : match.teamB.name;
+          label.innerHTML = `
+            <span class="match-player-copy">
+              <span class="match-player-team">${escapeHtml(teamName)}</span>
+              ${isSelectedTeam
+                ? `
+                  <span class="match-player-value">
+                    <span class="match-player-icon">🏆</span>
+                    <strong>${escapeHtml(currentState.player)}</strong>
+                  </span>
+                `
+                : `<span class="match-player-empty">Игрок не выбран</span>`}
+            </span>
+          `;
+        }
+
+        if (isEditingLocked) {
+          button.setAttribute("aria-expanded", "false");
+        }
+      });
+
+      if (isEditingLocked) {
+        closeAllPlayerDropdowns();
+      }
+
+      if (submitButton) {
+        submitButton.disabled = Boolean(isEditingLocked || isSending);
+        let submitLabel = "Отправить предикт";
+
+        if (isSending) {
+          submitLabel = "Отправка...";
+        } else if (matchStatus === "scheduled") {
+          submitLabel = "Скоро откроется";
+        } else if (matchStatus === "active") {
+          submitLabel = "Приём закрыт";
+        } else if (isMatchTemplate(match)) {
+          submitLabel = "Шаблон матча";
+        } else if (currentState.locked) {
+          submitLabel = "Предикт сохранён";
+        }
+
+        submitButton.textContent = submitLabel;
+      }
+
+      if (status) {
+        status.dataset.state = matchStatus === "closed"
+          ? "closed"
+          : matchStatus === "active"
+            ? "locked"
+          : matchStatus === "missed"
+            ? "missed"
+            : getMatchStatusDetails(match.id).state;
+        status.textContent = getStatusText(match.id);
+      }
+
+      if (result && comparison) {
+        card.querySelectorAll('[data-action="winner"]').forEach((button) => {
+          if (isSameChoiceValue(button.dataset.value, currentState.winner)) {
+            button.classList.add(comparison.winner ? "correct" : "incorrect");
+          }
+        });
+
+        card.querySelectorAll('[data-action="score"]').forEach((button) => {
+          if (button.dataset.value === currentState.score) {
+            button.classList.add(comparison.score ? "correct" : "incorrect");
+          }
+        });
+
+        card.querySelectorAll('[data-action="player"]').forEach((button) => {
+          if (button.dataset.value === currentState.player) {
+            button.classList.add(comparison.player ? "correct" : "incorrect");
+          }
+        });
+
+        if (selectedTeam) {
+          const selectedButton = card.querySelector(`[data-player-team="${selectedTeam}"]`);
+          if (selectedButton) {
+            selectedButton.classList.add(comparison.player ? "correct" : "incorrect");
+          }
+        }
+      }
+
+      syncUpcomingSubmitState();
+    }
+
+    function buildLeaderboardFromPredictions(rows) {
+      const grouped = new Map();
+      const uniquePredictions = new Map();
+
+      rows.forEach((row) => {
+        const prediction = normalizePrediction(row);
+
+        if (!prediction) {
+          return;
+        }
+
+        const result = matchResults[prediction.match_id];
+        if (!result) {
+          return;
+        }
+
+        const userId = String(row.user_id || row.userId || row.discord_id || prediction.username || "unknown");
+        const username = row.username || prediction.username || row.user || row.name || "Unknown";
+        const avatarUrl = row.avatar_url || row.avatar || prediction.avatar_url || "https://cdn.discordapp.com/embed/avatars/0.png";
+
+        const dedupeKey = `${userId}:${prediction.match_id}`;
+        const existingPrediction = uniquePredictions.get(dedupeKey);
+
+        if (existingPrediction) {
+          const existingTime = existingPrediction.submitted_at ? new Date(existingPrediction.submitted_at).getTime() : 0;
+          const nextTime = prediction.submitted_at ? new Date(prediction.submitted_at).getTime() : 0;
+
+          if (existingTime >= nextTime) {
+            return;
+          }
+        }
+
+        uniquePredictions.set(dedupeKey, {
+          ...prediction,
+          user_id: userId,
+          username,
+          avatar_url: avatarUrl
+        });
+      });
+
+      uniquePredictions.forEach((predictionRow) => {
+        const result = matchResults[predictionRow.match_id];
+        const match = getMatchById(predictionRow.match_id);
+
+        if (!result || !match) {
+          return;
+        }
+
+        if (!grouped.has(predictionRow.user_id)) {
+          grouped.set(predictionRow.user_id, {
+            user_id: predictionRow.user_id,
+            username: predictionRow.username,
+            avatar_url: predictionRow.avatar_url,
+            points: 0
+          });
+        }
+
+        const userRow = grouped.get(predictionRow.user_id);
+        const winnerCorrect = predictionRow.winner === result.winner;
+        const exactCorrect = canAwardExactScore(match) && predictionRow.score === result.score;
+        const bestCorrect = predictionRow.best === result.best;
+
+        if (winnerCorrect) {
+          userRow.points += SCORING_RULES.winner;
+        }
+
+        if (exactCorrect) {
+          userRow.points += SCORING_RULES.exactScore;
+        }
+
+        if (bestCorrect) {
+          userRow.points += SCORING_RULES.bestPlayer;
+        }
+      });
+
+      return Array.from(grouped.values())
+        .sort((a, b) => {
+          if (b.points !== a.points) {
+            return b.points - a.points;
+          }
+          return String(a.username || "").localeCompare(String(b.username || ""), "ru");
+        })
+        .map((row, index) => ({
+          ...row,
+          place: index + 1
+        }));
+    }
+
+    async function fetchJson(url) {
+      const res = await fetchWithTimeout(url, { method: "GET" }, 8000);
+      if (!res.ok) {
+        throw new Error(`Request failed: ${res.status}`);
+      }
+
+      return await res.json();
+    }
+
+    function extractPredictionRows(data) {
+      if (Array.isArray(data?.predictions)) {
+        return data.predictions;
+      }
+
+      if (Array.isArray(data?.rows)) {
+        return data.rows;
+      }
+
+      if (Array.isArray(data)) {
+        return data;
+      }
+
+      return [];
+    }
+
+    async function fetchUserPredictions(profile) {
+      if (!profile?.id) {
+        return [];
+      }
+
+      const urls = [
+        `${GOOGLE_SCRIPT_URL}?mode=my_predictions&user_id=${encodeURIComponent(profile.id)}`,
+        `${GOOGLE_SCRIPT_URL}?mode=predictions&user_id=${encodeURIComponent(profile.id)}`
+      ];
+
+      for (const url of urls) {
+        try {
+          const data = await fetchJson(url);
+          const rows = extractPredictionRows(data)
+            .map(normalizePrediction)
+            .filter(Boolean);
+
+          if (rows.length) {
+            return rows;
+          }
+        } catch (error) {
+          console.warn("User predictions endpoint unavailable", url, error);
+        }
+      }
+
+      return [];
+    }
+
+    async function hydrateSavedPredictions() {
+      setMatchGridsHydrating(true);
+
+      try {
+        const user = await window.__authPromise;
+        const profile = user ? getCurrentUserProfile() : null;
+
+        if (!profile?.id) {
+          return;
+        }
+
+        matches.forEach((match) => {
+          state[match.id].locked = false;
+          state[match.id].submittedAt = "";
+        });
+
+        const remotePredictions = await fetchUserPredictions(profile);
+        remotePredictions.forEach((prediction) => {
+          applyPredictionToState(prediction.match_id, prediction, { locked: true });
+        });
+
+        renderMatches({ animate: false });
+        syncRenderedMatchCards();
+        syncUpcomingSubmitState();
+      } catch (error) {
+        console.error("Failed to hydrate saved predictions", error);
+      } finally {
+        window.requestAnimationFrame(() => {
+          setMatchGridsHydrating(false);
+        });
+      }
+    }
+
+    function getDiscordAvatarUrl(user) {
+      if (!user || !user.id || !user.avatar) {
+        return "https://cdn.discordapp.com/embed/avatars/0.png";
+      }
+
+      const extension = String(user.avatar).startsWith("a_") ? "gif" : "png";
+      return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${extension}?size=128`;
+    }
+
+    function getCurrentUserProfile() {
+      const authUser = window.__authUser;
+
+      if (!authUser) {
+        return null;
+      }
+
+      return {
+        id: authUser.id || "",
+        username: authUser.username || authUser.global_name || authUser.name || "Unknown user",
+        name: authUser.global_name || authUser.name || authUser.username || "",
+        avatar_url: getDiscordAvatarUrl(authUser)
+      };
+    }
+
+    function buildSubmissionPayloadDeprecated() {
+      const profile = getCurrentUserProfile();
+
+      if (!profile) {
+        throw new Error("User profile not found");
+      }
+
+      const payload = {
+        mode: "submit_predictions",
+        user_id: profile.id,
+        username: profile.username,
+        name: profile.name,
+        auth_source: profile.source,
+        submitted_at: new Date().toISOString(),
+        matches_count: matches.length,
+        predictions: []
+      };
+
+      matches.forEach((match, index) => {
+        const currentState = state[match.id];
+        const position = index + 1;
+
+        if (!currentState.winner || !currentState.score || !currentState.player) {
+          throw new Error(`Заполни все поля для матча: ${match.title}`);
+        }
+
+        payload[`match${position}_id`] = match.id;
+        payload[`match${position}_title`] = match.title;
+        payload[`winner${position}`] = currentState.winner;
+        payload[`score${position}`] = currentState.score;
+        payload[`best${position}`] = currentState.player;
+
+        payload.predictions.push({
+          match_id: match.id,
+          match_title: match.title,
+          winner: currentState.winner,
+          score: currentState.score,
+          best: currentState.player
+        });
+      });
+
+      return payload;
+    }
+
+    async function submitAllPredictionsDeprecated() {
+      try {
+        submitAllButton.disabled = true;
+        submitAllButton.textContent = "Submitting...";
+
+        const payload = buildSubmissionPayload();
+        const res = await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const text = await res.text();
+        let result = {};
+
+        try {
+          result = JSON.parse(text);
+        } catch {
+          result = { raw: text };
+        }
+
+        if (!res.ok) {
+          throw new Error(result.error || text || "Request failed");
+        }
+
+        if (result.status === "exists") {
+          alert("Prediction row for this user already exists.");
+        } else {
+          alert("All predictions submitted.");
+        }
+
+        await loadLeaderboard();
+      } catch (error) {
+        console.error(error);
+        alert("Ошибка: " + error.message);
+      } finally {
+        submitAllButton.disabled = false;
+        submitAllButton.textContent = "Submit All Predictions";
+      }
+    }
+
+    function renderLeaderboard(rows, opts = {}) {
+      const { showBreakdown, tournamentAvailable } = opts;
+      const showTournamentColumn = Boolean(showBreakdown);
+
+      if (leaderboardHead) {
+        leaderboardHead.classList.toggle("compact", !showTournamentColumn);
+        const tournamentHeadCell = leaderboardHead.children[3];
+        if (tournamentHeadCell) {
+          tournamentHeadCell.hidden = !showTournamentColumn;
+        }
+      }
+
+      if (!rows.length) {
+        leaderboardTable.innerHTML = `<div class="leaderboard-empty">Пока нет данных для рейтинга игроков.</div>`;
+        return;
+      }
+
+      leaderboardTable.innerHTML = rows.map((row, index) => `
+        <div class="leaderboard-row${showTournamentColumn ? "" : " compact"}">
+          <div class="leaderboard-rank">${escapeHtml(row.place || index + 1)}</div>
+          <div class="leaderboard-user">
+            <img class="leaderboard-avatar" src="${escapeHtml(row.avatar_url || "https://cdn.discordapp.com/embed/avatars/0.png")}" alt="${escapeHtml(row.username || row.user || "User")} avatar">
+            <div class="leaderboard-name">${escapeHtml(row.username || row.user || "Unknown")}</div>
+          </div>
+          <div class="leaderboard-points">${escapeHtml(row.match_points ?? row.points ?? 0)}</div>
+          ${showTournamentColumn
+            ? `<div class="leaderboard-points">${escapeHtml(tournamentAvailable ? (row.tournament_points ?? 0) : 0)}</div>`
+            : ''
+          }
+          <div class="leaderboard-points points">${escapeHtml(row.total_points ?? row.points ?? 0)}</div>
+        </div>
+      `).join("");
+    }
+
+    async function loadLeaderboard() {
+      leaderboardTable.innerHTML = `<div class="leaderboard-empty">Загружаем таблицу лидеров...</div>`;
+
+      try {
+        try {
+          const data = await fetchJson(`${GOOGLE_SCRIPT_URL}?mode=combined_leaderboard`);
+          const rows = Array.isArray(data?.leaderboard) ? data.leaderboard : [];
+          renderLeaderboard(rows, {
+            showBreakdown: true,
+            tournamentAvailable: Boolean(data?.tournament_results_available)
+          });
+          return;
+        } catch (error) {
+          console.warn("Combined leaderboard unavailable, falling back", error);
+        }
+
+        try {
+          const predictionData = await fetchJson(`${GOOGLE_SCRIPT_URL}?mode=predictions`);
+          const predictionRows = extractPredictionRows(predictionData);
+          const computedRows = buildLeaderboardFromPredictions(predictionRows);
+
+          if (computedRows.length) {
+            renderLeaderboard(computedRows);
+            return;
+          }
+        } catch (error) {
+          console.warn("Raw predictions leaderboard unavailable, falling back to leaderboard endpoint", error);
+        }
+
+        const data = await fetchJson(`${GOOGLE_SCRIPT_URL}?mode=leaderboard`);
+        const rows = Array.isArray(data?.leaderboard) ? data.leaderboard : Array.isArray(data) ? data : [];
+        renderLeaderboard(rows);
+      } catch (error) {
+        console.error(error);
+        leaderboardTable.innerHTML = `<div class="leaderboard-empty">Не удалось загрузить таблицу лидеров.</div>`;
+      }
+    }
+
+    async function sendPredictionDeprecated(match) {
+      const currentState = state[match.id];
+      const profile = getCurrentUserProfile();
+
+      if (!currentState.winner) {
+        alert("Выбери победителя матча");
+        return;
+      }
+
+      if (!currentState.score) {
+        alert("Выбери итоговый счёт");
+        return;
+      }
+
+      if (!currentState.player) {
+        alert("Выбери топ-фраггера");
+        return;
+      }
+
+      if (!profile) {
+        alert("Telegram user не найден");
+        return;
+      }
+
+      const data = {
+        mode: "submit_prediction",
+        user_id: profile.id,
+        username: profile.username,
+        name: profile.name,
+        avatar_url: profile.avatar_url,
+        match_id: match.id,
+        match_title: match.title,
+        winner: currentState.winner,
+        score: currentState.score,
+        best: currentState.player
+      };
+
+      try {
+        const res = await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(data)
+        });
+
+        const text = await res.text();
+        let result = {};
+
+        try {
+          result = JSON.parse(text);
+        } catch {
+          console.log(text);
+        }
+
+        if (result.status === "already") {
+          alert("Ты уже отправлял предикт на этот матч");
+          return;
+        }
+
+        addPredictionRow(data);
+        alert("Prediction submitted!");
+      } catch (error) {
+        console.error(error);
+        alert("Ошибка: " + error);
+      }
+    }
+
+    function addPredictionRowDeprecated(data) {
+      const row = document.createElement("div");
+      row.className = "community-row";
+      row.innerHTML = `
+        <div class="font-bold">${escapeHtml(data.username || data.name)}</div>
+        <div>${escapeHtml(data.match_title)}</div>
+        <div>${escapeHtml(data.winner)} • ${escapeHtml(data.score)}</div>
+        <div>${escapeHtml(data.top_fragger)}</div>
+      `;
+      predictionsTable.prepend(row);
+    }
+
+    function addPredictionRow() {}
+
+    async function sendPrediction(match) {
+      normalizeMatchScoreState(match);
+      const currentState = state[match.id];
+      const profile = getCurrentUserProfile();
+      const card = document.querySelector(`[data-match-id="${CSS.escape(match.id)}"]`);
+      const submitButton = card ? card.querySelector('[data-action="submit"]') : null;
+      const matchStatus = getMatchStatus(match.id);
+
+      if (currentState.locked) {
+        setMatchFeedback(match.id, "Предикт на этот матч уже сохранён.", "saved");
+        if (card) {
+          syncCardState(card, match);
+        }
+        return;
+      }
+
+      if (isMatchTemplate(match)) {
+        setMatchFeedback(match.id, "Данные по этому матчу ещё не опубликованы.", "error");
+        if (card) {
+          syncCardState(card, match);
+        }
+        return;
+      }
+
+      if (matchStatus !== "upcoming") {
+        setMatchFeedback(match.id, "Приём предиктов на этот матч уже закрыт.", "locked");
+        if (card) {
+          syncCardState(card, match);
+        }
+        return;
+      }
+
+      if (!currentState.winner) {
+        setMatchFeedback(match.id, "Сначала выбери победителя матча.", "error");
+        if (card) {
+          syncCardState(card, match);
+        }
+        return;
+      }
+
+      if (!currentState.score) {
+        const scoreOptions = getScoreOptions(match);
+        if (scoreOptions.length) {
+          setMatchFeedback(match.id, "Сначала выбери итоговый счёт серии.", "error");
+          if (card) {
+            syncCardState(card, match);
+          }
+          return;
+        }
+      }
+
+      if (!currentState.player) {
+        setMatchFeedback(match.id, "Сначала выбери топ-фраггера матча.", "error");
+        if (card) {
+          syncCardState(card, match);
+        }
+        return;
+      }
+
+      if (!profile) {
+        setMatchFeedback(match.id, "Не удалось определить пользователя Discord.", "error");
+        if (card) {
+          syncCardState(card, match);
+        }
+        return;
+      }
+
+      const payload = {
+        mode: "submit_prediction",
+        user_id: profile.id,
+        username: profile.username,
+        name: profile.name,
+        avatar_url: profile.avatar_url,
+        match_id: match.id,
+        match_title: match.title,
+        winner: currentState.winner,
+        score: currentState.score,
+        best: currentState.player
+      };
+
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Отправка...";
+      }
+      setMatchFeedback(match.id, "Сохраняем предикт...", "sending");
+      if (card) {
+        syncCardState(card, match);
+      }
+
+      try {
+        const res = await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const text = await res.text();
+        let result = {};
+
+        try {
+          result = JSON.parse(text);
+        } catch {
+          result = { raw: text };
+        }
+
+        if (!res.ok) {
+          throw new Error(result.error || text || "Request failed");
+        }
+
+        if (result.status === "already") {
+          setMatchFeedback(match.id, "Предикт на этот матч уже был отправлен раньше.", "saved");
+        } else {
+          setMatchFeedback(match.id, "Предикт сохранён.", "saved");
+        }
+        await hydrateSavedPredictions();
+        await loadLeaderboard();
+      } catch (error) {
+        console.error(error);
+        setMatchFeedback(match.id, `Ошибка: ${error.message}`, "error");
+        if (card) {
+          syncCardState(card, match);
+        }
+      } finally {
+        if (submitButton && !state[match.id].locked && getMatchStatus(match.id) === "upcoming") {
+          submitButton.disabled = false;
+          submitButton.textContent = "Отправить предикт";
+        }
+      }
+    }
+
+    function getUpcomingMatchIds() {
+      return matches
+        .filter((m) => getMatchStatus(m.id) === "upcoming" && !isMatchTemplate(m))
+        .map((m) => m.id);
+    }
+
+    function countFilledUpcoming() {
+      const ids = getUpcomingMatchIds();
+      let filled = 0;
+      let locked = 0;
+
+      ids.forEach((id) => {
+        if (state[id]?.locked) {
+          locked++;
+          return;
+        }
+        if (state[id]?.winner && state[id]?.player) {
+          filled++;
+        }
+      });
+
+      return { filled, locked, total: ids.length };
+    }
+
+    function syncUpcomingSubmitState() {
+      const { filled, locked, total } = countFilledUpcoming();
+
+      if (!upcomingSubmitShell || !upcomingSubmitStatus || !submitUpcomingButton) {
+        return;
+      }
+
+      if (total === 0) {
+        upcomingSubmitStatus.dataset.state = "editing";
+        upcomingSubmitStatus.textContent = "Нет предстоящих матчей для предиктов.";
+        submitUpcomingButton.disabled = true;
+        submitUpcomingButton.textContent = "Нет матчей";
+        return;
+      }
+
+      if (locked >= total) {
+        upcomingSubmitStatus.dataset.state = "saved";
+        upcomingSubmitStatus.textContent = "Все предикты сохранены.";
+        submitUpcomingButton.disabled = true;
+        submitUpcomingButton.textContent = "Все отправлены";
+        return;
+      }
+
+      if (filled === 0) {
+        upcomingSubmitStatus.dataset.state = "editing";
+        upcomingSubmitStatus.textContent = "Заполни победителя и топ-фраггера хотя бы в одном матче.";
+        submitUpcomingButton.disabled = true;
+        submitUpcomingButton.textContent = "Отправить все предикты";
+        return;
+      }
+
+      upcomingSubmitStatus.dataset.state = "saved";
+      upcomingSubmitStatus.textContent = `Готово к отправке: ${filled} из ${total - locked} матчей заполнено.`;
+      submitUpcomingButton.disabled = false;
+      submitUpcomingButton.textContent = `Отправить ${filled} предикт${filled === 1 ? "" : filled < 5 ? "а" : "ов"}`;
+    }
+
+    async function sendAllUpcomingPredictions() {
+      const upcomingIds = getUpcomingMatchIds();
+      const profile = getCurrentUserProfile();
+
+      if (!profile) {
+        upcomingSubmitStatus.dataset.state = "error";
+        upcomingSubmitStatus.textContent = "Не удалось определить пользователя.";
+        return;
+      }
+
+      const toSend = upcomingIds.filter((id) => {
+        const s = state[id];
+        return s && s.winner && s.player && !s.locked;
+      });
+
+      if (toSend.length === 0) {
+        upcomingSubmitStatus.dataset.state = "editing";
+        upcomingSubmitStatus.textContent = "Нет заполненных предиктов для отправки.";
+        return;
+      }
+
+      submitUpcomingButton.disabled = true;
+      submitUpcomingButton.textContent = "Отправка...";
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const matchId of toSend) {
+        const s = state[matchId];
+        const match = getMatchById(matchId);
+        const payload = {
+          mode: "submit_prediction",
+          user_id: profile.id,
+          username: profile.username,
+          name: profile.name,
+          avatar_url: profile.avatar_url,
+          match_id: matchId,
+          match_title: match.title,
+          winner: s.winner,
+          score: s.score,
+          best: s.player
+        };
+
+        try {
+          const res = await fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+          });
+          const text = await res.text();
+          let result = {};
+          try { result = JSON.parse(text); } catch {}
+
+          if (res.ok && result.status !== "already") {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        } catch {
+          failCount++;
+        }
+      }
+
+      if (failCount > 0) {
+        upcomingSubmitStatus.dataset.state = "error";
+        upcomingSubmitStatus.textContent = `Отправлено ${successCount}, ошибок ${failCount}.`;
+      } else {
+        upcomingSubmitStatus.dataset.state = "saved";
+        upcomingSubmitStatus.textContent = `Все ${successCount} предикт${successCount === 1 ? "" : successCount < 5 ? "а" : "ов"} сохранены.`;
+      }
+
+      await hydrateSavedPredictions();
+      await loadLeaderboard();
+      syncUpcomingSubmitState();
+    }
+
+    document.addEventListener("click", async (event) => {
+      const dropdownInteraction = event.target.closest(".player-dropdown, .player-select-btn, [data-action='select-player'], [data-action='clear-selection']");
+      if (!dropdownInteraction) {
+        closeAllPlayerDropdowns();
+      }
+
+      const button = event.target.closest("button");
+      if (!button) {
+        return;
+      }
+
+      const action = button.dataset.action;
+      if (action === "toggle-player-dropdown") {
+        const dropdownId = button.dataset.dropdownId || button.dataset.key;
+        if (dropdownId) {
+          togglePlayerDropdown(dropdownId);
+        }
+        return;
+      }
+
+      if (action === "clear-selection") {
+        const tournamentKey = button.dataset.key;
+        const matchId = button.dataset.matchId;
+        if (tournamentKey) {
+          clearTournamentPredictionValue(tournamentKey);
+          return;
+        }
+        if (matchId) {
+          clearMatchPlayer(matchId);
+          return;
+        }
+      }
+
+      const card = button.closest("[data-match-id]");
+      if (card) {
+        const match = matches.find((item) => item.id === card.dataset.matchId);
+        if (!match) {
+          return;
+        }
+
+        const result = getMatchResult(match.id);
+        const matchStatus = getMatchStatus(match.id);
+        if (state[match.id].locked || result || matchStatus !== "upcoming" || isMatchTemplate(match)) {
+          return;
+        }
+
+        if (action === "winner") {
+          clearMatchFeedback(match.id);
+          state[match.id].winner = button.dataset.value;
+          normalizeMatchScoreState(match);
+          setActiveButtons(card, '[data-action="winner"]', button.dataset.value);
+          refreshScorePreview(card, match);
+          syncCardState(card, match);
+          return;
+        }
+
+        if (action === "score") {
+          clearMatchFeedback(match.id);
+          state[match.id].score = button.dataset.value;
+          setActiveButtons(card, '[data-action="score"]', button.dataset.value);
+          refreshScorePreview(card, match);
+          syncCardState(card, match);
+          return;
+        }
+
+
+        if (action === "player") {
+          clearMatchFeedback(match.id);
+          state[match.id].player = button.dataset.value;
+          setActiveButtons(card, '[data-action="player"]', button.dataset.value);
+          closeAllPlayerDropdowns();
+          syncCardState(card, match);
+          return;
+        }
+
+        if (action === "submit") {
+          await sendPrediction(match);
+          return;
+        }
+      }
+
+      const dropdownKey = button.dataset.key;
+      const dropdownValue = button.dataset.value;
+      if (dropdownKey && dropdownValue) {
+        setTournamentPredictionValue(dropdownKey, dropdownValue);
+        closeAllPlayerDropdowns();
+      }
+    });
+
+    refreshLeaderboardButton.addEventListener("click", loadLeaderboard);
+
+    if (matchTabButton) {
+      matchTabButton.addEventListener("click", () => switchPredictionTab("match"));
+    }
+
+    if (tournamentTabButton) {
+      tournamentTabButton.addEventListener("click", () => switchPredictionTab("tournament"));
+    }
+
+    if (leaderboardTabButton) {
+      leaderboardTabButton.addEventListener("click", () => switchPredictionTab("leaderboard"));
+    }
+
+    if (submitTournamentPredictionButton) {
+      submitTournamentPredictionButton.addEventListener("click", sendTournamentPrediction);
+    }
+
+    if (submitUpcomingButton) {
+      submitUpcomingButton.addEventListener("click", sendAllUpcomingPredictions);
+    }
+
+    (function () {
+      const authChip = document.getElementById("authChip");
+      const authAvatar = document.getElementById("authAvatar");
+      const authName = document.getElementById("authName");
+      const logoutButton = document.getElementById("logoutButton");
+
+      logoutButton.style.display = "none";
+
+      function getDisplayName(user) {
+        return user.global_name || user.username || user.name || "Discord User";
+      }
+
+      function getAvatarUrl(user) {
+        if (!user || !user.id || !user.avatar) {
+          return `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
+        }
+
+        const extension = String(user.avatar).startsWith("a_") ? "gif" : "png";
+        return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${extension}?size=128`;
+      }
+
+      async function renderAuth() {
+        try {
+          const user = await window.__authPromise;
+          if (!user) {
+            return;
+          }
+
+          authName.textContent = getDisplayName(user);
+          authAvatar.src = getAvatarUrl(user) || "images/icon.png";
+          authAvatar.alt = `${getDisplayName(user)} avatar`;
+          authChip.hidden = false;
+
+          logoutButton.style.display = IS_LOCAL_MODE ? "none" : "inline-flex";
+          showPage();
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      async function logout() {
+        if (IS_LOCAL_MODE) {
+          return;
+        }
+
+        logoutButton.disabled = true;
+
+        try {
+          await fetch(`${AUTH_SERVER}/logout`, {
+            method: "POST",
+            credentials: "include",
+            headers: buildAuthHeaders()
+          });
+        } finally {
+          clearStoredAuth();
+        }
+
+        window.location.href = "/sgtour3/login.html";
+      }
+
+      if (logoutButton) {
+        logoutButton.addEventListener("click", logout);
+      }
+
+      renderAuth();
+    }());
+
+    renderScoringSummary();
+    renderTournamentScoringSummary();
+    syncTournamentTabState();
+    setMatchGridsHydrating(true);
+    renderMatches({ animate: false });
+    renderTournamentResultCard();
+    renderTournamentPredictionCards();
+    syncUpcomingSubmitState();
+    syncRenderedMatchCards();
+    hydrateSavedPredictions();
+    loadTournamentPredictions();
+    loadLeaderboard();
+  </script>
+  <script src="scripts/theme-switcher.js"></script>
+</body>
+</html>
+

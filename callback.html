@@ -1,0 +1,56 @@
+<script>
+const AUTH_SERVER = "https://discord-auth-server-six.vercel.app";
+const AUTH_TOKEN_KEY = "sg-discord-token";
+const AUTH_USER_KEY = "sg-discord-user";
+const AUTH_STATE_KEY = "sg-discord-oauth-state";
+
+const params = new URLSearchParams(window.location.search);
+const code = params.get("code");
+const state = params.get("state");
+const expectedState = sessionStorage.getItem(AUTH_STATE_KEY);
+
+function persistAuthPayload(payload) {
+  if (!payload || !payload.token) {
+    return;
+  }
+
+  localStorage.setItem(AUTH_TOKEN_KEY, payload.token);
+
+  if (payload.user) {
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(payload.user));
+  }
+}
+
+async function finishDiscordLogin() {
+  if (!code) {
+    throw new Error("Missing Discord code");
+  }
+
+  if (expectedState && state !== expectedState) {
+    throw new Error("Invalid OAuth state");
+  }
+
+  const response = await fetch(`${AUTH_SERVER}/auth/discord`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ code })
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(payload.error || "Auth request failed");
+  }
+
+  persistAuthPayload(payload);
+  sessionStorage.removeItem(AUTH_STATE_KEY);
+  window.location.href = "/sgtour3/index.html";
+}
+
+finishDiscordLogin().catch((error) => {
+  console.error("Discord login failed", error);
+  sessionStorage.removeItem(AUTH_STATE_KEY);
+  alert("Ошибка входа через Discord. Попробуй ещё раз.");
+});
+</script>
