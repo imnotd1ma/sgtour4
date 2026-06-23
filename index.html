@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SPRING BREAKOUT | Teams</title>
+  <title>SUMMER BREAKOUT | Teams</title>
   <script>
     (function () {
       try {
@@ -24,7 +24,7 @@
   <link rel="icon" href="images/icon.png" type="image/png">
   
   <script>
-    const AUTH_SERVER = "https://discord-auth-server-six.vercel.app";
+    const AUTH_SERVER = "https://sgtour4-auth.vercel.app";
     const AUTH_TOKEN_KEY = "sg-discord-token";
     const AUTH_USER_KEY = "sg-discord-user";
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyILFKyqrVxOQkwT2k9a_YGdSy0jb6-YsUwga3gC2ahD31u98jvv0VL5A99Rccnc-w/exec";
@@ -85,7 +85,7 @@
         if (res.status === 401 || res.status === 403) {
           clearStoredAuth();
         }
-        window.location.href = "/sgtour3/login.html";
+        window.location.href = "/sgtour4/login.html";
         throw new Error("Unauthorized");
       }
 
@@ -106,11 +106,11 @@
         return LOCAL_USER;
       }
       clearStoredAuth();
-      window.location.href = "/sgtour3/login.html";
+      window.location.href = "/sgtour4/login.html";
     })
     .catch(() => {
       document.body.style.visibility = "visible"; // на всякий случай
-      window.location.href = "/sgtour3/login.html";
+      window.location.href = "/sgtour4/login.html";
     });
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -562,13 +562,13 @@
   <div class="top-nav">
     <div class="w-full px-6 py-3 nav-shell">
       <div class="nav-left">
-        <span class="brand-badge text-white/80">SG Tournament</span>
+        
       </div>
 
       <nav class="nav-center flex items-center gap-3 flex-wrap">
         <!-- текущая страница -->
         <a class="nav-link active" href="index.html">Teams</a>
-        <a class="nav-link" href="live.html"><span class="live-dot" aria-hidden="true"></span>PREDICTS</a>
+        <a class="nav-link" href="predicts.html"><span class="live-dot" aria-hidden="true"></span>PREDICTS</a>
         <a class="nav-link" href="playoff.html">Bracket</a>
       </nav>
 
@@ -585,13 +585,13 @@
   <!-- TOURNAMENT HEADER -->
   <header class="text-center py-16">
     <h1 class="text-6xl font-black tracking-tighter">
-        <span class="theme-accent-text theme-title-glow">SPRING BREAKOUT</span>
+        <span class="theme-accent-text theme-title-glow">SUMMER BREAKOUT</span>
     </h1>
     <div class="h-1 w-28 mx-auto mt-4 rounded-full glow"
         style="background: rgb(var(--accent-rgb));">
     </div>
     <p class="theme-accent-text mt-4 text-xs uppercase tracking-[0.3em]">
-    SG&MF TOURNAMENT №3
+    SECRET GATE TOURNAMENT №4
     </p>
   </header>
 
@@ -600,7 +600,7 @@
   </main>
 
   <footer class="text-center py-12 mt-10 border-t border-white/5 text-[10px] tracking-[0.4em] uppercase" style="color: var(--footer-color);">
-    © 2026 SG TOURNAMENT #3<span class="mx-3 opacity-20">|</span> SECRET GATE CORP.
+    © 2026 SG TOURNAMENT №4<span class="mx-3 opacity-20">|</span> SECRET GATE CORP.
   </footer>
 
   <script>
@@ -621,109 +621,17 @@
       const teams = [
         {
           key: "PV",
-          name: "PEPEVISION",
-          titleMain: "PEPE",
-          titleAccent: "VISION",
+          name: "???",
+          titleMain: "",
+          titleAccent: "???",
           logo: "images/pv.png",
           players: [
-            { name: "ImNotDima", image: "images/imnotdima.png", role: "стреляет раз в год", rating: "0.00", playtime: "906+ hrs", signature: "M4A1-S", captain: true },
-            { name: "Lam4uk", image: "images/egor_lam.png", role: "ванёк лучший", rating: "0.00", playtime: "500+ hrs", signature: "Desert Eagle" }
-            // { name: "Zero", image: "images/zeros.png", role: "", rating: "0.00", playtime: "400+ hrs", signature: "AK-47" },
-            // { name: "ds_swanson", image: "images/ds_swanson.png", role: "", rating: "0.00", playtime: "790+ hrs", signature: "M249" }
+            { name: "???", image: "images/imnotdima.png", role: "стреляет раз в год", rating: "0.00", playtime: "", signature: "" },
+            { name: "???", image: "images/egor_lam.png", role: "ванёк лучший", rating: "0.00", playtime: "", signature: "" },
+            { name: "???", image: "images/zeros.png", role: "", rating: "0.00", playtime: "", signature: "" },
+            { name: "???", image: "images/ds_swanson.png", role: "", rating: "0.00", playtime: "", signature: "" }
           ]
-        },
-        {
-          key: "AMK",
-          name: "AMK",
-          titleMain: "",
-          titleAccent: "AMK",
-          logo: "images/lossteam.png",
-          players: [
-            { name: "han4k", image: "images/han4k.png", role: "67 бро", rating: "0.00", playtime: "675+ hrs", signature: "AWP", captain: true },
-            { name: "S1MP1K", image: "images/s1mp1k.png", role: "влад ветошкин" , rating: "0.00", playtime: "800+ hrs", signature: "AWP" }
-            // { name: "Loss", image: "images/loss.png", role: "", rating: "0.00", playtime: "1000+ hrs", signature: "AK-47", captain: true },
-            
-            // { name: "WIN_Dizel", image: "images/win_dizel.png", role: "", rating: "0.00", playtime: "430+ hrs", signature: "MP9" },
-            // { name: "KriKkK", image: "images/krikkk.png", role: "", rating: "0.00", playtime: "2800+ hrs", signature: "Nova" }
-          ]
-        },
-        {
-          key: "CZ9",
-          name: "CZ9",
-          titleMain: "CZ",
-          titleAccent: "9",
-          logo: "images/cz9.png",
-          players: [
-            { name: "Crazy_crib", image: "images/crazy_crib.png", role: "прiвiт матвiйко", rating: "0.00", playtime: "730+ hrs", signature: "AK-47", captain: true },
-            { name: "Mexa", image: "images/mexa.png", role: "Меха", rating: "0.00", playtime: "300+ hrs", signature: "M4A1-S" },
-            // { name: "Egor T.", image: "images/egor_lam.png", role: "", rating: "0.00", playtime: "200+ hrs", signature: "AK-47" },
-            // { name: "Lam4uk", image: "images/egor_lam.png", role: "", rating: "0.00", playtime: "500+ hrs", signature: "Desert Eagle" }
-          ]
-        },
-        {
-          key: "OFF",
-          name: "OFFnicks",
-          titleMain: "",
-          titleAccent: "OFFNICKS",
-          logo: "images/lossteam.png",
-          players: [
-            { name: "Loss", image: "images/loss.png", role: "машина убийств", rating: "0.00", playtime: "1000+ hrs", signature: "AK-47", captain: true },
-            { name: "WIN_Dizel", image: "images/win_dizel.png", role: "лоутаб года (хайтаб)", rating: "0.00", playtime: "430+ hrs", signature: "MP9" }
-          ]
-        },
-        {
-          key: "ZBC",
-          name: "ZBC",
-          titleMain: "ZB",
-          titleAccent: "C",
-          logo: "images/zbc.png",
-          players: [
-            { name: "Takumi", image: "images/takumi.png", role: "прайм века", rating: "0.00", playtime: "2000+ hrs", signature: "AK-47", captain: true },
-            { name: "Pasha", image: "images/amk_pl.png", role: "павлик ветошкин", rating: "0.00", playtime: "200+ hrs", signature: "AK-47"}
-            // { name: "Klat4er", image: "images/klat4er.png", role: "", rating: "0.00", playtime: "2200+ hrs", signature: "AK-47" },
-            // { name: "strew", image: "images/strew.png", role: "", rating: "0.00", playtime: "250+ hrs", signature: "MP7" },
-            // { name: "igrok6574", image: "images/misha.png", role: "", rating: "0.00", playtime: "950+ hrs", signature: "AK-47" }
-          ]
-        },
-        {
-          key: "KLB",
-          name: "KLB",
-          titleMain: "KL",
-          titleAccent: "B",
-          logo: "images/klb.png",
-          players: [
-            { name: "Klat4er", image: "images/klat4er.png", role: "10 ур. фейсита (лоутаб)", rating: "0.00", playtime: "2200+ hrs", signature: "AK-47", captain: true },
-            { name: "Bulava", image: "images/bulava.png", role: "лоутаб", rating: "0.00", playtime: "250+ hrs", signature: "AK-47"},
-            // { name: "Little", image: "images/dq_pl.png", role: "", rating: "0.00", playtime: "65+ hrs", signature: "???" },
-            // { name: "Davidosik", image: "images/dq_pl.png", role: "", rating: "0.00", playtime: "600+ hrs", signature: "???" }
-          ]
-        },
-        {
-          key: "BK",
-          name: "BK",
-          titleMain: "BURGER ",
-          titleAccent: "KING",
-          logo: "images/egz.png",
-          players: [
-            { name: "minor-", image: "images/egor.png", role: "симпл в прайме", rating: "0.00", playtime: "3000+ hrs", signature: "AK-47", captain: true },
-            { name: "Zero", image: "images/zeros.png", role: "1500+ пинг", rating: "0.00", playtime: "400+ hrs", signature: "AK-47" },
-            // { name: "Patoshka", image: "images/paton.png", role: "", rating: "0.00", playtime: "2000+ hrs", signature: "AWP" },
-            // { name: "Megaglist", image: "images/amk_pl.png", role: "", rating: "0.00", playtime: "300+ hrs", signature: "AK-47" }
-          ]
-        },
-        {
-          key: "K7",
-          name: "K7",
-          titleMain: "",
-          titleAccent: "K7",
-          logo: "images/k7.png",
-          players: [
-            { name: "KriKkK", image: "images/krikkk.png", role: "ревик+нова", rating: "0.00", playtime: "2800+ hrs", signature: "Nova", captain: true },
-            { name: "igrok6574", image: "images/misha.png", role: "миша ветошкин", rating: "0.00", playtime: "950+ hrs", signature: "AK-47"}
-            // { name: "Patoshka", image: "images/paton.png", role: "", rating: "0.00", playtime: "2000+ hrs", signature: "AWP" },
-            // { name: "Megaglist", image: "images/amk_pl.png", role: "", rating: "0.00", playtime: "300+ hrs", signature: "AK-47" }
-          ]
-        },
+        }
       ];
 
       function escapeHtml(value) {
@@ -923,7 +831,7 @@
             clearStoredAuth();
           }
 
-          window.location.href = "/sgtour3/login.html";
+          window.location.href = "/sgtour4/login.html";
         }
 
       if (logoutButton) {

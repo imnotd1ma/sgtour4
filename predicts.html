@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SPRING BREAKOUT | Predicts</title>
+  <title>SUMMER BREAKOUT | Predicts</title>
   <script>
     (function () {
       try {
@@ -26,7 +26,7 @@
   </style>
 
   <script>
-    const AUTH_SERVER = "https://discord-auth-server-six.vercel.app";
+    const AUTH_SERVER = "https://sgtour4-auth.vercel.app";
     const AUTH_TOKEN_KEY = "sg-discord-token";
     const AUTH_USER_KEY = "sg-discord-user";
     const IS_LOCAL_MODE = ["localhost", "127.0.0.1"].includes(window.location.hostname) || window.location.protocol === "file:";
@@ -141,7 +141,7 @@
           }
 
           clearStoredAuth();
-          window.location.href = "/sgtour3/login.html";
+          window.location.href = "/sgtour4/login.html";
           return null;
         })
         .finally(() => {
@@ -2196,12 +2196,12 @@
   <div class="top-nav">
     <div class="w-full px-6 py-3 nav-shell">
       <div class="nav-left">
-        <span class="brand-badge text-white/80">SG Tournament</span>
+        
       </div>
 
       <nav class="nav-center flex items-center gap-3 flex-wrap">
         <a class="nav-link" href="index.html">Teams</a>
-        <a class="nav-link active" href="live.html"><span class="live-dot" aria-hidden="true"></span>Predicts</a>
+        <a class="nav-link active" href="predicts.html"><span class="live-dot" aria-hidden="true"></span>Predicts</a>
         <a class="nav-link" href="playoff.html">Bracket</a>
       </nav>
 
@@ -2386,6 +2386,10 @@
     </div>
   </main>
 
+  <footer class="text-center py-12 mt-10 border-t border-white/5 text-[10px] tracking-[0.4em] uppercase" style="color: var(--footer-color);">
+    © 2026 SG TOURNAMENT №4<span class="mx-3 opacity-20">|</span> SECRET GATE CORP.
+  </footer>
+  
   <script>
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyILFKyqrVxOQkwT2k9a_YGdSy0jb6-YsUwga3gC2ahD31u98jvv0VL5A99Rccnc-w/exec";
     const LIVE_PAGE_FLAGS = {

@@ -1,5 +1,5 @@
 <script>
-const AUTH_SERVER = "https://discord-auth-server-six.vercel.app";
+const AUTH_SERVER = "https://sgtour4-auth.vercel.app";
 const AUTH_TOKEN_KEY = "sg-discord-token";
 const AUTH_USER_KEY = "sg-discord-user";
 const AUTH_STATE_KEY = "sg-discord-oauth-state";
@@ -45,7 +45,7 @@ async function finishDiscordLogin() {
 
   persistAuthPayload(payload);
   sessionStorage.removeItem(AUTH_STATE_KEY);
-  window.location.href = "/sgtour3/index.html";
+  window.location.href = "/sgtour4/index.html";
 }
 
 finishDiscordLogin().catch((error) => {
