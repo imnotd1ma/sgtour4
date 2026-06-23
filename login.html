@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SPRING BREAKOUT | Login</title>
+  <title>SPRING BREAKOUT — Login</title>
   <script>
     (function () {
       try {
@@ -12,6 +12,104 @@
       } catch (error) {
         document.documentElement.dataset.theme = "original";
       }
+    }());
+  </script>
+
+  <style>
+    html[data-auth-state="checking"] body{
+      visibility: hidden;
+    }
+  </style>
+
+  <script>
+    const AUTH_SERVER = "https://discord-auth-server-six.vercel.app";
+    const AUTH_TOKEN_KEY = "sg-discord-token";
+    const AUTH_USER_KEY = "sg-discord-user";
+    const IS_LOCAL_MODE = ["localhost", "127.0.0.1"].includes(window.location.hostname) || window.location.protocol === "file:";
+
+    function readStoredAuthToken() {
+      try {
+        return localStorage.getItem(AUTH_TOKEN_KEY) || "";
+      } catch (error) {
+        console.warn("Unable to read auth token", error);
+        return "";
+      }
+    }
+
+    function persistAuthUser(user) {
+      try {
+        if (user) {
+          localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+        } else {
+          localStorage.removeItem(AUTH_USER_KEY);
+        }
+      } catch (error) {
+        console.warn("Unable to persist auth user", error);
+      }
+    }
+
+    function clearStoredAuth() {
+      try {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.removeItem(AUTH_USER_KEY);
+      } catch (error) {
+        console.warn("Unable to clear auth storage", error);
+      }
+    }
+
+    function redirectAuthenticatedUser() {
+      const fallbackUrl = "/sgtour4/index.html";
+      const referrer = document.referrer ? new URL(document.referrer, window.location.href) : null;
+      const isSafeReferrer =
+        referrer &&
+        referrer.origin === window.location.origin &&
+        !/\/(?:login|callback)\.html$/i.test(referrer.pathname);
+
+      window.location.replace(isSafeReferrer ? referrer.href : fallbackUrl);
+    }
+
+    (function () {
+      const token = readStoredAuthToken();
+
+      if (!token || IS_LOCAL_MODE) {
+        document.documentElement.dataset.authState = "ready";
+        return;
+      }
+
+      document.documentElement.dataset.authState = "checking";
+
+      fetch(`${AUTH_SERVER}/me`, {
+        credentials: "include",
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw response;
+        }
+
+        const user = await response.json();
+        persistAuthUser(user);
+        redirectAuthenticatedUser();
+      })
+      .catch(async (error) => {
+        const status = typeof error?.status === "number" ? error.status : 0;
+
+        if (status === 401 || status === 403) {
+          clearStoredAuth();
+        } else {
+          try {
+            const cachedUser = localStorage.getItem(AUTH_USER_KEY);
+            if (cachedUser) {
+              redirectAuthenticatedUser();
+              return;
+            }
+          } catch (storageError) {
+            console.warn("Unable to read cached auth user", storageError);
+          }
+        }
+
+        document.documentElement.dataset.authState = "ready";
+      });
     }());
   </script>
 
