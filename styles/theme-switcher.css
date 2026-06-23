@@ -1,66 +1,66 @@
 html[data-theme="original"],
 html[data-theme="dark"] {
-  --accent: #ff9bb3;
-  --accent-rgb: 255 155 179;
+  --accent: #f8db95;
+  --accent-rgb: 248 219 149;
   --page-bg:
-    radial-gradient(circle at 10% 0%, rgba(255 132 176 / 0.32), transparent 35%),
-    radial-gradient(circle at 90% 10%, rgba(255 179 209 / 0.18), transparent 40%),
-    radial-gradient(circle at 30% 42%, rgba(255 118 170 / 0.18), transparent 45%),
-    radial-gradient(circle at 72% 62%, rgba(255 165 204 / 0.16), transparent 48%),
-    linear-gradient(180deg, #1a0f18 0%, #120b12 45%, #09070c 100%);
-  --nav-bg: rgba(33, 18, 29, 0.64);
-  --nav-border: rgba(255, 190, 217, 0.18);
-  --nav-link-border: rgba(255, 190, 217, 0.16);
-  --nav-link-bg: rgba(44, 25, 38, 0.72);
-  --nav-link-color: #ffe3ee;
-  --nav-link-hover-bg: rgba(64, 35, 53, 0.88);
+    radial-gradient(circle at 12% 6%, rgba(93 138 255 / 0.16), transparent 32%),
+    radial-gradient(circle at 88% 10%, rgba(93 138 255 / 0.18), transparent 34%),
+    radial-gradient(circle at 28% 46%, rgba(72 118 232 / 0.1), transparent 42%),
+    radial-gradient(circle at 74% 68%, rgba(20 45 100 / 0.28), transparent 50%),
+    linear-gradient(180deg, #142d64 0%, #0d1c45 42%, #050a1e 100%);
+  --nav-bg: rgba(8, 16, 43, 0.72);
+  --nav-border: rgba(248, 219, 149, 0.18);
+  --nav-link-border: rgba(248, 219, 149, 0.16);
+  --nav-link-bg: rgba(13, 28, 69, 0.72);
+  --nav-link-color: #e8f7ff;
+  --nav-link-hover-bg: rgba(20, 45, 100, 0.92);
   --nav-link-active-color: #ffffff;
-  --glass-bg: rgba(33, 18, 29, 0.48);
-  --glass-border: rgba(255, 190, 217, 0.18);
-  --card-bg: linear-gradient(180deg, rgba(46, 25, 39, 0.82), rgba(26, 15, 24, 0.72));
-  --card-border: rgba(255, 190, 217, 0.18);
-  --panel-bg: rgba(58, 33, 48, 0.74);
-  --panel-border: rgba(255, 190, 217, 0.16);
-  --picker-bg: rgba(45, 26, 38, 0.84);
-  --ink: #fff0f6;
-  --hero-ink: #fff1f7;
-  --muted: rgba(255, 221, 235, 0.72);
-  --soft: #d9abc0;
-  --community-ink: #f5d8e5;
-  --score-separator: #ffb7d1;
+  --glass-bg: rgba(8, 16, 43, 0.5);
+  --glass-border: rgba(248, 219, 149, 0.18);
+  --card-bg: linear-gradient(180deg, rgba(20, 45, 100, 0.84), rgba(5, 10, 30, 0.82));
+  --card-border: rgba(248, 219, 149, 0.16);
+  --panel-bg: rgba(12, 24, 61, 0.8);
+  --panel-border: rgba(248, 219, 149, 0.16);
+  --picker-bg: rgba(8, 18, 46, 0.9);
+  --ink: #f4fbff;
+  --hero-ink: #f4fbff;
+  --muted: rgba(191, 219, 254, 0.74);
+  --soft: rgba(191, 219, 254, 0.64);
+  --community-ink: #dbeafe;
+  --score-separator: #7dd3fc;
   --stat-bg: rgba(255, 255, 255, 0.08);
-  --stat-border: rgba(255, 190, 217, 0.14);
-  --pill-bg: rgba(60, 33, 47, 0.84);
+  --stat-border: rgba(248, 219, 149, 0.14);
+  --pill-bg: rgba(13, 28, 69, 0.86);
   --discord-a: #738adb;
   --discord-b: #5865f2;
-  --footer-color: rgba(255, 215, 230, 0.62);
-  --scrollbar-track: rgba(44, 25, 38, 0.82);
-  --scrollbar-thumb: rgba(255, 190, 217, 0.42);
-  --toggle-bg: rgba(56, 29, 42, 0.76);
-  --toggle-border: rgba(255, 190, 217, 0.22);
-  --toggle-color: #fff1f7;
-  --toggle-hover-bg: rgba(86, 47, 65, 0.92);
-  --toggle-hover-border: rgba(255, 155, 179, 0.36);
-  --tab-shell-bg: linear-gradient(180deg, rgba(40, 22, 34, 0.9), rgba(19, 11, 17, 0.84));
-  --tab-card-bg: linear-gradient(180deg, rgba(67, 38, 53, 0.78), rgba(27, 16, 24, 0.92));
-  --tab-card-active-bg: linear-gradient(180deg, rgba(116, 64, 90, 0.94), rgba(54, 28, 42, 0.96));
-  --tab-kicker-color: #ffd7e5;
-  --tab-state-color: #ffe7f0;
-  --tab-note-color: #f0cedd;
-  --submit-btn-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 200, 218, 0.82));
-  --submit-btn-border: rgba(255 155 179 / 0.6);
-  --submit-btn-color: #2a1620;
+  --footer-color: rgba(191, 219, 254, 0.62);
+  --scrollbar-track: rgba(8, 18, 46, 0.92);
+  --scrollbar-thumb: rgba(248, 219, 149, 0.42);
+  --toggle-bg: rgba(12, 24, 61, 0.78);
+  --toggle-border: rgba(248, 219, 149, 0.22);
+  --toggle-color: #f4fbff;
+  --toggle-hover-bg: rgba(20, 45, 100, 0.92);
+  --toggle-hover-border: rgba(248, 219, 149, 0.36);
+  --tab-shell-bg: linear-gradient(180deg, rgba(10, 21, 52, 0.94), rgba(5, 10, 30, 0.88));
+  --tab-card-bg: linear-gradient(180deg, rgba(20, 45, 100, 0.8), rgba(8, 18, 46, 0.94));
+  --tab-card-active-bg: linear-gradient(180deg, rgba(30, 63, 136, 0.96), rgba(13, 28, 69, 0.98));
+  --tab-kicker-color: #bfe9ff;
+  --tab-state-color: #e1f6ff;
+  --tab-note-color: rgba(219, 238, 255, 0.78);
+  --submit-btn-bg: linear-gradient(180deg, rgba(255, 242, 192, 0.96), rgba(248, 219, 149, 0.84));
+  --submit-btn-border: rgba(248 219 149 / 0.62);
+  --submit-btn-color: #082032;
   --submit-btn-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.72),
-    0 10px 26px rgba(255, 155, 179, 0.16);
-  --submit-btn-hover-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 214, 228, 0.9));
-  --submit-btn-hover-border: rgba(255 155 179 / 0.82);
+    0 10px 26px rgba(248, 219, 149, 0.18);
+  --submit-btn-hover-bg: linear-gradient(180deg, rgba(255, 247, 216, 0.98), rgba(250, 208, 97, 0.92));
+  --submit-btn-hover-border: rgba(248 219 149 / 0.82);
   --submit-btn-hover-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.82),
-    0 16px 36px rgba(255, 155, 179, 0.26);
-  --submit-btn-disabled-bg: linear-gradient(180deg, rgba(120, 82, 101, 0.42), rgba(66, 42, 55, 0.46));
-  --submit-btn-disabled-border: rgba(255 190 217 / 0.18);
-  --submit-btn-disabled-color: rgba(255, 227, 238, 0.48);
+    0 16px 36px rgba(248, 219, 149, 0.28);
+  --submit-btn-disabled-bg: linear-gradient(180deg, rgba(50, 68, 117, 0.7), rgba(18, 28, 63, 0.82));
+  --submit-btn-disabled-border: rgba(248 219 149 / 0.18);
+  --submit-btn-disabled-color: rgba(219, 238, 255, 0.42);
 }
 
 html[data-theme="old"],
