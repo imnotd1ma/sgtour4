@@ -1,57 +1,152 @@
-<script>
-const AUTH_SERVER = "https://discord-auth-server-six.vercel.app";
-const AUTH_TOKEN_KEY = "sg-discord-token";
-const AUTH_USER_KEY = "sg-discord-user";
-const AUTH_STATE_KEY = "sg-discord-oauth-state";
-const AUTH_SITE = "sgtour4";
+<!DOCTYPE html>
+<html lang="ru" data-theme="original">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Переадресация...</title>
+  <script>
+    try {
+      var savedTheme = localStorage.getItem("sg-theme-preference");
+      document.documentElement.dataset.theme = savedTheme === "old" || savedTheme === "black" ? "old" : "original";
+    } catch (error) {
+      document.documentElement.dataset.theme = "original";
+    }
+  </script>
+  <link rel="stylesheet" href="styles/theme-switcher.css">
+  <style>
+    html,
+    body {
+      min-height: 100%;
+      margin: 0;
+    }
 
-const params = new URLSearchParams(window.location.search);
-const code = params.get("code");
-const state = params.get("state");
-const expectedState = sessionStorage.getItem(AUTH_STATE_KEY);
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      background: var(--page-bg);
+      color: var(--hero-ink);
+      font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+    }
 
-function persistAuthPayload(payload) {
-  if (!payload || !payload.token) {
-    return;
-  }
+    .redirect-card {
+      position: relative;
+      width: min(100%, 420px);
+      padding: 32px 28px;
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      background:
+        linear-gradient(180deg, rgba(var(--accent-rgb) / 0.12), rgba(var(--accent-rgb) / 0.03) 58%, transparent 100%),
+        var(--glass-bg);
+      box-shadow:
+        0 28px 60px rgba(0, 0, 0, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(18px);
+      text-align: center;
+    }
 
-  localStorage.setItem(AUTH_TOKEN_KEY, payload.token);
+    .redirect-card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(var(--accent-rgb) / 0.28), transparent 42%, rgba(var(--accent-rgb) / 0.12));
+      opacity: 0.9;
+      pointer-events: none;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      padding: 1px;
+    }
 
-  if (payload.user) {
-    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(payload.user));
-  }
-}
+    .redirect-indicator {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.4);
+      background: rgba(var(--accent-rgb) / 0.12);
+      box-shadow:
+        0 0 0 10px rgba(var(--accent-rgb) / 0.06),
+        0 0 28px rgba(var(--accent-rgb) / 0.18);
+    }
 
-async function finishDiscordLogin() {
-  if (!code) {
-    throw new Error("Missing Discord code");
-  }
+    .redirect-title {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 36px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: 0;
+      text-shadow:
+        0 0 18px rgba(var(--accent-rgb) / 0.18),
+        0 10px 30px rgba(0, 0, 0, 0.24);
+    }
+  </style>
+</head>
+<body>
+  <main class="redirect-card" aria-live="polite">
+    <div class="redirect-indicator" aria-hidden="true"></div>
+    <h1 class="redirect-title">Переадресация...</h1>
+  </main>
 
-  if (expectedState && state !== expectedState) {
-    throw new Error("Invalid OAuth state");
-  }
+  <script>
+    const AUTH_SERVER = "https://discord-auth-server-six.vercel.app";
+    const AUTH_TOKEN_KEY = "sg-discord-token";
+    const AUTH_USER_KEY = "sg-discord-user";
+    const AUTH_STATE_KEY = "sg-discord-oauth-state";
+    const AUTH_SITE = "sgtour4";
 
-  const response = await fetch(`${AUTH_SERVER}/auth/discord`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ code, site: AUTH_SITE })
-  });
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const state = params.get("state");
+    const expectedState = sessionStorage.getItem(AUTH_STATE_KEY);
 
-  const payload = await response.json().catch(() => ({}));
+    function persistAuthPayload(payload) {
+      if (!payload || !payload.token) {
+        return;
+      }
 
-  if (!response.ok) {
-    throw new Error(payload.error || "Auth request failed");
-  }
+      localStorage.setItem(AUTH_TOKEN_KEY, payload.token);
 
-  persistAuthPayload(payload);
-  sessionStorage.removeItem(AUTH_STATE_KEY);
-  window.location.href = "/sgtour4/index.html";
-}
+      if (payload.user) {
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(payload.user));
+      }
+    }
 
-finishDiscordLogin().catch((error) => {
-  console.error("Discord login failed", error);
-  sessionStorage.removeItem(AUTH_STATE_KEY);
-  alert("Ошибка входа через Discord. Попробуй ещё раз.");
-});
-</script>
+    async function finishDiscordLogin() {
+      if (!code) {
+        throw new Error("Missing Discord code");
+      }
+
+      if (expectedState && state !== expectedState) {
+        throw new Error("Invalid OAuth state");
+      }
+
+      const response = await fetch(`${AUTH_SERVER}/auth/discord`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ code, site: AUTH_SITE })
+      });
+
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(payload.error || "Auth request failed");
+      }
+
+      persistAuthPayload(payload);
+      sessionStorage.removeItem(AUTH_STATE_KEY);
+      window.location.href = "/sgtour4/index.html";
+    }
+
+    finishDiscordLogin().catch((error) => {
+      console.error("Discord login failed", error);
+      sessionStorage.removeItem(AUTH_STATE_KEY);
+      alert("Ошибка входа через Discord. Попробуй ещё раз.");
+    });
+  </script>
+</body>
+</html>
