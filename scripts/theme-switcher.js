@@ -100,15 +100,39 @@
     return button;
   }
 
+  function ensureDock() {
+    var dock = document.querySelector("[data-theme-toggle-dock]");
+
+    if (dock) {
+      return dock;
+    }
+
+    if (!document.body) {
+      return null;
+    }
+
+    dock = document.createElement("div");
+    dock.className = "theme-toggle-dock";
+    dock.setAttribute("data-theme-toggle-dock", "");
+    document.body.appendChild(dock);
+    return dock;
+  }
+
   function mountToggle() {
-    var navLeft = document.querySelector(".nav-left");
-    if (!navLeft || navLeft.querySelector("[data-theme-toggle]")) {
+    var dock = ensureDock();
+
+    if (!dock) {
+      syncAllToggles(getCurrentTheme());
+      return;
+    }
+
+    if (dock.querySelector("[data-theme-toggle]")) {
       syncAllToggles(getCurrentTheme());
       return;
     }
 
     var button = createToggle();
-    navLeft.insertBefore(button, navLeft.firstChild);
+    dock.appendChild(button);
     updateToggleLabel(button, getCurrentTheme());
   }
 

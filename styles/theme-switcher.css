@@ -216,6 +216,24 @@ html {
     box-shadow 220ms ease;
 }
 
+.theme-toggle-dock {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 1100;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(4, 10, 30, 0.44);
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
 .theme-toggle::before {
   content: "";
   position: absolute;
@@ -283,11 +301,93 @@ html {
   color: rgba(255, 255, 255, 0.56);
 }
 
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  color: var(--nav-link-color, var(--hero-ink));
+  min-width: 0;
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  padding: 8px;
+  border-radius: 18px;
+  border: 1px solid rgba(var(--accent-rgb) / 0.26);
+  background:
+    linear-gradient(180deg, rgba(var(--accent-rgb) / 0.18), rgba(var(--accent-rgb) / 0.04)),
+    rgba(255, 255, 255, 0.04);
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  flex: 0 0 auto;
+}
+
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.05;
+}
+
+.brand-kicker {
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.brand-title {
+  color: var(--hero-ink, #ffffff);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
 @media (max-width: 640px) {
+  .theme-toggle-dock {
+    left: 12px;
+    bottom: 12px;
+    padding: 7px;
+  }
+
   .theme-toggle {
     width: 150px;
     min-height: 40px;
     font-size: 8px;
     letter-spacing: 0.09em;
+  }
+
+  .brand-link {
+    gap: 10px;
+  }
+
+  .brand-mark {
+    width: 44px;
+    height: 44px;
+    padding: 7px;
+    border-radius: 16px;
+  }
+
+  .brand-kicker {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+  }
+
+  .brand-title {
+    font-size: 15px;
   }
 }
