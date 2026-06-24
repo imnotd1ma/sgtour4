@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="original">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SUMMER BREAKOUT - Home</title>
+  <script>
+    (function () {
+      try {
+        var savedTheme = localStorage.getItem("sg-theme-preference");
+        document.documentElement.dataset.theme = savedTheme === "old" || savedTheme === "black" ? "old" : "original";
+      } catch (error) {
+        document.documentElement.dataset.theme = "original";
+      }
+    }());
+  </script>
+  <link rel="icon" href="images/icon.png" type="image/png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <link rel="stylesheet" href="styles/theme-switcher.css" />
+  <style>
+    :root {
+      --page-bg:
+        radial-gradient(circle at 10% 0%, rgba(255, 209, 102, 0.16), transparent 34%),
+        radial-gradient(circle at 90% 12%, rgba(125, 211, 252, 0.18), transparent 32%),
+        linear-gradient(180deg, #142d64 0%, #0d1c45 42%, #050a1e 100%);
+      --nav-bg: rgba(8, 16, 43, 0.72);
+      --nav-border: rgba(248, 219, 149, 0.18);
+      --nav-link-border: rgba(248, 219, 149, 0.16);
+      --nav-link-bg: rgba(13, 28, 69, 0.72);
+      --nav-link-color: #e8f7ff;
+      --nav-link-hover-bg: rgba(20, 45, 100, 0.92);
+      --nav-link-active-color: #ffffff;
+      --glass-bg: rgba(8, 16, 43, 0.52);
+      --glass-border: rgba(248, 219, 149, 0.18);
+      --card-bg: linear-gradient(180deg, rgba(20, 45, 100, 0.84), rgba(5, 10, 30, 0.82));
+      --card-border: rgba(248, 219, 149, 0.16);
+      --hero-ink: #f4fbff;
+      --ink: #f4fbff;
+      --muted: rgba(191, 219, 254, 0.8);
+      --soft: rgba(219, 238, 255, 0.68);
+      --panel-bg: rgba(12, 24, 61, 0.82);
+      --panel-border: rgba(248, 219, 149, 0.14);
+      --pill-bg: rgba(13, 28, 69, 0.86);
+      --footer-color: rgba(191, 219, 254, 0.62);
+      --scrollbar-track: rgba(8, 18, 46, 0.92);
+      --scrollbar-thumb: rgba(248, 219, 149, 0.42);
+      --discord-a: #738adb;
+      --discord-b: #5865f2;
+      --accent: #f8db95;
+      --accent-rgb: 248 219 149;
+    }
+
+    html {
+      color-scheme: dark;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--page-bg);
+      background-attachment: fixed;
+      color: var(--ink);
+    }
+
+    body::-webkit-scrollbar {
+      width: 12px;
+    }
+
+    body::-webkit-scrollbar-track {
+      background: var(--scrollbar-track);
+    }
+
+    body::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      background: var(--scrollbar-thumb);
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    .glow {
+      text-shadow:
+        0 0 12px rgba(var(--accent-rgb) / 0.52),
+        0 0 28px rgba(var(--accent-rgb) / 0.34),
+        0 0 54px rgba(var(--accent-rgb) / 0.18);
+    }
+
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      backdrop-filter: blur(16px);
+      background: var(--nav-bg);
+      border-bottom: 1px solid var(--nav-border);
+    }
+
+    .nav-shell {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      width: 100%;
+      max-width: 1500px;
+      margin: 0 auto;
+    }
+
+    .nav-left,
+    .nav-center,
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-center {
+      margin-left: auto;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .nav-right {
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .brand-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: var(--hero-ink);
+    }
+
+    .brand-mark {
+      width: 50px;
+      height: 50px;
+      padding: 8px;
+      border-radius: 18px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.26);
+      background:
+        linear-gradient(180deg, rgba(var(--accent-rgb) / 0.18), rgba(var(--accent-rgb) / 0.04)),
+        rgba(255, 255, 255, 0.04);
+      box-shadow:
+        0 14px 32px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+
+    .brand-mark img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .brand-copy {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.05;
+    }
+
+    .brand-kicker {
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+    }
+
+    .nav-link,
+    .login-link,
+    .logout-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 42px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--nav-link-border);
+      background: var(--nav-link-bg);
+      color: var(--nav-link-color);
+      backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14);
+      text-decoration: none;
+    }
+
+    .nav-link:hover,
+    .login-link:hover,
+    .logout-btn:hover {
+      transform: translateY(-2px) scale(1.03);
+      background: var(--nav-link-hover-bg);
+      border-color: rgba(var(--accent-rgb) / 0.5);
+      box-shadow:
+        0 10px 35px rgba(var(--accent-rgb) / 0.2),
+        0 0 20px rgba(var(--accent-rgb) / 0.16);
+    }
+
+    .nav-link.active {
+      background: rgba(var(--accent-rgb) / 0.18);
+      border-color: rgba(var(--accent-rgb) / 0.7);
+      color: var(--nav-link-active-color);
+      box-shadow: 0 0 25px rgba(var(--accent-rgb) / 0.34);
+    }
+
+    .live-dot,
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(var(--accent-rgb) / 0.16);
+      flex: 0 0 auto;
+    }
+
+    .auth-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 12px 6px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.18);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(14px);
+      box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .auth-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      object-fit: cover;
+      border: 1px solid rgba(var(--accent-rgb) / 0.28);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .auth-name {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: var(--hero-ink);
+    }
+
+    .hero-shell {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 40px 24px 28px;
+    }
+
+    .hero-card,
+    .section-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 32px;
+      border: 1px solid var(--glass-border);
+      background:
+        linear-gradient(180deg, rgba(var(--accent-rgb) / 0.12), rgba(var(--accent-rgb) / 0.03) 58%, transparent 100%),
+        var(--glass-bg);
+      box-shadow:
+        0 28px 60px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero-card::before,
+    .section-card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(var(--accent-rgb) / 0.3), transparent 42%, rgba(var(--accent-rgb) / 0.12));
+      opacity: 0.85;
+      pointer-events: none;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      padding: 1px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+      gap: 28px;
+      align-items: stretch;
+      padding: 32px;
+    }
+
+    .eyebrow,
+    .section-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.22);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .hero-title {
+      margin-top: 24px;
+      font-size: clamp(46px, 8vw, 82px);
+      font-weight: 900;
+      line-height: 0.94;
+      letter-spacing: -0.05em;
+      color: var(--hero-ink);
+    }
+
+    .hero-copy {
+      margin-top: 22px;
+      max-width: 52rem;
+      color: var(--muted);
+      font-size: clamp(17px, 2.2vw, 21px);
+      line-height: 1.7;
+    }
+
+    .hero-subcopy {
+      margin-top: 16px;
+      max-width: 44rem;
+      color: var(--soft);
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      min-height: 52px;
+      padding: 0 22px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition:
+        transform 0.24s ease,
+        box-shadow 0.24s ease,
+        border-color 0.24s ease,
+        background 0.24s ease;
+    }
+
+    .primary-btn {
+      color: #082032;
+      border: 1px solid rgba(var(--accent-rgb) / 0.72);
+      background: linear-gradient(180deg, rgba(255, 247, 216, 0.98), rgba(248, 219, 149, 0.88));
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.82),
+        0 16px 36px rgba(var(--accent-rgb) / 0.22);
+    }
+
+    .secondary-btn {
+      color: var(--hero-ink);
+      border: 1px solid rgba(var(--accent-rgb) / 0.2);
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 16px 34px rgba(0, 0, 0, 0.16);
+    }
+
+    .primary-btn:hover,
+    .secondary-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .stats-grid,
+    .feature-grid,
+    .map-grid,
+    .faq-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 28px;
+    }
+
+    .feature-grid,
+    .map-grid,
+    .faq-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .stat-card,
+    .feature-card,
+    .map-card,
+    .faq-card,
+    .logo-stage,
+    .side-panel,
+    .timeline-item {
+      position: relative;
+      border-radius: 24px;
+      border: 1px solid var(--panel-border);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+        var(--panel-bg);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 18px 42px rgba(0, 0, 0, 0.18);
+    }
+
+    .stat-card,
+    .feature-card,
+    .faq-card,
+    .timeline-item {
+      padding: 18px;
+    }
+
+    .stat-label,
+    .faq-label,
+    .map-status {
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      margin-top: 10px;
+      color: var(--hero-ink);
+      font-size: 21px;
+      font-weight: 900;
+      line-height: 1.15;
+    }
+
+    .stat-note,
+    .feature-copy,
+    .faq-copy,
+    .timeline-copy,
+    .side-copy,
+    .map-copy {
+      margin-top: 10px;
+      color: var(--soft);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .logo-stage {
+      display: grid;
+      place-items: center;
+      min-height: 100%;
+      padding: 30px;
+      overflow: hidden;
+    }
+
+    .logo-stage::before {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border-radius: 26px;
+      background:
+        radial-gradient(circle at center, rgba(var(--accent-rgb) / 0.18), transparent 52%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+      filter: blur(0.2px);
+    }
+
+    .logo-ring {
+      position: relative;
+      width: min(100%, 280px);
+      aspect-ratio: 1;
+      border-radius: 999px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.28);
+      background:
+        radial-gradient(circle at center, rgba(var(--accent-rgb) / 0.18), rgba(var(--accent-rgb) / 0.04) 48%, transparent 74%),
+        rgba(255, 255, 255, 0.04);
+      box-shadow:
+        0 0 0 18px rgba(var(--accent-rgb) / 0.05),
+        0 0 0 42px rgba(var(--accent-rgb) / 0.03),
+        0 30px 60px rgba(0, 0, 0, 0.28);
+      display: grid;
+      place-items: center;
+      z-index: 1;
+    }
+
+    .logo-ring img {
+      width: 62%;
+      height: 62%;
+      object-fit: contain;
+      filter:
+        drop-shadow(0 0 24px rgba(var(--accent-rgb) / 0.28))
+        drop-shadow(0 18px 40px rgba(0, 0, 0, 0.28));
+    }
+
+    .side-panel {
+      margin-top: 18px;
+      padding: 22px;
+    }
+
+    .side-title,
+    .section-title,
+    .map-title,
+    .timeline-title {
+      margin-top: 12px;
+      color: var(--hero-ink);
+      font-weight: 900;
+      line-height: 1.08;
+    }
+
+    .side-title {
+      font-size: 28px;
+    }
+
+    .section-shell {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 0 24px 24px;
+    }
+
+    .section-card {
+      padding: 30px;
+    }
+
+    .section-title {
+      font-size: clamp(30px, 4vw, 44px);
+    }
+
+    .section-copy {
+      margin-top: 14px;
+      max-width: 56rem;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.78;
+    }
+
+    .feature-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.24);
+      background: rgba(var(--accent-rgb) / 0.1);
+      color: var(--hero-ink);
+      font-size: 15px;
+      font-weight: 900;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .feature-title,
+    .faq-title {
+      margin-top: 16px;
+      color: var(--hero-ink);
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+    }
+
+    .timeline-step {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .timeline-title {
+      font-size: 20px;
+    }
+
+    .map-card {
+      display: flex;
+      flex-direction: column;
+      padding: 22px;
+      min-height: 100%;
+    }
+
+    .map-title {
+      font-size: 30px;
+    }
+
+    .map-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: auto;
+      padding-top: 22px;
+    }
+
+    .map-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.22);
+      color: var(--hero-ink);
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.06);
+      transition:
+        transform 0.24s ease,
+        border-color 0.24s ease,
+        background 0.24s ease;
+    }
+
+    .map-link:hover {
+      transform: translateY(-2px);
+      border-color: rgba(var(--accent-rgb) / 0.42);
+      background: rgba(var(--accent-rgb) / 0.12);
+    }
+
+    .footer-shell {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 14px 24px 42px;
+      text-align: center;
+      color: var(--footer-color);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 1180px) {
+      .hero-grid,
+      .feature-grid,
+      .map-grid,
+      .faq-grid,
+      .timeline,
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .logo-stage {
+        min-height: 320px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .nav-shell {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .nav-left,
+      .nav-center,
+      .nav-right {
+        justify-content: center;
+      }
+
+      .nav-left {
+        flex-wrap: wrap;
+      }
+
+      .brand-link {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .hero-shell,
+      .section-shell,
+      .footer-shell {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .hero-grid,
+      .section-card {
+        padding: 22px;
+      }
+
+      .hero-title {
+        font-size: clamp(38px, 14vw, 56px);
+      }
+
+      .brand-title {
+        font-size: 16px;
+      }
+
+      .brand-kicker,
+      .nav-link,
+      .login-link,
+      .logout-btn {
+        letter-spacing: 0.06em;
+      }
+    }
+  </style>
+</head>
+<body class="font-sans">
+  <div class="top-nav">
+    <div class="w-full px-4 md:px-6 py-3 nav-shell">
+      <div class="nav-left">
+        <a class="brand-link" href="index.html" aria-label="SUMMER BREAKOUT home">
+          <span class="brand-mark">
+            <img src="images/icon.png" alt="SUMMER BREAKOUT logo" />
+          </span>
+          <span class="brand-copy">
+            <span class="brand-kicker">Public Hub</span>
+            <span class="brand-title">SUMMER BREAKOUT</span>
+          </span>
+        </a>
+      </div>
+
+      <nav class="nav-center flex items-center gap-3 flex-wrap" aria-label="Primary navigation">
+        <a class="nav-link active" href="index.html">Home</a>
+        <a class="nav-link" href="teams.html">Teams</a>
+        <a class="nav-link" href="predicts.html"><span class="live-dot" aria-hidden="true"></span>Predicts</a>
+      </nav>
+
+      <div class="nav-right">
+        <div id="authChip" class="auth-chip" hidden>
+          <img id="authAvatar" class="auth-avatar" alt="Discord avatar" />
+          <span id="authName" class="auth-name"></span>
+        </div>
+        <a id="loginNavButton" class="login-link" href="login.html">Login</a>
+        <button id="logoutButton" class="logout-btn" type="button" hidden>Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <header class="hero-shell theme-hero-header animate__animated animate__fadeIn">
+      <section class="hero-card">
+        <div class="hero-grid">
+          <div>
+            <div class="eyebrow">
+              <span class="status-dot" aria-hidden="true"></span>
+              Public main page
+            </div>
+
+            <h1 class="hero-title">
+              SUMMER
+              <span class="theme-accent-text block glow">BREAKOUT</span>
+            </h1>
+
+            <p class="hero-copy">
+              This is the main entry point for the SG Tournament website. The page is open for everyone, works as the public hub of the project, and explains what the site includes before a visitor signs in with Discord.
+            </p>
+
+            <p class="hero-subcopy" id="heroAccessState">
+              Home is public. Teams and Predicts stay protected and will ask for Discord authorization when a private section needs it.
+            </p>
+
+            <div class="cta-row">
+              <a id="primaryCta" class="primary-btn" href="predicts.html">Open Predicts</a>
+              <a id="secondaryCta" class="secondary-btn" href="teams.html">Browse Teams</a>
+            </div>
+
+            <div class="stats-grid">
+              <article class="stat-card">
+                <div class="stat-label">Access model</div>
+                <div class="stat-value">Public hub</div>
+                <p class="stat-note">Index is the open landing page for both guests and authorized players.</p>
+              </article>
+              <article class="stat-card">
+                <div class="stat-label">Protected zones</div>
+                <div class="stat-value">Teams + Predicts</div>
+                <p class="stat-note">Private tournament pages still keep Discord-based access control in place.</p>
+              </article>
+              <article class="stat-card">
+                <div class="stat-label">Main route</div>
+                <div class="stat-value">Site home</div>
+                <p class="stat-note">OAuth callbacks and return logic can safely bring users back to the main hub.</p>
+              </article>
+            </div>
+          </div>
+
+          <div>
+            <div class="logo-stage">
+              <div class="logo-ring">
+                <img src="images/icon.png" alt="SUMMER BREAKOUT icon" />
+              </div>
+            </div>
+
+            <aside class="side-panel">
+              <div class="section-kicker">Site snapshot</div>
+              <h2 class="side-title">One page to explain the whole project</h2>
+              <p class="side-copy">
+                Use this page as the default homepage, as a quick overview for newcomers, and as a clean starting point before entering live tournament sections.
+              </p>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </header>
+
+    <section class="section-shell">
+      <div class="section-card">
+        <div class="section-kicker">What is here</div>
+        <h2 class="section-title">The site combines public overview, private tournament pages, and quick navigation</h2>
+        <p class="section-copy">
+          The idea of the homepage is simple: explain the structure of the website, show the main sections, and let every visitor understand where to go next. Guests can read about the project, while signed-in users can jump straight into the live tools.
+        </p>
+
+        <div class="feature-grid mt-8">
+          <article class="feature-card">
+            <div class="feature-number">01</div>
+            <div class="feature-title">Public Home</div>
+            <p class="feature-copy">
+              A friendly landing page with the key information about the tournament website, navigation, and access rules.
+            </p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-number">02</div>
+            <div class="feature-title">Teams Section</div>
+            <p class="feature-copy">
+              A roster-focused page for tournament participants, team presentation, and identity inside the SG Tournament season.
+            </p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-number">03</div>
+            <div class="feature-title">Predicts Center</div>
+            <p class="feature-copy">
+              The live prediction area where participants follow matches, submit picks, and compare points on the leaderboard.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-shell">
+      <div class="section-card">
+        <div class="section-kicker">How it works</div>
+        <h2 class="section-title">Simple flow for guests and tournament members</h2>
+        <p class="section-copy">
+          The homepage stays readable without login, but the competitive parts remain behind Discord authorization. That keeps the first touch open while protecting player-specific pages and actions.
+        </p>
+
+        <div class="timeline">
+          <article class="timeline-item">
+            <div class="timeline-step">Step 01</div>
+            <h3 class="timeline-title">Open the hub</h3>
+            <p class="timeline-copy">Any visitor can land on the homepage and immediately understand what the website is for.</p>
+          </article>
+          <article class="timeline-item">
+            <div class="timeline-step">Step 02</div>
+            <h3 class="timeline-title">Read the overview</h3>
+            <p class="timeline-copy">The main page describes the site structure, explains protected areas, and highlights the tournament sections.</p>
+          </article>
+          <article class="timeline-item">
+            <div class="timeline-step">Step 03</div>
+            <h3 class="timeline-title">Authorize with Discord</h3>
+            <p class="timeline-copy">When a visitor needs a private page, the site can redirect to Discord login and return back cleanly.</p>
+          </article>
+          <article class="timeline-item">
+            <div class="timeline-step">Step 04</div>
+            <h3 class="timeline-title">Enter live sections</h3>
+            <p class="timeline-copy">Authorized users can move into teams, predictions, leaderboard views, and the rest of the tournament flow.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-shell">
+      <div class="section-card">
+        <div class="section-kicker">Site map</div>
+        <h2 class="section-title">Three clear destinations from the homepage</h2>
+        <p class="section-copy">
+          The navigation now reflects a proper main page. Home is the public overview, Teams is the roster area, and Predicts is the live predictions workspace.
+        </p>
+
+        <div class="map-grid mt-8">
+          <article class="map-card">
+            <div class="map-status">Public</div>
+            <h3 class="map-title">Home</h3>
+            <p class="map-copy">
+              The default page for everyone. It explains the project, shows the logo, and acts as the main route for the website.
+            </p>
+            <div class="map-actions">
+              <a class="map-link" href="index.html">Stay on Home</a>
+            </div>
+          </article>
+          <article class="map-card">
+            <div class="map-status">Protected</div>
+            <h3 class="map-title">Teams</h3>
+            <p class="map-copy">
+              Team rosters, tournament identities, and the player-facing information that belongs to the competition area.
+            </p>
+            <div class="map-actions">
+              <a class="map-link" href="teams.html">Go to Teams</a>
+              <a class="map-link" href="login.html">Login first</a>
+            </div>
+          </article>
+          <article class="map-card">
+            <div class="map-status">Protected</div>
+            <h3 class="map-title">Predicts</h3>
+            <p class="map-copy">
+              Match predictions, tournament picks, scoring logic, and leaderboard tracking in one competitive center.
+            </p>
+            <div class="map-actions">
+              <a class="map-link" href="predicts.html">Open Predicts</a>
+              <a class="map-link" href="login.html">Authorize</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-shell">
+      <div class="section-card">
+        <div class="section-kicker">Quick notes</div>
+        <h2 class="section-title">Important details for visitors and players</h2>
+        <p class="section-copy">
+          These notes explain the access model and why the homepage is intentionally public while tournament actions remain private.
+        </p>
+
+        <div class="faq-grid mt-8">
+          <article class="faq-card">
+            <div class="faq-label">Access</div>
+            <h3 class="faq-title">Who can open this page?</h3>
+            <p class="faq-copy">
+              Everyone. This homepage does not require authorization and should be safe as the default landing route of the site.
+            </p>
+          </article>
+          <article class="faq-card">
+            <div class="faq-label">Security</div>
+            <h3 class="faq-title">Why are other pages protected?</h3>
+            <p class="faq-copy">
+              Teams and Predicts are part of the tournament flow, so they preserve the Discord sign-in checks already used across the project.
+            </p>
+          </article>
+          <article class="faq-card">
+            <div class="faq-label">Navigation</div>
+            <h3 class="faq-title">What changed in the structure?</h3>
+            <p class="faq-copy">
+              Index is now the real homepage, and the rest of the navigation points to it as the primary starting destination.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer-shell">
+    SG Tournament No.4 | SUMMER BREAKOUT | Public Home
+  </footer>
+
+  <script>
+    const AUTH_SERVER = "https://discord-auth-server-six.vercel.app";
+    const AUTH_TOKEN_KEY = "sg-discord-token";
+    const AUTH_USER_KEY = "sg-discord-user";
+    const IS_LOCAL_MODE = ["localhost", "127.0.0.1"].includes(window.location.hostname) || window.location.protocol === "file:";
+
+    function readStoredAuthToken() {
+      try {
+        return localStorage.getItem(AUTH_TOKEN_KEY) || "";
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function readStoredAuthUser() {
+      try {
+        const stored = localStorage.getItem(AUTH_USER_KEY);
+        return stored ? JSON.parse(stored) : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function clearStoredAuth() {
+      try {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.removeItem(AUTH_USER_KEY);
+      } catch (error) {
+        console.warn("Unable to clear auth storage", error);
+      }
+    }
+
+    function buildAuthHeaders() {
+      const token = readStoredAuthToken();
+      return token ? { Authorization: "Bearer " + token } : {};
+    }
+
+    function getDisplayName(user) {
+      return user?.global_name || user?.username || user?.name || "Discord User";
+    }
+
+    function getAvatarUrl(user) {
+      if (!user || !user.id || !user.avatar) {
+        return "images/icon.png";
+      }
+
+      const extension = String(user.avatar).startsWith("a_") ? "gif" : "png";
+      return "https://cdn.discordapp.com/avatars/" + user.id + "/" + user.avatar + "." + extension + "?size=128";
+    }
+
+    async function logout() {
+      const logoutButton = document.getElementById("logoutButton");
+      if (logoutButton) {
+        logoutButton.disabled = true;
+      }
+
+      try {
+        if (!IS_LOCAL_MODE) {
+          await fetch(AUTH_SERVER + "/logout", {
+            method: "POST",
+            credentials: "include",
+            headers: buildAuthHeaders()
+          });
+        }
+      } catch (error) {
+        console.warn("Logout request failed", error);
+      } finally {
+        clearStoredAuth();
+        window.location.href = "index.html";
+      }
+    }
+
+    function renderAuth() {
+      const token = readStoredAuthToken();
+      const user = readStoredAuthUser();
+      const authChip = document.getElementById("authChip");
+      const authAvatar = document.getElementById("authAvatar");
+      const authName = document.getElementById("authName");
+      const loginNavButton = document.getElementById("loginNavButton");
+      const logoutButton = document.getElementById("logoutButton");
+      const heroAccessState = document.getElementById("heroAccessState");
+      const primaryCta = document.getElementById("primaryCta");
+      const secondaryCta = document.getElementById("secondaryCta");
+
+      if (IS_LOCAL_MODE) {
+        heroAccessState.textContent = "Local mode detected. Home stays public, and protected pages can be opened during development without the hosted auth flow.";
+        loginNavButton.hidden = true;
+        logoutButton.hidden = true;
+        if (primaryCta) {
+          primaryCta.textContent = "Open Predicts";
+        }
+        return;
+      }
+
+      if (user) {
+        authName.textContent = getDisplayName(user);
+        authAvatar.src = getAvatarUrl(user);
+        authAvatar.alt = getDisplayName(user) + " avatar";
+        authChip.hidden = false;
+      } else {
+        authChip.hidden = true;
+      }
+
+      if (token || user) {
+        heroAccessState.textContent = "Discord session detected. You can use this page as your launchpad and jump straight into the protected tournament sections.";
+        loginNavButton.hidden = true;
+        logoutButton.hidden = false;
+        if (primaryCta) {
+          primaryCta.textContent = "Continue to Predicts";
+        }
+        if (secondaryCta) {
+          secondaryCta.textContent = "Open Teams";
+        }
+      } else {
+        heroAccessState.textContent = "Home is public. Teams and Predicts remain protected and will request Discord authorization when needed.";
+        loginNavButton.hidden = false;
+        logoutButton.hidden = true;
+      }
+    }
+
+    document.getElementById("logoutButton")?.addEventListener("click", logout);
+    renderAuth();
+  </script>
+  <script src="scripts/theme-switcher.js"></script>
+</body>
+</html>
