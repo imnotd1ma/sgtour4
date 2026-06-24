@@ -100,8 +100,6 @@
       justify-content: space-between;
       gap: 16px;
       width: 100%;
-      max-width: 1500px;
-      margin: 0 auto;
     }
 
     .nav-left,
@@ -114,65 +112,17 @@
 
     .nav-center {
       margin-left: auto;
-      justify-content: center;
+      justify-content: flex-end;
       flex-wrap: wrap;
     }
 
     .nav-right {
+      flex: 0 0 auto;
       flex-wrap: wrap;
       justify-content: flex-end;
     }
 
-    .brand-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 14px;
-      text-decoration: none;
-      color: var(--hero-ink);
-    }
-
-    .brand-mark {
-      width: 50px;
-      height: 50px;
-      padding: 8px;
-      border-radius: 18px;
-      border: 1px solid rgba(var(--accent-rgb) / 0.26);
-      background:
-        linear-gradient(180deg, rgba(var(--accent-rgb) / 0.18), rgba(var(--accent-rgb) / 0.04)),
-        rgba(255, 255, 255, 0.04);
-      box-shadow:
-        0 14px 32px rgba(0, 0, 0, 0.24),
-        inset 0 1px 0 rgba(255, 255, 255, 0.18);
-    }
-
-    .brand-mark img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-
-    .brand-copy {
-      display: flex;
-      flex-direction: column;
-      line-height: 1.05;
-    }
-
-    .brand-kicker {
-      color: var(--accent);
-      font-size: 10px;
-      font-weight: 900;
-      letter-spacing: 0.24em;
-      text-transform: uppercase;
-    }
-
-    .brand-title {
-      font-size: 18px;
-      font-weight: 900;
-      letter-spacing: 0.02em;
-    }
-
     .nav-link,
-    .login-link,
     .logout-btn {
       display: inline-flex;
       align-items: center;
@@ -187,34 +137,51 @@
       backdrop-filter: blur(12px);
       transition: all 0.25s ease;
       font-size: 11px;
-      font-weight: 900;
+      font-weight: 800;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       box-shadow:
         0 4px 20px rgba(0, 0, 0, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.14);
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
       text-decoration: none;
     }
 
     .nav-link:hover,
-    .login-link:hover,
     .logout-btn:hover {
       transform: translateY(-2px) scale(1.03);
       background: var(--nav-link-hover-bg);
       border-color: rgba(var(--accent-rgb) / 0.5);
       box-shadow:
-        0 10px 35px rgba(var(--accent-rgb) / 0.2),
-        0 0 20px rgba(var(--accent-rgb) / 0.16);
+        0 10px 35px rgba(var(--accent-rgb) / 0.25),
+        0 0 20px rgba(var(--accent-rgb) / 0.2);
     }
 
     .nav-link.active {
-      background: rgba(var(--accent-rgb) / 0.18);
+      background: rgba(var(--accent-rgb) / 0.25);
       border-color: rgba(var(--accent-rgb) / 0.7);
       color: var(--nav-link-active-color);
-      box-shadow: 0 0 25px rgba(var(--accent-rgb) / 0.34);
+      box-shadow: 0 0 25px rgba(var(--accent-rgb) / 0.7);
     }
 
-    .live-dot,
+    .live-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #ff2d2d;
+      box-shadow: 0 0 12px rgba(255, 45, 45, 0.55);
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .live-dot::after {
+      content: "";
+      position: absolute;
+      inset: -7px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 45, 45, 0.45);
+      animation: pulse 1.5s ease-out infinite;
+    }
+
     .status-dot {
       width: 9px;
       height: 9px;
@@ -224,18 +191,35 @@
       flex: 0 0 auto;
     }
 
+    @keyframes pulse {
+      0% {
+        transform: scale(0.8);
+        opacity: 0.9;
+      }
+      70% {
+        transform: scale(1.18);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1.18);
+        opacity: 0;
+      }
+    }
+
     .auth-chip {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      padding: 6px 12px 6px 8px;
+      padding: 8px 12px 8px 8px;
       border-radius: 999px;
-      border: 1px solid rgba(var(--accent-rgb) / 0.18);
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(14px);
+      border: 1px solid var(--nav-link-border);
+      background: var(--nav-link-bg);
+      color: var(--nav-link-color);
+      backdrop-filter: blur(12px);
       box-shadow:
-        0 6px 18px rgba(0, 0, 0, 0.16),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        0 4px 20px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+      min-width: 0;
     }
 
     .auth-avatar {
@@ -243,15 +227,19 @@
       height: 34px;
       border-radius: 999px;
       object-fit: cover;
-      border: 1px solid rgba(var(--accent-rgb) / 0.28);
-      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(var(--accent-rgb) / 0.42);
+      background: rgba(var(--accent-rgb) / 0.18);
+      flex: 0 0 auto;
     }
 
     .auth-name {
+      font-weight: 900;
       font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      color: var(--hero-ink);
+      letter-spacing: .03em;
+      max-width: 160px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .hero-shell {
@@ -668,22 +656,20 @@
 
     @media (max-width: 900px) {
       .nav-shell {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .nav-left,
-      .nav-center,
-      .nav-right {
-        justify-content: center;
-      }
-
-      .nav-left {
         flex-wrap: wrap;
       }
 
-      .brand-link {
+      .nav-center {
+        order: 3;
+        width: 100%;
         justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .nav-right {
+        margin-left: auto;
+        flex-wrap: wrap;
+        justify-content: flex-end;
       }
     }
 
@@ -704,13 +690,7 @@
         font-size: clamp(38px, 14vw, 56px);
       }
 
-      .brand-title {
-        font-size: 16px;
-      }
-
-      .brand-kicker,
       .nav-link,
-      .login-link,
       .logout-btn {
         letter-spacing: 0.06em;
       }
@@ -970,6 +950,13 @@
     const AUTH_TOKEN_KEY = "sg-discord-token";
     const AUTH_USER_KEY = "sg-discord-user";
     const IS_LOCAL_MODE = ["localhost", "127.0.0.1"].includes(window.location.hostname) || window.location.protocol === "file:";
+    const LOCAL_USER = {
+      id: "local-dev-user",
+      username: "LocalDev",
+      global_name: "Local Dev",
+      name: "Local Dev",
+      avatar: ""
+    };
 
     function readStoredAuthToken() {
       try {
@@ -988,6 +975,18 @@
       }
     }
 
+    function persistAuthUser(user) {
+      try {
+        if (user) {
+          localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+        } else {
+          localStorage.removeItem(AUTH_USER_KEY);
+        }
+      } catch (error) {
+        console.warn("Unable to persist auth user", error);
+      }
+    }
+
     function clearStoredAuth() {
       try {
         localStorage.removeItem(AUTH_TOKEN_KEY);
@@ -1000,6 +999,18 @@
     function buildAuthHeaders() {
       const token = readStoredAuthToken();
       return token ? { Authorization: "Bearer " + token } : {};
+    }
+
+    function fetchWithTimeout(resource, options = {}, timeoutMs = 6000) {
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
+      return fetch(resource, {
+        ...options,
+        signal: controller.signal
+      }).finally(() => {
+        window.clearTimeout(timeoutId);
+      });
     }
 
     function getDisplayName(user) {
@@ -1037,9 +1048,48 @@
       }
     }
 
-    function renderAuth() {
+    async function resolveAuthUser() {
       const token = readStoredAuthToken();
-      const user = readStoredAuthUser();
+      const storedUser = readStoredAuthUser();
+
+      if (IS_LOCAL_MODE) {
+        persistAuthUser(LOCAL_USER);
+        return LOCAL_USER;
+      }
+
+      if (!token) {
+        return storedUser;
+      }
+
+      try {
+        const response = await fetchWithTimeout(`${AUTH_SERVER}/me`, {
+          credentials: "include",
+          headers: buildAuthHeaders()
+        }, 6000);
+
+        if (!response.ok) {
+          if (response.status === 401 || response.status === 403) {
+            clearStoredAuth();
+            return null;
+          }
+
+          throw new Error(`Auth failed: ${response.status}`);
+        }
+
+        const user = await response.json();
+        persistAuthUser(user);
+        return user;
+      } catch (error) {
+        if (storedUser) {
+          return storedUser;
+        }
+
+        return null;
+      }
+    }
+
+    function applyAuthState(user) {
+      const token = readStoredAuthToken();
       const authChip = document.getElementById("authChip");
       const authAvatar = document.getElementById("authAvatar");
       const authName = document.getElementById("authName");
@@ -1049,6 +1099,15 @@
       const primaryCta = document.getElementById("primaryCta");
       const secondaryCta = document.getElementById("secondaryCta");
 
+      if (user) {
+        authName.textContent = getDisplayName(user);
+        authAvatar.src = getAvatarUrl(user);
+        authAvatar.alt = getDisplayName(user) + " avatar";
+        authChip.hidden = false;
+      } else {
+        authChip.hidden = true;
+      }
+
       if (IS_LOCAL_MODE) {
         heroAccessState.textContent = "Local mode detected. Home stays public, and protected pages can be opened during development without the hosted auth flow.";
         loginNavButton.hidden = true;
@@ -1057,15 +1116,6 @@
           primaryCta.textContent = "Open Predicts";
         }
         return;
-      }
-
-      if (user) {
-        authName.textContent = getDisplayName(user);
-        authAvatar.src = getAvatarUrl(user);
-        authAvatar.alt = getDisplayName(user) + " avatar";
-        authChip.hidden = false;
-      } else {
-        authChip.hidden = true;
       }
 
       if (token || user) {
@@ -1086,7 +1136,11 @@
     }
 
     document.getElementById("logoutButton")?.addEventListener("click", logout);
-    renderAuth();
+
+    (async function initPublicAuthState() {
+      const user = await resolveAuthUser();
+      applyAuthState(user);
+    }());
   </script>
   <script src="scripts/theme-switcher.js"></script>
 </body>
