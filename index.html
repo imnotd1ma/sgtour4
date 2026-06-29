@@ -159,6 +159,39 @@
       box-shadow: 0 0 25px rgba(var(--nav-accent-rgb) / 0.7);
     }
 
+    .discord-button{
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.3);
+      background: linear-gradient(135deg, var(--discord-a), var(--discord-b));
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow:
+        0 20px 45px rgba(88,101,242,0.32),
+        inset 0 1px 0 rgba(255,255,255,0.28);
+      transition: transform .24s ease, box-shadow .24s ease, filter .24s ease;
+    }
+
+    .discord-button:hover{
+      transform: translateY(-3px) scale(1.01);
+      box-shadow:
+        0 26px 55px rgba(88,101,242,0.4),
+        0 0 28px rgba(115,138,219,0.28);
+      filter: saturate(1.06);
+    }
+
+    .discord-icon{
+      width: 26px;
+      height: 26px;
+      flex: 0 0 auto;
+    }
+
     .logout-btn {
       display: inline-flex;
       align-items: center;
@@ -664,6 +697,10 @@
       text-transform: uppercase;
     }
 
+    
+
+
+
     @media (max-width: 1180px) {
       .hero-grid,
       .feature-grid,
@@ -747,7 +784,12 @@
           <img id="authAvatar" class="auth-avatar" alt="Discord avatar" />
           <span id="authName" class="auth-name"></span>
         </div>
-        <a id="loginNavButton" class="nav-link" href="login.html">Login</a>
+        <a id="loginNavButton" class="discord-button" href="https://discord.com/oauth2/authorize?client_id=1518915331886809189&response_type=code&redirect_uri=https%3A%2F%2Fimnotd1ma.github.io%2Fsgtour4%2Fcallback.html&scope=identify">
+          <svg class="discord-icon" viewBox="0 0 127.14 96.36" fill="currentColor" aria-hidden="true">
+                <path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83A97.68 97.68 0 0 0 49 6.83 72.37 72.37 0 0 0 45.64 0 105.89 105.89 0 0 0 19.39 8.09C2.79 32.65-1.71 56.6.54 80.21h.04A105.73 105.73 0 0 0 32.71 96.36a77.7 77.7 0 0 0 6.84-11.16 68.42 68.42 0 0 1-10.78-5.16c.91-.66 1.8-1.34 2.66-2.05a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.67 2.05a68.68 68.68 0 0 1-10.8 5.17 77 77 0 0 0 6.84 11.15A105.25 105.25 0 0 0 126.6 80.22h.03c2.64-27.29-4.5-51-18.93-72.15ZM42.45 65.69C36.18 65.69 31 59.98 31 52.94s5-12.75 11.43-12.75c6.48 0 11.57 5.76 11.46 12.75 0 7.04-5 12.75-11.44 12.75Zm42.24 0c-6.27 0-11.45-5.71-11.45-12.75s5-12.75 11.45-12.75S96.27 45.9 96.13 52.94c0 7.04-5 12.75-11.44 12.75Z"/>
+              </svg>
+              <span>Login</span>
+        </a>
         <button id="logoutButton" class="logout-btn" type="button" hidden>Logout</button>
       </div>
     </div>
@@ -760,7 +802,7 @@
           <div>
             <div class="eyebrow">
               <span class="status-dot" aria-hidden="true"></span>
-              SG Tournament No.4
+              SG Tournament №4
             </div>
 
             <h1 class="hero-title">
@@ -968,7 +1010,7 @@
   </main>
 
   <footer class="footer-shell">
-    SG Tournament No.4 | SUMMER BREAKOUT
+    SG Tournament №4 | SUMMER BREAKOUT
   </footer>
 
   <script>
@@ -1136,7 +1178,7 @@
 
       if (IS_LOCAL_MODE) {
         heroAccessState.textContent = "Локальный режим включен. Можно сразу переходить по разделам и спокойно проверять страницу.";
-        loginNavButton.hidden = true;
+        loginNavButton.hidden = false;
         logoutButton.hidden = true;
         if (primaryCta) {
           primaryCta.textContent = "Смотреть Predicts";
