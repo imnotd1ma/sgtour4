@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SUMMER BREAKOUT - Profile</title>
+  <title>SUMMER BREAKOUT - Профиль</title>
   <script>
     (function () {
       try {
@@ -165,6 +165,13 @@
       border-color: rgba(var(--nav-accent-rgb) / 0.7);
       color: var(--nav-link-active-color);
       box-shadow: 0 0 25px rgba(var(--nav-accent-rgb) / 0.7);
+    }
+
+    .auth-chip.active {
+      background: rgba(var(--nav-accent-rgb) / 0.25);
+      border-color: rgba(var(--nav-accent-rgb) / 0.7);
+      color: var(--nav-link-active-color);
+      box-shadow: 0 0 25px rgba(var(--nav-accent-rgb) / 0.38);
     }
 
     .discord-button {
@@ -496,6 +503,50 @@
       line-height: 1.05;
     }
 
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 13px 18px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: transform 0.24s ease, box-shadow 0.24s ease, background 0.24s ease;
+    }
+
+    .primary-btn {
+      color: #08102b;
+      background: linear-gradient(135deg, #f8db95, #ffd978);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.46),
+        0 16px 36px rgba(var(--accent-rgb) / 0.22);
+    }
+
+    .secondary-btn {
+      color: var(--hero-ink);
+      border: 1px solid rgba(var(--accent-rgb) / 0.2);
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 16px 34px rgba(0, 0, 0, 0.16);
+    }
+
+    .primary-btn:hover,
+    .secondary-btn:hover {
+      transform: translateY(-2px);
+    }
+
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -666,11 +717,10 @@
       <nav class="nav-center" aria-label="Primary navigation">
         <a class="nav-link" href="teams.html">Teams</a>
         <a class="nav-link" href="predicts.html">Predicts</a>
-        <a class="nav-link active" href="profile.html">Profile</a>
       </nav>
 
       <div class="nav-right">
-        <a id="authChip" class="auth-chip" href="profile.html" aria-label="Open profile" hidden>
+        <a id="authChip" class="auth-chip active" href="profile.html" aria-label="Открыть профиль" hidden>
           <img id="authAvatar" class="auth-avatar" alt="Discord avatar" />
           <span id="authName" class="auth-name"></span>
         </a>
@@ -678,9 +728,9 @@
           <svg class="discord-icon" viewBox="0 0 127.14 96.36" fill="currentColor" aria-hidden="true">
             <path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83A97.68 97.68 0 0 0 49 6.83 72.37 72.37 0 0 0 45.64 0 105.89 105.89 0 0 0 19.39 8.09C2.79 32.65-1.71 56.6.54 80.21h.04A105.73 105.73 0 0 0 32.71 96.36a77.7 77.7 0 0 0 6.84-11.16 68.42 68.42 0 0 1-10.78-5.16c.91-.66 1.8-1.34 2.66-2.05a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.67 2.05a68.68 68.68 0 0 1-10.8 5.17 77 77 0 0 0 6.84 11.15A105.25 105.25 0 0 0 126.6 80.22h.03c2.64-27.29-4.5-51-18.93-72.15ZM42.45 65.69C36.18 65.69 31 59.98 31 52.94s5-12.75 11.43-12.75c6.48 0 11.57 5.76 11.46 12.75 0 7.04-5 12.75-11.44 12.75Zm42.24 0c-6.27 0-11.45-5.71-11.45-12.75s5-12.75 11.45-12.75S96.27 45.9 96.13 52.94c0 7.04-5 12.75-11.44 12.75Z"/>
           </svg>
-          <span>Login</span>
+          <span>Войти</span>
         </a>
-        <button id="logoutButton" class="logout-btn" type="button" hidden>Logout</button>
+        <button id="logoutButton" class="logout-btn" type="button" hidden>Выйти</button>
       </div>
     </div>
   </div>
@@ -691,34 +741,34 @@
         <div>
           <div class="eyebrow">
             <span class="status-dot" aria-hidden="true"></span>
-            Account Center
+            Личный кабинет
           </div>
           <h1 class="hero-title">
-            YOUR
-            <span class="glow block">PROFILE</span>
+            ТВОЙ
+            <span class="glow block">ПРОФИЛЬ</span>
           </h1>
           <p class="hero-copy">
-            This page uses your current Discord login and shows the public account data already available on the site.
-            It is a clean base for adding coins, bet history, and private user settings later.
+            Здесь собраны твои данные по аккаунту и текущая активность в SUMMER BREAKOUT. Всё самое важное уже под рукой:
+            вход через Discord, статистика прогнозов и быстрый переход к нужным разделам.
           </p>
           <p id="profileSummary" class="hero-note">
-            Loading your account details and prediction summary.
+            Загружаем информацию об аккаунте и статистику прогнозов.
           </p>
         </div>
 
         <aside id="profileCard" class="user-shell" hidden>
           <div class="user-header">
-            <img id="profileAvatar" class="user-avatar" src="images/icon.png" alt="Profile avatar" />
+            <img id="profileAvatar" class="user-avatar" src="images/icon.png" alt="Аватар профиля" />
             <div>
-              <h2 id="profileName" class="user-name">Unknown user</h2>
-              <div id="profileHandle" class="user-handle">@not-signed-in</div>
+              <h2 id="profileName" class="user-name">Пользователь</h2>
+              <div id="profileHandle" class="user-handle">@не-авторизован</div>
             </div>
           </div>
 
           <div class="badge-row">
             <div class="badge">
               <span class="badge-pill" aria-hidden="true"></span>
-              <span id="profileStatus">Signed in</span>
+              <span id="profileStatus">Аккаунт подключён</span>
             </div>
             <div class="badge">
               <span>ID</span>
@@ -728,16 +778,16 @@
 
           <div class="info-list">
             <div class="info-row">
-              <div class="info-label">Username</div>
+              <div class="info-label">Логин</div>
               <div id="profileUsername" class="info-value">-</div>
             </div>
             <div class="info-row">
-              <div class="info-label">Display name</div>
+              <div class="info-label">Имя в профиле</div>
               <div id="profileDisplayName" class="info-value">-</div>
             </div>
             <div class="info-row">
-              <div class="info-label">Coins</div>
-              <div id="profileCoins" class="info-value">Coming soon</div>
+              <div class="info-label">Ставочные монеты</div>
+              <div id="profileCoins" class="info-value">Скоро появятся</div>
             </div>
           </div>
         </aside>
@@ -747,77 +797,80 @@
     <section id="profileContent" hidden>
       <div class="stats-grid">
         <article class="stat-card">
-          <div class="stat-label">Match predictions</div>
+          <div class="stat-label">Матч-прогнозы</div>
           <div id="matchPredictionsValue" class="stat-value">0</div>
-          <p class="stat-note">How many match predictions are currently stored for your account.</p>
+          <p class="stat-note">Сколько прогнозов на матчи уже сохранено за твоим аккаунтом.</p>
         </article>
         <article class="stat-card">
-          <div class="stat-label">Tournament pick</div>
-          <div id="tournamentPredictionValue" class="stat-value">No</div>
-          <p class="stat-note">Shows whether your tournament prediction sheet entry exists yet.</p>
+          <div class="stat-label">Турнирный пик</div>
+          <div id="tournamentPredictionValue" class="stat-value">Нет</div>
+          <p class="stat-note">Показывает, сохранён ли у тебя турнирный прогноз.</p>
         </article>
         <article class="stat-card">
-          <div class="stat-label">Combined rank</div>
+          <div class="stat-label">Место</div>
           <div id="rankValue" class="stat-value">-</div>
-          <p class="stat-note">Position in the combined leaderboard based on current results.</p>
+          <p class="stat-note">Твоя текущая позиция в общей таблице по доступным результатам.</p>
         </article>
         <article class="stat-card">
-          <div class="stat-label">Total points</div>
+          <div class="stat-label">Очки</div>
           <div id="pointsValue" class="stat-value">0</div>
-          <p class="stat-note">Current points from match predictions and tournament picks.</p>
+          <p class="stat-note">Суммарные очки за матчевые прогнозы и турнирный пик.</p>
         </article>
       </div>
 
       <div class="grid-two">
         <section class="panel-card">
-          <div class="section-kicker">Account data</div>
-          <h2 class="section-title">Identity snapshot</h2>
+          <div class="section-kicker">Текущий статус</div>
+          <h2 class="section-title">Как идёт турнирная гонка</h2>
           <p class="muted-copy">
-            These values come from the Discord account currently stored by your site auth flow.
+            Здесь короткая сводка по тому, что уже связано с твоим аккаунтом на сайте.
           </p>
           <div class="info-list">
             <div class="info-row">
-              <div class="info-label">Auth source</div>
-              <div class="info-value">Discord OAuth via Vercel</div>
+              <div class="info-label">Матчевые очки</div>
+              <div id="matchPointsBreakdown" class="info-value">0</div>
             </div>
             <div class="info-row">
-              <div class="info-label">Avatar URL</div>
-              <div id="profileAvatarUrl" class="info-value">-</div>
+              <div class="info-label">Турнирные очки</div>
+              <div id="tournamentPointsBreakdown" class="info-value">0</div>
             </div>
             <div class="info-row">
-              <div class="info-label">Session mode</div>
-              <div id="profileMode" class="info-value">-</div>
+              <div class="info-label">Турнирный прогноз</div>
+              <div id="tournamentPredictionStatus" class="info-value">Пока нет</div>
             </div>
             <div class="info-row">
-              <div class="info-label">Last refresh</div>
+              <div class="info-label">Обновлено</div>
               <div id="profileRefreshTime" class="info-value">-</div>
             </div>
           </div>
         </section>
 
         <section class="panel-card">
-          <div class="section-kicker">Next step</div>
-          <h2 class="section-title">Ready for coins</h2>
+          <div class="section-kicker">Быстрый переход</div>
+          <h2 class="section-title">Куда пойти дальше</h2>
           <p class="muted-copy">
-            This page is now wired to your logged-in user. The next clean step is attaching a real user profile store
-            so we can show coin balance, transaction history, bet slips, and private settings here.
+            Если хочешь сразу продолжить участие, вот самые полезные разделы рядом.
           </p>
+          <div class="cta-row">
+            <a class="primary-btn" href="predicts.html">Перейти в Predicts</a>
+            <a class="secondary-btn" href="teams.html">Открыть Teams</a>
+          </div>
           <div class="info-list">
             <div class="info-row">
-              <div class="info-label">Best place for coins</div>
-              <div class="info-value">Server-side only, not localStorage</div>
+              <div class="info-label">Для прогнозов</div>
+              <div class="info-value">Открывай Predicts и смотри свои результаты</div>
             </div>
             <div class="info-row">
-              <div class="info-label">Current placeholder</div>
-              <div class="info-value">Coming soon</div>
+              <div class="info-label">Для составов</div>
+              <div class="info-value">В Teams можно быстро освежить участников турнира</div>
             </div>
             <div class="info-row">
-              <div class="info-label">Recommended key</div>
-              <div class="info-value">Discord user id</div>
+              <div class="info-label">Для монет</div>
+              <div class="info-value">Баланс и история ставок появятся здесь чуть позже</div>
             </div>
             <div class="info-row">
-              <div class="info-label">Profile route</div>
-              <div class="info-value">profile.html</div>
+              <div class="info-label">Для главной</div>
+              <div class="info-value">Если нужен общий обзор, возвращайся на стартовую страницу</div>
             </div>
           </div>
         </section>
@@ -825,19 +878,19 @@
     </section>
 
     <section id="loggedOutState" class="empty-card" hidden>
-      <h2 class="empty-title">Sign in to open your profile</h2>
+      <h2 class="empty-title">Войди, чтобы открыть профиль</h2>
       <p class="empty-copy">
-        Your account page is tied to the Discord user currently logged into the site. Once you sign in, this page will
-        show your identity card and your current prediction summary automatically.
+        Профиль привязан к Discord-аккаунту, через который ты входишь на сайт. После входа здесь автоматически
+        появятся твои данные и краткая статистика по прогнозам.
       </p>
       <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
         <a class="discord-button" href="https://discord.com/oauth2/authorize?client_id=1518915331886809189&response_type=code&redirect_uri=https%3A%2F%2Fimnotd1ma.github.io%2Fsgtour4%2Fcallback.html&scope=identify">
           <svg class="discord-icon" viewBox="0 0 127.14 96.36" fill="currentColor" aria-hidden="true">
             <path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83A97.68 97.68 0 0 0 49 6.83 72.37 72.37 0 0 0 45.64 0 105.89 105.89 0 0 0 19.39 8.09C2.79 32.65-1.71 56.6.54 80.21h.04A105.73 105.73 0 0 0 32.71 96.36a77.7 77.7 0 0 0 6.84-11.16 68.42 68.42 0 0 1-10.78-5.16c.91-.66 1.8-1.34 2.66-2.05a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.67 2.05a68.68 68.68 0 0 1-10.8 5.17 77 77 0 0 0 6.84 11.15A105.25 105.25 0 0 0 126.6 80.22h.03c2.64-27.29-4.5-51-18.93-72.15ZM42.45 65.69C36.18 65.69 31 59.98 31 52.94s5-12.75 11.43-12.75c6.48 0 11.57 5.76 11.46 12.75 0 7.04-5 12.75-11.44 12.75Zm42.24 0c-6.27 0-11.45-5.71-11.45-12.75s5-12.75 11.45-12.75S96.27 45.9 96.13 52.94c0 7.04-5 12.75-11.44 12.75Z"/>
           </svg>
-          <span>Login with Discord</span>
+          <span>Войти через Discord</span>
         </a>
-        <a class="nav-link" href="index.html">Back home</a>
+        <a class="nav-link" href="index.html">На главную</a>
       </div>
     </section>
   </main>
@@ -951,7 +1004,7 @@
 
       return {
         id: authUser.id || "",
-        username: authUser.username || authUser.global_name || authUser.name || "Unknown user",
+        username: authUser.username || authUser.global_name || authUser.name || "Неизвестный пользователь",
         name: authUser.global_name || authUser.name || authUser.username || "",
         avatar_url: getAvatarUrl(authUser)
       };
@@ -1062,7 +1115,7 @@
       document.getElementById("profileCard").hidden = true;
       document.getElementById("profileContent").hidden = true;
       document.getElementById("loggedOutState").hidden = false;
-      setText("profileSummary", "No active site session found yet. Sign in with Discord to open your profile.");
+      setText("profileSummary", "Пока нет активной сессии. Войди через Discord, чтобы открыть свой профиль.");
     }
 
     function renderProfileCard(profile) {
@@ -1070,18 +1123,17 @@
       document.getElementById("profileContent").hidden = false;
       document.getElementById("loggedOutState").hidden = true;
 
-      setText("profileName", profile.name || profile.username || "Unknown user");
+      setText("profileName", profile.name || profile.username || "Игрок");
       setText("profileHandle", "@" + (profile.username || "unknown"));
       setText("profileId", profile.id || "-");
       setText("profileUsername", profile.username || "-");
       setText("profileDisplayName", profile.name || "-");
-      setText("profileAvatarUrl", profile.avatar_url || "-");
-      setText("profileMode", IS_LOCAL_MODE ? "Local dev mode" : "Remote auth session");
-      setText("profileRefreshTime", new Date().toLocaleString());
+      setText("profileCoins", "Скоро появятся");
+      setText("profileRefreshTime", new Date().toLocaleString("ru-RU"));
 
       const avatar = document.getElementById("profileAvatar");
       avatar.src = profile.avatar_url || "images/icon.png";
-      avatar.alt = (profile.name || profile.username || "User") + " avatar";
+      avatar.alt = "Аватар пользователя " + (profile.name || profile.username || "игрок");
     }
 
     async function fetchProfileStats(profile) {
@@ -1110,20 +1162,24 @@
 
     function renderProfileStats(stats) {
       setText("matchPredictionsValue", String(stats.matchPredictions));
-      setText("tournamentPredictionValue", stats.hasTournamentPrediction ? "Yes" : "No");
+      setText("tournamentPredictionValue", stats.hasTournamentPrediction ? "Есть" : "Нет");
       setText("rankValue", stats.rank);
       setText("pointsValue", String(stats.totalPoints));
+      setText("matchPointsBreakdown", String(stats.matchPoints));
+      setText("tournamentPointsBreakdown", String(stats.tournamentPoints));
+      setText("tournamentPredictionStatus", stats.hasTournamentPrediction ? "Уже сохранён" : "Пока не заполнен");
+      setText("profileRefreshTime", new Date().toLocaleString("ru-RU"));
 
       if (stats.partialFailure) {
-        setText("profileSummary", "Signed in. Some live profile stats could not be refreshed, so cached account info is shown.");
+        setText("profileSummary", "Ты в аккаунте. Часть статистики сейчас недоступна, поэтому показываем то, что удалось обновить.");
         return;
       }
 
       setText(
         "profileSummary",
-        "Signed in as your current Discord user. Match points: " +
+        "Ты вошёл в аккаунт. Матчевые очки: " +
           stats.matchPoints +
-          ". Tournament points: " +
+          ". Турнирные очки: " +
           stats.tournamentPoints +
           "."
       );
@@ -1154,7 +1210,7 @@
           renderProfileStats(stats);
         } catch (error) {
           console.warn("Unable to load profile stats", error);
-          setText("profileSummary", "Signed in. Basic profile data is ready, but live prediction stats are unavailable right now.");
+          setText("profileSummary", "Профиль загружен, но живая статистика прогнозов сейчас временно недоступна.");
         }
       } finally {
         showPage();
