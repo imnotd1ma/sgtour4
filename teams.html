@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="original">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SUMMER BREAKOUT — Teams</title>
+  <script>
+    (function () {
+      try {
+        var savedTheme = localStorage.getItem("sg-theme-preference");
+        document.documentElement.dataset.theme = savedTheme === "old" || savedTheme === "black" ? "old" : "original";
+      } catch (error) {
+        document.documentElement.dataset.theme = "original";
+      }
+    }());
+  </script>
+
+  <style>
+    body {
+      visibility: hidden;
+    }
+  </style>
+
+  <link rel="icon" href="images/icon.png" type="image/png">
+  
+  <script>
+    const AUTH_SERVER = "https://discord-auth-server-six.vercel.app";
+    const AUTH_TOKEN_KEY = "sg-discord-token";
+    const AUTH_USER_KEY = "sg-discord-user";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyILFKyqrVxOQkwT2k9a_YGdSy0jb6-YsUwga3gC2ahD31u98jvv0VL5A99Rccnc-w/exec";
+    const IS_LOCAL_MODE = ["localhost", "127.0.0.1"].includes(window.location.hostname) || window.location.protocol === "file:";
+    const LOCAL_USER = {
+      id: "local-dev-user",
+      username: "LocalDev",
+      global_name: "Local Dev",
+      name: "Local Dev",
+      avatar: ""
+    };
+
+    function readStoredAuthToken() {
+      try {
+        return localStorage.getItem(AUTH_TOKEN_KEY) || "";
+      } catch (error) {
+        console.warn("Unable to read auth token", error);
+        return "";
+      }
+    }
+
+    function persistAuthUser(user) {
+      try {
+        if (user) {
+          localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+        } else {
+          localStorage.removeItem(AUTH_USER_KEY);
+        }
+      } catch (error) {
+        console.warn("Unable to persist auth user", error);
+      }
+    }
+
+    function clearStoredAuth() {
+      try {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.removeItem(AUTH_USER_KEY);
+      } catch (error) {
+        console.warn("Unable to clear auth storage", error);
+      }
+    }
+
+    function buildAuthHeaders() {
+      const token = readStoredAuthToken();
+      return token ? { Authorization: `Bearer ${token}` } : {};
+    }
+
+    window.__authPromise = IS_LOCAL_MODE ? Promise.resolve(LOCAL_USER) : fetch(`${AUTH_SERVER}/me`, {
+      credentials: "include",
+      headers: buildAuthHeaders()
+    })
+    .then(async (res) => {
+      if (IS_LOCAL_MODE) {
+        return res;
+      }
+
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          clearStoredAuth();
+        }
+        window.location.href = "/sgtour4/login.html";
+        throw new Error("Unauthorized");
+      }
+
+      return await res.json();
+    })
+    .then((user) => {
+      window.__authUser = user;
+      persistAuthUser(user);
+      if (IS_LOCAL_MODE) {
+        document.body.style.visibility = "visible";
+      }
+      return user;
+    })
+    .catch((err) => {
+      console.error("Auth error:", err);
+      if (IS_LOCAL_MODE) {
+        document.body.style.visibility = "visible";
+        return LOCAL_USER;
+      }
+      clearStoredAuth();
+      window.location.href = "/sgtour4/login.html";
+    })
+    .catch(() => {
+      document.body.style.visibility = "visible"; // на всякий случай
+      window.location.href = "/sgtour4/login.html";
+    });
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <style>
+    :root{
+    --accent:#ff9bb3;
+    --accent-rgb:255 155 179;
+    --page-bg:
+        radial-gradient(circle at 10% 0%, rgba(255,132,176,0.30), transparent 35%),
+        radial-gradient(circle at 90% 10%, rgba(255,179,209,0.18), transparent 40%),
+        radial-gradient(circle at 30% 42%, rgba(255,118,170,0.16), transparent 45%),
+        radial-gradient(circle at 72% 62%, rgba(255,165,204,0.14), transparent 48%),
+        linear-gradient(180deg, #1a0f18 0%, #120b12 45%, #09070c 100%);
+    --nav-bg: rgba(33,18,29,0.64);
+    --nav-border: rgba(255,190,217,0.18);
+    --nav-link-border: rgba(255,190,217,0.16);
+    --nav-link-bg: rgba(44,25,38,0.72);
+    --nav-link-color: #ffe3ee;
+    --nav-link-hover-bg: rgba(64,35,53,0.88);
+    --nav-link-active-color: #ffffff;
+    --card-bg: rgba(39,23,34,0.60);
+    --card-border: rgba(255,190,217,0.18);
+    --stat-bg: rgba(255,255,255,0.08);
+    --stat-border: rgba(255,190,217,0.14);
+    --footer-color: rgba(255,215,230,0.62);
+    --scrollbar-track: rgba(44,25,38,0.82);
+    --scrollbar-thumb: rgba(255,190,217,0.42);
+    }
+
+    /* ===== BODY ===== */
+    body {
+    background: var(--page-bg);
+
+    background-attachment: fixed;
+    color: #ffffff;
+    }
+
+    /* ===== GLOBAL GLOW ===== */
+    .glow {
+    text-shadow:
+        0 0 10px rgba(var(--accent-rgb) / 0.6),
+        0 0 20px rgba(var(--accent-rgb) / 0.4);
+    }
+
+    /* ===== NAV ===== */
+    .top-nav{
+    position: sticky;
+    top: 0;
+    z-index: 999;
+
+    backdrop-filter: blur(16px);
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--nav-border);
+    }
+
+    /* КНОПКИ НЕ СЛИВАЮТСЯ */
+    .nav-link{
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+
+    border-radius: 999px;
+
+    border: 1px solid var(--nav-link-border);
+    background: var(--nav-link-bg);
+
+    backdrop-filter: blur(12px);
+
+    transition: all .25s ease;
+
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    font-size: 11px;
+
+    color: var(--nav-link-color);
+
+    box-shadow:
+        0 4px 20px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .nav-link:hover{
+    transform: translateY(-2px) scale(1.03);
+
+    background: var(--nav-link-hover-bg);
+
+    border-color: rgba(var(--accent-rgb) / 0.5);
+
+    box-shadow:
+        0 10px 35px rgba(var(--accent-rgb) / 0.25),
+        0 0 20px rgba(var(--accent-rgb) / 0.2);
+    }
+
+    .nav-link.active{
+    background: rgba(var(--accent-rgb) / 0.25);
+
+    border-color: rgba(var(--accent-rgb) / 0.7);
+
+    box-shadow:
+        0 0 25px rgba(var(--accent-rgb) / 0.7);
+
+    color: var(--nav-link-active-color);
+    }
+
+    .nav-shell{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    }
+
+    .nav-left,
+    .nav-center,
+    .nav-right{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    }
+
+    .nav-center{
+    margin-left: auto;
+    justify-content: flex-end;
+    }
+
+    .nav-right{
+    flex: 0 0 auto;
+    justify-content: flex-end;
+    }
+
+    .brand-badge{
+    color: var(--nav-link-color);
+    font-weight: 900;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    font-size: 10px;
+    white-space: nowrap;
+    }
+
+    .auth-chip{
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px 8px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--nav-link-border);
+    background: var(--nav-link-bg);
+    color: var(--nav-link-color);
+    backdrop-filter: blur(12px);
+    box-shadow:
+        0 4px 20px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+    min-width: 0;
+    }
+
+    .auth-avatar{
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 1px solid rgba(var(--accent-rgb) / 0.42);
+    background: rgba(var(--accent-rgb) / 0.18);
+    flex: 0 0 auto;
+    }
+
+    .auth-name{
+    font-weight: 900;
+    font-size: 12px;
+    letter-spacing: .03em;
+    max-width: 160px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    }
+
+    .logout-btn{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--nav-link-border);
+    background: var(--nav-link-bg);
+    color: var(--nav-link-color);
+    backdrop-filter: blur(12px);
+    transition: all .25s ease;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    font-size: 11px;
+    box-shadow:
+        0 4px 20px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .logout-btn:hover{
+    transform: translateY(-2px) scale(1.03);
+    background: var(--nav-link-hover-bg);
+    border-color: rgba(var(--accent-rgb) / 0.5);
+    box-shadow:
+        0 10px 35px rgba(var(--accent-rgb) / 0.25),
+        0 0 20px rgba(var(--accent-rgb) / 0.2);
+    }
+
+    /* LIVE DOT */
+    .live-dot{
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #ff2d2d;
+    box-shadow: 0 0 12px rgba(255,45,45,0.55);
+    position: relative;
+    }
+
+    .live-dot::after{
+    content:"";
+    position:absolute;
+    inset:-7px;
+    border-radius:999px;
+    border:1px solid rgba(255,45,45,0.45);
+    animation: pulse 1.5s ease-out infinite;
+    }
+
+    @keyframes pulse{
+    0%{ transform: scale(0.65); opacity: .9; }
+    100%{ transform: scale(1.3); opacity: 0; }
+    }
+
+    @media (max-width: 980px){
+    .nav-shell{
+        flex-wrap: wrap;
+    }
+
+    .nav-center{
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .nav-right{
+        margin-left: auto;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    }
+
+    /* ===== CARDS ===== */
+    .player-card{
+    position: relative;
+
+    background: var(--card-bg);
+    backdrop-filter: blur(18px);
+
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+
+    transition: all .4s ease;
+    overflow: hidden;
+    }
+
+    /* GLOW */
+    .player-card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+
+    background: radial-gradient(
+        circle at var(--x,50%) var(--y,50%),
+        rgba(var(--accent-rgb) / 0.35),
+        transparent 70%
+    );
+
+    opacity:0;
+    transition:.4s;
+    }
+
+    .player-card:hover::before{
+    opacity:1;
+    }
+
+    .player-card:hover{
+    transform: translateY(-10px) scale(1.02);
+
+    border-color: rgba(var(--accent-rgb) / 0.6);
+
+    box-shadow:
+        0 20px 60px rgba(var(--accent-rgb) / 0.25),
+        0 0 40px rgba(var(--accent-rgb) / 0.2);
+    }
+
+    /* IMG ANIMATION */
+    .player-card img{
+        transition: transform .6s ease;
+        box-shadow: 0 0 25px rgba(var(--accent-rgb)/0.25);
+        filter: brightness(0.9) contrast(1.05);
+    }
+
+    .player-card:hover img{
+        transform: scale(1.08) rotate(1deg);
+        box-shadow: 0 0 40px rgba(var(--accent-rgb)/0.5);
+    }
+
+    /* ===== TEXT ===== */
+    .player-name{
+    color: white;
+
+    transition: 
+        color .35s ease,
+        text-shadow .45s ease,
+        transform .35s ease;
+    }
+
+    .team .player-card:hover .player-name{
+    color: var(--accent);
+
+    text-shadow:
+        0 0 6px rgba(var(--accent-rgb) / 0.4),
+        0 0 14px rgba(var(--accent-rgb) / 0.5),
+        0 0 28px rgba(var(--accent-rgb) / 0.35);
+
+    transform: translateY(-1px);
+    }
+
+    /* ===== ROLE BAR ===== */
+    .role-bar{
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+    }
+
+    /* ===== STATS ===== */
+    .stat-badge{
+    background: var(--stat-bg);
+    border: 1px solid var(--stat-border);
+    backdrop-filter: blur(8px);
+
+    border-radius: 12px;
+    padding: 8px 12px;
+
+    transition: 0.3s;
+    }
+
+    .player-card:hover .stat-badge{
+    background: rgba(255,255,255,0.3);
+    }
+
+    /* ===== CAPTAIN ===== */
+    .badge-captain{
+    background: linear-gradient(135deg, #fff, var(--accent));
+    color: #000;
+
+    border-radius: 999px;
+    padding: 5px 10px;
+
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .12em;
+
+    box-shadow:
+        0 0 15px rgba(var(--accent-rgb)/0.8),
+        0 0 35px rgba(var(--accent-rgb)/0.4);
+
+    transition: .3s;
+    }
+
+    .player-card:hover .badge-captain{
+    transform: scale(1.1);
+    }
+
+    .captain-ring{
+    border: 1px solid rgba(var(--accent-rgb)/0.5);
+
+    box-shadow:
+        0 0 30px rgba(var(--accent-rgb)/0.25),
+        inset 0 0 10px rgba(var(--accent-rgb)/0.1);
+    }
+
+    .team-roster{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 360px));
+    justify-content: center;
+    gap: 32px;
+    }
+
+    /* ===== TEAM COLORS ===== */
+    .PV  { --accent:#38bdf8; --accent-rgb:56 189 248; }
+    .OFF { --accent:#A53DBA; --accent-rgb:165 61 186; }
+    .CZ9 { --accent:#ff5c00; --accent-rgb:255 92 0; }
+    .AMK { --accent:#ffffff; --accent-rgb:255 255 255; }
+    .K7  { --accent:#9d00ff; --accent-rgb:157 0 255; }
+    .ZBC { --accent:#7070e0; --accent-rgb:112 112 224; }
+    .KLB { --accent:#14def8; --accent-rgb:20 222 248; }
+    .BK  { --accent:#a75d19; --accent-rgb:167 93 25; }
+    
+    /* ===== TEAM EFFECTS ===== */
+    .team .team-accent{
+    color: var(--accent);
+    text-shadow: 0 0 15px rgba(var(--accent-rgb) / 0.6);
+    }
+
+    .team .team-line{
+    background: var(--accent);
+    box-shadow: 0 0 15px rgba(var(--accent-rgb) / 0.6);
+    }
+
+    .team .stat-value{
+    color: var(--accent);
+    }
+
+    /* ===== SCROLL ===== */
+    html[data-theme="original"] .player-card img,
+    html[data-theme="dark"] .player-card img{
+    filter: brightness(0.82) contrast(1.08);
+    }
+
+    html[data-theme="original"] .top-nav .text-white\/80,
+    html[data-theme="dark"] .top-nav .text-white\/80{
+    color: rgba(255, 236, 243, 0.86);
+    }
+
+    html[data-theme="original"] header p.text-\[\#ff6f91\],
+    html[data-theme="dark"] header p.text-\[\#ff6f91\]{
+    color: #ff9fbe;
+    }
+
+    ::-webkit-scrollbar{
+    height: 10px;
+    width: 10px;
+    }
+
+    ::-webkit-scrollbar-track{
+    background: var(--scrollbar-track);
+    }
+
+    ::-webkit-scrollbar-thumb{
+    background: var(--scrollbar-thumb);
+    border-radius: 999px;
+    }
+    </style>
+  <link rel="stylesheet" href="styles/theme-switcher.css">
+</head>
+
+<body class="font-sans min-h-screen">
+
+  <!-- TOP NAV (Tabs) -->
+  <div class="top-nav">
+    <div class="w-full px-6 py-3 nav-shell">
+      <div class="nav-left">
+        <a class="brand-link" href="index.html" aria-label="PUBLIC HUB SUMMER BREAKOUT home">
+          <span class="brand-mark">
+            <img src="images/icon.png" alt="SUMMER BREAKOUT logo">
+          </span>
+          <span class="brand-copy">
+            <span class="brand-kicker">Public Hub</span>
+            <span class="brand-title">SUMMER BREAKOUT</span>
+          </span>
+        </a>
+      </div>
+
+      <nav class="nav-center flex items-center gap-3 flex-wrap">
+        <!-- текущая страница -->
+        <a class="nav-link active" href="teams.html">Teams</a>
+        <a class="nav-link" href="predicts.html"><span class="live-dot" aria-hidden="true"></span>Predicts</a>
+      </nav>
+
+      <div class="nav-right">
+        <div id="authChip" class="auth-chip" hidden>
+          <img id="authAvatar" class="auth-avatar" alt="Discord avatar">
+          <span id="authName" class="auth-name"></span>
+        </div>
+        <button id="logoutButton" class="logout-btn" type="button">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOURNAMENT HEADER -->
+  <header class="text-center py-16">
+    <h1 class="text-6xl font-black tracking-tighter">
+        <span class="theme-accent-text theme-title-glow">SUMMER BREAKOUT</span>
+    </h1>
+    <div class="h-1 w-28 mx-auto mt-4 rounded-full glow"
+        style="background: rgb(var(--accent-rgb));">
+    </div>
+    <p class="theme-accent-text mt-4 text-xs uppercase tracking-[0.3em]">
+    SECRET GATE TOURNAMENT №4
+    </p>
+  </header>
+
+  <main class="max-w-[1800px] mx-auto px-6 pb-16">
+    <div id="teamsContainer" class="space-y-16"></div>
+  </main>
+
+  <footer class="text-center py-12 mt-10 border-t border-white/5 text-[10px] tracking-[0.4em] uppercase" style="color: var(--footer-color);">
+    © 2026 SG TOURNAMENT №4<span class="mx-3 opacity-20">|</span> SECRET GATE CORP.
+  </footer>
+
+  <script>
+    (function () {
+      const teamsContainer = document.getElementById("teamsContainer");
+
+      if (!teamsContainer) {
+        return;
+      }
+
+      const DEFAULT_PLAYER_STATS = {
+        rating: "0.00",
+        playtime: "??? hrs",
+        signature: "???"
+      };
+
+      // Edit team rosters here, similar to `matches` in live.html.
+      const teams = [
+        {
+          key: "PV",
+          name: "???",
+          titleMain: "",
+          titleAccent: "???",
+          logo: "images/pv.png",
+          players: [
+            { name: "???", image: "images/imnotdima.png", role: "стреляет раз в год", rating: "0.00", playtime: "", signature: "" },
+            { name: "???", image: "images/egor_lam.png", role: "ванёк лучший", rating: "0.00", playtime: "", signature: "" },
+            { name: "???", image: "images/zeros.png", role: "", rating: "0.00", playtime: "", signature: "" },
+            { name: "???", image: "images/ds_swanson.png", role: "", rating: "0.00", playtime: "", signature: "" }
+          ]
+        }
+      ];
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      function normalizePlayerName(value) {
+        return String(value ?? "")
+          .normalize("NFKD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^0-9a-zа-яё]+/gi, "")
+          .toLowerCase();
+      }
+
+      function formatRating(value) {
+        if (value === null || value === undefined || value === "") {
+          return DEFAULT_PLAYER_STATS.rating;
+        }
+
+        const numericValue = Number(value);
+        if (Number.isFinite(numericValue)) {
+          return numericValue.toFixed(2);
+        }
+
+        const normalizedValue = String(value).trim();
+        return normalizedValue || DEFAULT_PLAYER_STATS.rating;
+      }
+
+      async function fetchJson(url) {
+        const response = await fetch(url, { method: "GET" });
+
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        return await response.json();
+      }
+
+      async function loadRatingsByPlayer() {
+        const data = await fetchJson(`${GOOGLE_SCRIPT_URL}?mode=ratings`);
+        if (data?.status === "error") {
+          throw new Error(data.error || "Failed to load ratings");
+        }
+        const rows = Array.isArray(data?.ratings) ? data.ratings : [];
+
+        return rows.reduce((accumulator, row) => {
+          const playerName = normalizePlayerName(row?.player);
+
+          if (!playerName) {
+            return accumulator;
+          }
+
+          accumulator[playerName] = formatRating(row?.average_rating);
+          return accumulator;
+        }, {});
+      }
+
+      function renderPlayerCard(team, player, playerIndex) {
+        const animationDelay = `${(playerIndex * 0.12).toFixed(2)}s`;
+        const imageSrc = escapeHtml(player.image || team.logo || "images/icon.png");
+        const fallbackImage = escapeHtml(team.logo || "images/icon.png");
+        const playerKey = escapeHtml(normalizePlayerName(player.name));
+        const playerName = escapeHtml(player.name);
+        const role = escapeHtml(player.role || "Player");
+        const rating = escapeHtml(player.rating || DEFAULT_PLAYER_STATS.rating);
+        const playtime = escapeHtml(player.playtime || DEFAULT_PLAYER_STATS.playtime);
+        const signature = escapeHtml(player.signature || DEFAULT_PLAYER_STATS.signature);
+
+        return `
+          <div class="player-card rounded-3xl p-6 group animate__animated animate__fadeInUp${player.captain ? " captain-ring" : ""}" style="animation-delay: ${animationDelay};">
+            <div class="relative overflow-hidden rounded-2xl mb-6">
+              <img src="${imageSrc}" alt="${playerName}" class="w-full h-72 object-cover group-hover:scale-110 transition duration-700" onerror="this.onerror=null;this.src='${fallbackImage}';">
+              ${player.captain ? '<div class="absolute top-4 right-4 badge-captain text-[10px] px-2 py-1 rounded font-black uppercase">Captain</div>' : ""}
+              <div class="absolute bottom-0 left-0 right-0 role-bar p-4">
+                <span class="text-[10px] font-black uppercase role-text">${role}</span>
+              </div>
+            </div>
+            <h3 class="player-name text-3xl font-black mb-4 tracking-tight">${playerName}</h3>
+            <div class="space-y-3 text-sm">
+              <div class="flex justify-between stat-badge"><span class="text-gray-400">Average K/D</span><span class="font-semibold stat-value" data-player-rating="${playerKey}">${rating}</span></div>
+              <div class="flex justify-between stat-badge"><span class="text-gray-400">Playtime</span><span class="font-mono stat-value">${playtime}</span></div>
+              <div class="flex justify-between stat-badge"><span class="text-gray-400">Main gun</span><span class="font-mono stat-value">${signature}</span></div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderTeamSection(team, teamIndex) {
+        const teamNumber = String(teamIndex + 1).padStart(2, "0");
+
+        return `
+          <section class="team ${escapeHtml(team.key)}">
+            <div class="text-center mb-8">
+              <p class="uppercase tracking-[0.45em] text-[10px]" style="color: var(--accent); text-shadow: 0 0 10px rgba(var(--accent-rgb)/0.5);">
+                Team ${teamNumber} • Duo
+              </p>
+              <h2 class="mt-3 text-5xl font-black tracking-tighter team-glow">
+                ${escapeHtml(team.titleMain)}<span class="team-accent">${escapeHtml(team.titleAccent)}</span>
+              </h2>
+              <div class="h-1 w-24 team-line mx-auto mt-4 rounded-full"></div>
+            </div>
+
+            <div class="team-roster">
+              ${team.players.map((player, playerIndex) => renderPlayerCard(team, player, playerIndex)).join("")}
+            </div>
+          </section>
+        `;
+      }
+
+      function updateRenderedRatings(ratingsByPlayer) {
+        Object.entries(ratingsByPlayer).forEach(([playerKey, rating]) => {
+          const ratingNodes = teamsContainer.querySelectorAll(`[data-player-rating="${playerKey}"]`);
+          ratingNodes.forEach((node) => {
+            node.textContent = rating;
+          });
+        });
+      }
+
+      async function hydrateRatings() {
+        try {
+          const ratingsByPlayer = await loadRatingsByPlayer();
+          updateRenderedRatings(ratingsByPlayer);
+        } catch (error) {
+          console.error("Failed to load player ratings:", error);
+        }
+      }
+
+      function initTeams() {
+        teamsContainer.innerHTML = teams.map(renderTeamSection).join("");
+        hydrateRatings();
+      }
+
+      initTeams();
+    }());
+
+    (function () {
+      const authChip = document.getElementById("authChip");
+      const authAvatar = document.getElementById("authAvatar");
+      const authName = document.getElementById("authName");
+      const logoutButton = document.getElementById("logoutButton");
+
+      logoutButton.style.display = "none";
+
+      function getDisplayName(user) {
+        return user.global_name || user.username || user.name || "Discord User";
+      }
+
+      function getAvatarUrl(user) {
+        if (!user || !user.id || !user.avatar) {
+          return `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
+        }
+
+        const extension = String(user.avatar).startsWith("a_") ? "gif" : "png";
+        return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${extension}?size=128`;
+      }
+
+      async function renderAuth() {
+        try {
+          const user = await window.__authPromise;
+          if (!user) {
+            return;
+          }
+
+          authName.textContent = getDisplayName(user);
+          authAvatar.src = getAvatarUrl(user) || "images/icon.png";
+          authAvatar.alt = `${getDisplayName(user)} avatar`;
+          authChip.hidden = false;
+
+          logoutButton.style.display = IS_LOCAL_MODE ? "none" : "inline-flex";
+
+          document.body.style.visibility = "visible";
+
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      async function logout() {
+          if (IS_LOCAL_MODE) {
+            return;
+          }
+
+          logoutButton.disabled = true;
+
+          try {
+            await fetch(`${AUTH_SERVER}/logout`, {
+              method: "POST",
+              credentials: "include",
+              headers: buildAuthHeaders()
+            });
+          } finally {
+            clearStoredAuth();
+          }
+
+          window.location.href = "/sgtour4/login.html";
+        }
+
+      if (logoutButton) {
+        logoutButton.addEventListener("click", logout);
+      }
+
+      renderAuth();
+    }());
+  </script>
+  <script src="scripts/theme-switcher.js"></script>
+</body>
+</html>
+
