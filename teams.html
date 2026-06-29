@@ -851,7 +851,7 @@
             authAvatar.src = getAvatarUrl(user) || "images/icon.png";
             authAvatar.alt = `${getDisplayName(user)} avatar`;
             authChip.hidden = false;
-            loginNavButton.hidden = false;
+            loginNavButton.hidden = true;
             logoutButton.style.display = IS_LOCAL_MODE ? "none" : "inline-flex";
           } else {
             authChip.hidden = true;
