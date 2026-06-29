@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="original">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SUMMER BREAKOUT - Profile</title>
+  <script>
+    (function () {
+      try {
+        var savedTheme = localStorage.getItem("sg-theme-preference");
+        document.documentElement.dataset.theme = savedTheme === "old" || savedTheme === "black" ? "old" : "original";
+      } catch (error) {
+        document.documentElement.dataset.theme = "original";
+      }
+    }());
+  </script>
+  <style>
+    body {
+      visibility: hidden;
+    }
+  </style>
+  <link rel="icon" href="images/icon.png" type="image/png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <link rel="stylesheet" href="styles/theme-switcher.css" />
+  <style>
+    :root {
+      --page-bg:
+        radial-gradient(circle at 12% 0%, rgba(255, 209, 102, 0.18), transparent 34%),
+        radial-gradient(circle at 90% 12%, rgba(125, 211, 252, 0.18), transparent 32%),
+        linear-gradient(180deg, #142d64 0%, #0d1c45 42%, #050a1e 100%);
+      --nav-bg: rgba(33, 18, 29, 0.64);
+      --nav-border: rgba(255, 190, 217, 0.18);
+      --nav-link-border: rgba(255, 190, 217, 0.16);
+      --nav-link-bg: rgba(44, 25, 38, 0.72);
+      --nav-link-color: #ffe3ee;
+      --nav-link-hover-bg: rgba(64, 35, 53, 0.88);
+      --nav-link-active-color: #ffffff;
+      --nav-accent-rgb: 255 155 179;
+      --glass-bg: rgba(8, 16, 43, 0.56);
+      --glass-border: rgba(248, 219, 149, 0.18);
+      --card-bg: linear-gradient(180deg, rgba(20, 45, 100, 0.88), rgba(5, 10, 30, 0.82));
+      --card-border: rgba(248, 219, 149, 0.16);
+      --panel-bg: rgba(12, 24, 61, 0.84);
+      --panel-border: rgba(248, 219, 149, 0.14);
+      --hero-ink: #f4fbff;
+      --ink: #f4fbff;
+      --muted: rgba(191, 219, 254, 0.8);
+      --soft: rgba(219, 238, 255, 0.68);
+      --footer-color: rgba(191, 219, 254, 0.62);
+      --scrollbar-track: rgba(44, 25, 38, 0.82);
+      --scrollbar-thumb: rgba(255, 190, 217, 0.42);
+      --discord-a: #738adb;
+      --discord-b: #5865f2;
+      --accent: #f8db95;
+      --accent-rgb: 248 219 149;
+      --positive: #86efac;
+      --warn: #fcd34d;
+    }
+
+    html {
+      color-scheme: dark;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--page-bg);
+      background-attachment: fixed;
+      color: var(--ink);
+      font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    ::-webkit-scrollbar {
+      height: 10px;
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--scrollbar-track);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--scrollbar-thumb);
+      border-radius: 999px;
+    }
+
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      backdrop-filter: blur(16px);
+      background: var(--nav-bg);
+      border-bottom: 1px solid var(--nav-border);
+    }
+
+    .nav-shell {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .nav-left,
+    .nav-center,
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-center {
+      margin-left: auto;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .nav-right {
+      flex: 0 0 auto;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-link,
+    .discord-button,
+    .logout-btn,
+    .auth-chip {
+      text-decoration: none;
+    }
+
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--nav-link-border);
+      background: var(--nav-link-bg);
+      color: var(--nav-link-color);
+      backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .nav-link:hover,
+    .auth-chip:hover,
+    .logout-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      background: var(--nav-link-hover-bg);
+      border-color: rgba(var(--nav-accent-rgb) / 0.5);
+      box-shadow:
+        0 10px 35px rgba(var(--nav-accent-rgb) / 0.25),
+        0 0 20px rgba(var(--nav-accent-rgb) / 0.18);
+    }
+
+    .nav-link.active {
+      background: rgba(var(--nav-accent-rgb) / 0.25);
+      border-color: rgba(var(--nav-accent-rgb) / 0.7);
+      color: var(--nav-link-active-color);
+      box-shadow: 0 0 25px rgba(var(--nav-accent-rgb) / 0.7);
+    }
+
+    .discord-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.3);
+      background: linear-gradient(135deg, var(--discord-a), var(--discord-b));
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow:
+        0 20px 45px rgba(88,101,242,0.32),
+        inset 0 1px 0 rgba(255,255,255,0.28);
+      transition: transform .24s ease, box-shadow .24s ease, filter .24s ease;
+    }
+
+    .discord-button:hover {
+      transform: translateY(-3px) scale(1.01);
+      box-shadow:
+        0 26px 55px rgba(88,101,242,0.4),
+        0 0 28px rgba(115,138,219,0.28);
+      filter: saturate(1.06);
+    }
+
+    .discord-icon {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 auto;
+    }
+
+    .logout-btn,
+    .auth-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px 8px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--nav-link-border);
+      background: var(--nav-link-bg);
+      color: var(--nav-link-color);
+      backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+      box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      min-width: 0;
+    }
+
+    .logout-btn {
+      padding: 10px 14px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .auth-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      object-fit: cover;
+      border: 1px solid rgba(var(--nav-accent-rgb) / 0.42);
+      background: rgba(var(--nav-accent-rgb) / 0.18);
+      flex: 0 0 auto;
+    }
+
+    .auth-name {
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing: .03em;
+      max-width: 160px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--hero-ink);
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.26);
+      background:
+        linear-gradient(145deg, rgba(var(--accent-rgb) / 0.26), rgba(255, 255, 255, 0.06)),
+        rgba(7, 14, 38, 0.82);
+      box-shadow:
+        0 22px 38px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .brand-mark img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+    }
+
+    .brand-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .brand-kicker {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.28em;
+      color: rgba(255, 255, 255, 0.66);
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .page-shell {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 42px 24px 72px;
+    }
+
+    .hero-card,
+    .panel-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 32px;
+      border: 1px solid var(--glass-border);
+      background:
+        linear-gradient(180deg, rgba(var(--accent-rgb) / 0.12), rgba(var(--accent-rgb) / 0.03) 58%, transparent 100%),
+        var(--glass-bg);
+      box-shadow:
+        0 28px 60px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .hero-card::before,
+    .panel-card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(var(--accent-rgb) / 0.22), transparent 42%, rgba(var(--accent-rgb) / 0.1));
+      opacity: 0.9;
+      pointer-events: none;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      padding: 1px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.9fr);
+      gap: 24px;
+      padding: 30px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(var(--accent-rgb) / 0.16);
+      flex: 0 0 auto;
+    }
+
+    .hero-title {
+      margin: 0;
+      font-size: clamp(44px, 8vw, 78px);
+      line-height: 0.95;
+      font-weight: 950;
+      letter-spacing: -0.04em;
+      color: var(--hero-ink);
+    }
+
+    .glow {
+      text-shadow:
+        0 0 12px rgba(var(--accent-rgb) / 0.52),
+        0 0 28px rgba(var(--accent-rgb) / 0.34),
+        0 0 54px rgba(var(--accent-rgb) / 0.18);
+    }
+
+    .hero-copy,
+    .hero-note,
+    .muted-copy {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .hero-copy {
+      max-width: 58ch;
+      margin-top: 18px;
+      font-size: 16px;
+    }
+
+    .hero-note {
+      margin-top: 16px;
+      font-size: 14px;
+    }
+
+    .user-shell {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 24px;
+      border-radius: 28px;
+      border: 1px solid var(--panel-border);
+      background: linear-gradient(180deg, rgba(17, 35, 86, 0.9), rgba(7, 14, 38, 0.9));
+    }
+
+    .user-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .user-avatar {
+      width: 92px;
+      height: 92px;
+      border-radius: 28px;
+      object-fit: cover;
+      border: 1px solid rgba(var(--accent-rgb) / 0.36);
+      box-shadow:
+        0 18px 40px rgba(0, 0, 0, 0.26),
+        0 0 0 10px rgba(var(--accent-rgb) / 0.08);
+      background: rgba(var(--accent-rgb) / 0.16);
+      flex: 0 0 auto;
+    }
+
+    .user-name {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 900;
+      line-height: 1;
+      color: var(--hero-ink);
+    }
+
+    .user-handle {
+      margin-top: 8px;
+      color: var(--soft);
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.18);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--soft);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .badge-pill {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--positive);
+      box-shadow: 0 0 0 5px rgba(134, 239, 172, 0.18);
+    }
+
+    .grid-two {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .panel-card {
+      padding: 24px;
+    }
+
+    .section-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .section-title {
+      margin: 14px 0 10px;
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--hero-ink);
+      line-height: 1.05;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .stat-card {
+      padding: 18px;
+      border-radius: 24px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.14);
+      background: linear-gradient(180deg, rgba(18, 36, 88, 0.84), rgba(9, 16, 42, 0.88));
+    }
+
+    .stat-label {
+      color: var(--soft);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      margin-top: 12px;
+      font-size: clamp(26px, 4vw, 34px);
+      line-height: 1;
+      font-weight: 900;
+      color: var(--hero-ink);
+    }
+
+    .stat-note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .info-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .info-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.12);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .info-label {
+      color: var(--soft);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .info-value {
+      color: var(--hero-ink);
+      font-size: 14px;
+      font-weight: 700;
+      text-align: right;
+      word-break: break-word;
+    }
+
+    .empty-card {
+      margin-top: 24px;
+      padding: 28px;
+      border-radius: 28px;
+      border: 1px solid rgba(var(--accent-rgb) / 0.16);
+      background: linear-gradient(180deg, rgba(20, 45, 100, 0.8), rgba(5, 10, 30, 0.78));
+      text-align: center;
+    }
+
+    .empty-title {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 900;
+      color: var(--hero-ink);
+    }
+
+    .empty-copy {
+      margin: 16px auto 0;
+      max-width: 48ch;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .footer-shell {
+      padding: 18px 16px 28px;
+      text-align: center;
+      color: var(--footer-color);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 1080px) {
+      .hero-grid,
+      .grid-two,
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .nav-shell {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .nav-left,
+      .nav-center,
+      .nav-right {
+        justify-content: center;
+      }
+
+      .hero-grid,
+      .grid-two,
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .user-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page-shell {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .hero-grid,
+      .panel-card,
+      .empty-card {
+        padding: 22px;
+      }
+
+      .hero-title {
+        font-size: clamp(36px, 16vw, 52px);
+      }
+    }
+  </style>
+</head>
+<body class="font-sans">
+  <div class="top-nav">
+    <div class="w-full px-4 md:px-6 py-3 nav-shell">
+      <div class="nav-left">
+        <a class="brand-link" href="index.html" aria-label="SUMMER BREAKOUT home">
+          <span class="brand-mark">
+            <img src="images/icon.png" alt="SUMMER BREAKOUT logo" />
+          </span>
+          <span class="brand-copy">
+            <span class="brand-kicker">Public Hub</span>
+            <span class="brand-title">SUMMER BREAKOUT</span>
+          </span>
+        </a>
+      </div>
+
+      <nav class="nav-center" aria-label="Primary navigation">
+        <a class="nav-link" href="teams.html">Teams</a>
+        <a class="nav-link" href="predicts.html">Predicts</a>
+        <a class="nav-link active" href="profile.html">Profile</a>
+      </nav>
+
+      <div class="nav-right">
+        <a id="authChip" class="auth-chip" href="profile.html" aria-label="Open profile" hidden>
+          <img id="authAvatar" class="auth-avatar" alt="Discord avatar" />
+          <span id="authName" class="auth-name"></span>
+        </a>
+        <a id="loginNavButton" class="discord-button" href="https://discord.com/oauth2/authorize?client_id=1518915331886809189&response_type=code&redirect_uri=https%3A%2F%2Fimnotd1ma.github.io%2Fsgtour4%2Fcallback.html&scope=identify">
+          <svg class="discord-icon" viewBox="0 0 127.14 96.36" fill="currentColor" aria-hidden="true">
+            <path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83A97.68 97.68 0 0 0 49 6.83 72.37 72.37 0 0 0 45.64 0 105.89 105.89 0 0 0 19.39 8.09C2.79 32.65-1.71 56.6.54 80.21h.04A105.73 105.73 0 0 0 32.71 96.36a77.7 77.7 0 0 0 6.84-11.16 68.42 68.42 0 0 1-10.78-5.16c.91-.66 1.8-1.34 2.66-2.05a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.67 2.05a68.68 68.68 0 0 1-10.8 5.17 77 77 0 0 0 6.84 11.15A105.25 105.25 0 0 0 126.6 80.22h.03c2.64-27.29-4.5-51-18.93-72.15ZM42.45 65.69C36.18 65.69 31 59.98 31 52.94s5-12.75 11.43-12.75c6.48 0 11.57 5.76 11.46 12.75 0 7.04-5 12.75-11.44 12.75Zm42.24 0c-6.27 0-11.45-5.71-11.45-12.75s5-12.75 11.45-12.75S96.27 45.9 96.13 52.94c0 7.04-5 12.75-11.44 12.75Z"/>
+          </svg>
+          <span>Login</span>
+        </a>
+        <button id="logoutButton" class="logout-btn" type="button" hidden>Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="page-shell">
+    <section class="hero-card animate__animated animate__fadeIn">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow">
+            <span class="status-dot" aria-hidden="true"></span>
+            Account Center
+          </div>
+          <h1 class="hero-title">
+            YOUR
+            <span class="glow block">PROFILE</span>
+          </h1>
+          <p class="hero-copy">
+            This page uses your current Discord login and shows the public account data already available on the site.
+            It is a clean base for adding coins, bet history, and private user settings later.
+          </p>
+          <p id="profileSummary" class="hero-note">
+            Loading your account details and prediction summary.
+          </p>
+        </div>
+
+        <aside id="profileCard" class="user-shell" hidden>
+          <div class="user-header">
+            <img id="profileAvatar" class="user-avatar" src="images/icon.png" alt="Profile avatar" />
+            <div>
+              <h2 id="profileName" class="user-name">Unknown user</h2>
+              <div id="profileHandle" class="user-handle">@not-signed-in</div>
+            </div>
+          </div>
+
+          <div class="badge-row">
+            <div class="badge">
+              <span class="badge-pill" aria-hidden="true"></span>
+              <span id="profileStatus">Signed in</span>
+            </div>
+            <div class="badge">
+              <span>ID</span>
+              <span id="profileId">-</span>
+            </div>
+          </div>
+
+          <div class="info-list">
+            <div class="info-row">
+              <div class="info-label">Username</div>
+              <div id="profileUsername" class="info-value">-</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Display name</div>
+              <div id="profileDisplayName" class="info-value">-</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Coins</div>
+              <div id="profileCoins" class="info-value">Coming soon</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="profileContent" hidden>
+      <div class="stats-grid">
+        <article class="stat-card">
+          <div class="stat-label">Match predictions</div>
+          <div id="matchPredictionsValue" class="stat-value">0</div>
+          <p class="stat-note">How many match predictions are currently stored for your account.</p>
+        </article>
+        <article class="stat-card">
+          <div class="stat-label">Tournament pick</div>
+          <div id="tournamentPredictionValue" class="stat-value">No</div>
+          <p class="stat-note">Shows whether your tournament prediction sheet entry exists yet.</p>
+        </article>
+        <article class="stat-card">
+          <div class="stat-label">Combined rank</div>
+          <div id="rankValue" class="stat-value">-</div>
+          <p class="stat-note">Position in the combined leaderboard based on current results.</p>
+        </article>
+        <article class="stat-card">
+          <div class="stat-label">Total points</div>
+          <div id="pointsValue" class="stat-value">0</div>
+          <p class="stat-note">Current points from match predictions and tournament picks.</p>
+        </article>
+      </div>
+
+      <div class="grid-two">
+        <section class="panel-card">
+          <div class="section-kicker">Account data</div>
+          <h2 class="section-title">Identity snapshot</h2>
+          <p class="muted-copy">
+            These values come from the Discord account currently stored by your site auth flow.
+          </p>
+          <div class="info-list">
+            <div class="info-row">
+              <div class="info-label">Auth source</div>
+              <div class="info-value">Discord OAuth via Vercel</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Avatar URL</div>
+              <div id="profileAvatarUrl" class="info-value">-</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Session mode</div>
+              <div id="profileMode" class="info-value">-</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Last refresh</div>
+              <div id="profileRefreshTime" class="info-value">-</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel-card">
+          <div class="section-kicker">Next step</div>
+          <h2 class="section-title">Ready for coins</h2>
+          <p class="muted-copy">
+            This page is now wired to your logged-in user. The next clean step is attaching a real user profile store
+            so we can show coin balance, transaction history, bet slips, and private settings here.
+          </p>
+          <div class="info-list">
+            <div class="info-row">
+              <div class="info-label">Best place for coins</div>
+              <div class="info-value">Server-side only, not localStorage</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Current placeholder</div>
+              <div class="info-value">Coming soon</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Recommended key</div>
+              <div class="info-value">Discord user id</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Profile route</div>
+              <div class="info-value">profile.html</div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section id="loggedOutState" class="empty-card" hidden>
+      <h2 class="empty-title">Sign in to open your profile</h2>
+      <p class="empty-copy">
+        Your account page is tied to the Discord user currently logged into the site. Once you sign in, this page will
+        show your identity card and your current prediction summary automatically.
+      </p>
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
+        <a class="discord-button" href="https://discord.com/oauth2/authorize?client_id=1518915331886809189&response_type=code&redirect_uri=https%3A%2F%2Fimnotd1ma.github.io%2Fsgtour4%2Fcallback.html&scope=identify">
+          <svg class="discord-icon" viewBox="0 0 127.14 96.36" fill="currentColor" aria-hidden="true">
+            <path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83A97.68 97.68 0 0 0 49 6.83 72.37 72.37 0 0 0 45.64 0 105.89 105.89 0 0 0 19.39 8.09C2.79 32.65-1.71 56.6.54 80.21h.04A105.73 105.73 0 0 0 32.71 96.36a77.7 77.7 0 0 0 6.84-11.16 68.42 68.42 0 0 1-10.78-5.16c.91-.66 1.8-1.34 2.66-2.05a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.67 2.05a68.68 68.68 0 0 1-10.8 5.17 77 77 0 0 0 6.84 11.15A105.25 105.25 0 0 0 126.6 80.22h.03c2.64-27.29-4.5-51-18.93-72.15ZM42.45 65.69C36.18 65.69 31 59.98 31 52.94s5-12.75 11.43-12.75c6.48 0 11.57 5.76 11.46 12.75 0 7.04-5 12.75-11.44 12.75Zm42.24 0c-6.27 0-11.45-5.71-11.45-12.75s5-12.75 11.45-12.75S96.27 45.9 96.13 52.94c0 7.04-5 12.75-11.44 12.75Z"/>
+          </svg>
+          <span>Login with Discord</span>
+        </a>
+        <a class="nav-link" href="index.html">Back home</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer-shell">
+    SG Tournament #4 | SUMMER BREAKOUT
+  </footer>
+
+  <script>
+    const AUTH_SERVER = "https://discord-auth-server-six.vercel.app";
+    const AUTH_TOKEN_KEY = "sg-discord-token";
+    const AUTH_USER_KEY = "sg-discord-user";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyILFKyqrVxOQkwT2k9a_YGdSy0jb6-YsUwga3gC2ahD31u98jvv0VL5A99Rccnc-w/exec";
+    const IS_LOCAL_MODE = ["localhost", "127.0.0.1"].includes(window.location.hostname) || window.location.protocol === "file:";
+    const LOCAL_USER = {
+      id: "local-dev-user",
+      username: "LocalDev",
+      global_name: "Local Dev",
+      name: "Local Dev",
+      avatar: ""
+    };
+
+    function showPage() {
+      document.body.style.visibility = "visible";
+    }
+
+    function readStoredAuthToken() {
+      try {
+        return localStorage.getItem(AUTH_TOKEN_KEY) || "";
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function readStoredAuthUser() {
+      try {
+        const stored = localStorage.getItem(AUTH_USER_KEY);
+        return stored ? JSON.parse(stored) : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function persistAuthUser(user) {
+      try {
+        if (user) {
+          localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+        } else {
+          localStorage.removeItem(AUTH_USER_KEY);
+        }
+      } catch (error) {
+        console.warn("Unable to persist auth user", error);
+      }
+    }
+
+    function clearStoredAuth() {
+      try {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.removeItem(AUTH_USER_KEY);
+      } catch (error) {
+        console.warn("Unable to clear auth storage", error);
+      }
+    }
+
+    function buildAuthHeaders() {
+      const token = readStoredAuthToken();
+      return token ? { Authorization: "Bearer " + token } : {};
+    }
+
+    function fetchWithTimeout(resource, options = {}, timeoutMs = 6000) {
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
+      return fetch(resource, {
+        ...options,
+        signal: controller.signal
+      }).finally(() => {
+        window.clearTimeout(timeoutId);
+      });
+    }
+
+    async function fetchJson(url, timeoutMs = 8000) {
+      const response = await fetchWithTimeout(url, { method: "GET" }, timeoutMs);
+
+      if (!response.ok) {
+        throw new Error("Request failed: " + response.status);
+      }
+
+      return response.json();
+    }
+
+    function getDisplayName(user) {
+      return user?.global_name || user?.username || user?.name || "Discord User";
+    }
+
+    function getAvatarUrl(user) {
+      if (!user || !user.id || !user.avatar) {
+        return "images/icon.png";
+      }
+
+      const extension = String(user.avatar).startsWith("a_") ? "gif" : "png";
+      return "https://cdn.discordapp.com/avatars/" + user.id + "/" + user.avatar + "." + extension + "?size=128";
+    }
+
+    function getCurrentUserProfile() {
+      const authUser = window.__authUser;
+
+      if (!authUser) {
+        return null;
+      }
+
+      return {
+        id: authUser.id || "",
+        username: authUser.username || authUser.global_name || authUser.name || "Unknown user",
+        name: authUser.global_name || authUser.name || authUser.username || "",
+        avatar_url: getAvatarUrl(authUser)
+      };
+    }
+
+    async function resolveAuthUser() {
+      const token = readStoredAuthToken();
+      const storedUser = readStoredAuthUser();
+
+      if (IS_LOCAL_MODE) {
+        persistAuthUser(LOCAL_USER);
+        window.__authUser = LOCAL_USER;
+        return LOCAL_USER;
+      }
+
+      if (!token) {
+        window.__authUser = storedUser;
+        return storedUser;
+      }
+
+      try {
+        const response = await fetchWithTimeout(AUTH_SERVER + "/me", {
+          credentials: "include",
+          headers: buildAuthHeaders()
+        }, 6000);
+
+        if (!response.ok) {
+          if (response.status === 401 || response.status === 403) {
+            clearStoredAuth();
+            window.__authUser = null;
+            return null;
+          }
+
+          throw new Error("Auth failed: " + response.status);
+        }
+
+        const user = await response.json();
+        window.__authUser = user;
+        persistAuthUser(user);
+        return user;
+      } catch (error) {
+        if (storedUser) {
+          window.__authUser = storedUser;
+          return storedUser;
+        }
+
+        window.__authUser = null;
+        return null;
+      }
+    }
+
+    async function logout() {
+      const logoutButton = document.getElementById("logoutButton");
+
+      if (IS_LOCAL_MODE) {
+        clearStoredAuth();
+        window.location.href = "index.html";
+        return;
+      }
+
+      if (logoutButton) {
+        logoutButton.disabled = true;
+      }
+
+      try {
+        await fetch(AUTH_SERVER + "/logout", {
+          method: "POST",
+          credentials: "include",
+          headers: buildAuthHeaders()
+        });
+      } catch (error) {
+        console.warn("Logout request failed", error);
+      } finally {
+        clearStoredAuth();
+        window.location.href = "index.html";
+      }
+    }
+
+    function applyNavAuthState(user) {
+      const authChip = document.getElementById("authChip");
+      const authAvatar = document.getElementById("authAvatar");
+      const authName = document.getElementById("authName");
+      const loginNavButton = document.getElementById("loginNavButton");
+      const logoutButton = document.getElementById("logoutButton");
+
+      if (user) {
+        authName.textContent = getDisplayName(user);
+        authAvatar.src = getAvatarUrl(user);
+        authAvatar.alt = getDisplayName(user) + " avatar";
+        authChip.hidden = false;
+        loginNavButton.hidden = true;
+        logoutButton.hidden = IS_LOCAL_MODE;
+      } else {
+        authChip.hidden = true;
+        loginNavButton.hidden = false;
+        logoutButton.hidden = true;
+      }
+    }
+
+    function setText(id, value) {
+      const node = document.getElementById(id);
+      if (node) {
+        node.textContent = value;
+      }
+    }
+
+    function renderLoggedOutState() {
+      document.getElementById("profileCard").hidden = true;
+      document.getElementById("profileContent").hidden = true;
+      document.getElementById("loggedOutState").hidden = false;
+      setText("profileSummary", "No active site session found yet. Sign in with Discord to open your profile.");
+    }
+
+    function renderProfileCard(profile) {
+      document.getElementById("profileCard").hidden = false;
+      document.getElementById("profileContent").hidden = false;
+      document.getElementById("loggedOutState").hidden = true;
+
+      setText("profileName", profile.name || profile.username || "Unknown user");
+      setText("profileHandle", "@" + (profile.username || "unknown"));
+      setText("profileId", profile.id || "-");
+      setText("profileUsername", profile.username || "-");
+      setText("profileDisplayName", profile.name || "-");
+      setText("profileAvatarUrl", profile.avatar_url || "-");
+      setText("profileMode", IS_LOCAL_MODE ? "Local dev mode" : "Remote auth session");
+      setText("profileRefreshTime", new Date().toLocaleString());
+
+      const avatar = document.getElementById("profileAvatar");
+      avatar.src = profile.avatar_url || "images/icon.png";
+      avatar.alt = (profile.name || profile.username || "User") + " avatar";
+    }
+
+    async function fetchProfileStats(profile) {
+      const requests = await Promise.allSettled([
+        fetchJson(GOOGLE_SCRIPT_URL + "?mode=my_predictions&user_id=" + encodeURIComponent(profile.id)),
+        fetchJson(GOOGLE_SCRIPT_URL + "?mode=my_tournament_predictions&user_id=" + encodeURIComponent(profile.id)),
+        fetchJson(GOOGLE_SCRIPT_URL + "?mode=combined_leaderboard")
+      ]);
+
+      const predictions = requests[0].status === "fulfilled" ? (requests[0].value.predictions || []) : [];
+      const tournamentPredictions = requests[1].status === "fulfilled" ? (requests[1].value.predictions || []) : [];
+      const leaderboard = requests[2].status === "fulfilled" ? (requests[2].value.leaderboard || []) : [];
+
+      const leaderboardEntry = leaderboard.find((item) => String(item.user_id || "").trim() === String(profile.id).trim()) || null;
+
+      return {
+        matchPredictions: predictions.length,
+        hasTournamentPrediction: tournamentPredictions.length > 0,
+        rank: leaderboardEntry ? "#" + leaderboardEntry.place : "-",
+        totalPoints: leaderboardEntry ? leaderboardEntry.total_points : 0,
+        matchPoints: leaderboardEntry ? leaderboardEntry.match_points : 0,
+        tournamentPoints: leaderboardEntry ? leaderboardEntry.tournament_points : 0,
+        partialFailure: requests.some((request) => request.status === "rejected")
+      };
+    }
+
+    function renderProfileStats(stats) {
+      setText("matchPredictionsValue", String(stats.matchPredictions));
+      setText("tournamentPredictionValue", stats.hasTournamentPrediction ? "Yes" : "No");
+      setText("rankValue", stats.rank);
+      setText("pointsValue", String(stats.totalPoints));
+
+      if (stats.partialFailure) {
+        setText("profileSummary", "Signed in. Some live profile stats could not be refreshed, so cached account info is shown.");
+        return;
+      }
+
+      setText(
+        "profileSummary",
+        "Signed in as your current Discord user. Match points: " +
+          stats.matchPoints +
+          ". Tournament points: " +
+          stats.tournamentPoints +
+          "."
+      );
+    }
+
+    document.getElementById("logoutButton")?.addEventListener("click", logout);
+
+    (async function initProfilePage() {
+      try {
+        const user = await resolveAuthUser();
+        applyNavAuthState(user);
+
+        if (!user) {
+          renderLoggedOutState();
+          return;
+        }
+
+        const profile = getCurrentUserProfile();
+        if (!profile) {
+          renderLoggedOutState();
+          return;
+        }
+
+        renderProfileCard(profile);
+
+        try {
+          const stats = await fetchProfileStats(profile);
+          renderProfileStats(stats);
+        } catch (error) {
+          console.warn("Unable to load profile stats", error);
+          setText("profileSummary", "Signed in. Basic profile data is ready, but live prediction stats are unavailable right now.");
+        }
+      } finally {
+        showPage();
+      }
+    }());
+  </script>
+  <script src="scripts/theme-switcher.js"></script>
+</body>
+</html>
