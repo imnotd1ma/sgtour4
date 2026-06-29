@@ -1359,8 +1359,15 @@
 
     .rules-grid{
       display:grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
+    }
+
+    .rules-grid-match{
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .rules-grid-tournament{
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
     .rules-item{
@@ -2432,14 +2439,14 @@
       <section class="rules-card animate__animated animate__fadeInUp">
         <p class="section-kicker">Как считаются очки за предикты</p>
         <h3 class="mt-2 text-2xl font-black tracking-tight theme-heading">Система начисления за матч</h3>
-        <div id="scoringRulesSummary" class="rules-grid mt-5"></div>
+        <div id="scoringRulesSummary" class="rules-grid rules-grid-match mt-5"></div>
         <p id="scoringRulesNote" class="rules-note mt-4"></p>
       </section>
 
       <section class="rules-card animate__animated animate__fadeInUp">
         <p class="section-kicker">Турнирные очки</p>
         <h3 class="mt-2 text-2xl font-black tracking-tight theme-heading">Система начисления за турнир</h3>
-        <div id="tournamentScoringRulesSummary" class="rules-grid mt-5"></div>
+        <div id="tournamentScoringRulesSummary" class="rules-grid rules-grid-tournament mt-5"></div>
         <p id="tournamentScoringRulesNote" class="rules-note mt-4"></p>
       </section>
 
