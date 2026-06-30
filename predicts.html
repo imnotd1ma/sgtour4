@@ -83,6 +83,13 @@
       return token ? { Authorization: `Bearer ${token}` } : {};
     }
 
+    function buildApiPostHeaders() {
+      return {
+        "Content-Type": "text/plain;charset=utf-8",
+        ...buildAuthHeaders()
+      };
+    }
+
     function showPage() {
       document.documentElement.dataset.authState = "ready";
       document.body?.style.setProperty("visibility", "visible");
@@ -2528,9 +2535,9 @@
   </footer>
   
   <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyILFKyqrVxOQkwT2k9a_YGdSy0jb6-YsUwga3gC2ahD31u98jvv0VL5A99Rccnc-w/exec";
+    const GOOGLE_SCRIPT_URL = "https://dcrhwrcdpcnzqtxhqgwb.supabase.co/functions/v1/api";
     const LIVE_PAGE_FLAGS = {
-      tournamentPredictionsOpen: false // Fast switch: set to false to instantly close tournament predictions.
+      tournamentPredictionsOpen: false
     };
     const leaderboardTable = document.getElementById("leaderboardTable");
     const leaderboardHead = document.getElementById("leaderboardHead");
@@ -2579,16 +2586,53 @@
       loss: 0
     };
 
-    const TEAM_PLAYERS = {
-      pv: ["ImNotDima", "Lam4uk"],
-      amk: ["han4k", "s1mp1k"],
-      cz9: ["Crazy_crib", "Mexa"],
-      loss: ["Loss", "WIN_Dizel"],
-      zbc: ["Takumi", "Pasha"],
-      klb: ["Klat4er", "Bulava"],
-      egz: ["Egor T.", "Zero"],
-      dq: ["KriKkK", "igrok6574"]
-    };
+    const TEAM_PLAYERS = {};
+
+    const TEAM_META = {};
+
+    function replaceObjectContents(target, nextValues) {
+      Object.keys(target).forEach((key) => {
+        delete target[key];
+      });
+
+      Object.assign(target, nextValues);
+    }
+
+    async function loadTeamsFromApi() {
+      try {
+        const data = await fetchJson(`${GOOGLE_SCRIPT_URL}?mode=teams`);
+        const rows = Array.isArray(data?.teams) ? data.teams : [];
+
+        const nextTeamMeta = {};
+        const nextTeamPlayers = {};
+
+        rows.forEach((team) => {
+          const teamName = String(team?.name || "").trim();
+          const teamSlug = String(team?.slug || "").trim().toLowerCase();
+
+          if (!teamName || !teamSlug) {
+            return;
+          }
+
+          nextTeamMeta[teamName] = {
+            slug: teamSlug,
+            subtitle: String(team?.subtitle || "").trim(),
+            logo: String(team?.logo_url || "").trim()
+          };
+
+          nextTeamPlayers[teamSlug] = Array.isArray(team?.players)
+            ? team.players
+              .map((player) => String(player?.display_name || "").trim())
+              .filter(Boolean)
+            : [];
+        });
+
+        replaceObjectContents(TEAM_META, nextTeamMeta);
+        replaceObjectContents(TEAM_PLAYERS, nextTeamPlayers);
+      } catch (error) {
+        console.error("Failed to load teams from API", error);
+      }
+    }
 
     function resolveMatchPlayers(players) {
       if (Array.isArray(players)) {
@@ -2605,7 +2649,7 @@
         .flatMap((teamKey) => TEAM_PLAYERS[teamKey] || []);
     }
 
-    const matches = [
+    let matches = [
       // `format` controls score behavior:
       // BO1 -> score is set automatically to 1:0, no score buttons
       // BO3 -> 2:0 / 2:1
@@ -2619,6 +2663,142 @@
       // BO1 results can omit `score`; "1:0" is still used internally for saved predictions and Google Sheet data.
       
     ];
+
+    let matchResults = {};
+    let state = {};
+    let standingsTeamNames = [];
+    let teamDirectory = new Map();
+    let tournamentConfig = {
+      predictionsOpen: LIVE_PAGE_FLAGS.tournamentPredictionsOpen
+    };
+
+    function createDefaultMatchState() {
+      return {
+        winner: "",
+        score: "",
+        player: "",
+        locked: false,
+        submittedAt: "",
+        statusText: "",
+        statusState: ""
+      };
+    }
+
+    function ensureMatchState(matchId) {
+      if (!state[matchId]) {
+        state[matchId] = createDefaultMatchState();
+      }
+
+      return state[matchId];
+    }
+
+    function getTeamMeta(teamName) {
+      return TEAM_META[String(teamName || "").trim()] || { slug: "", subtitle: "", logo: "" };
+    }
+
+    function formatMatchDate(value, fallbackStageNumber) {
+      if (!value) {
+        return `Stage ${fallbackStageNumber}`;
+      }
+
+      const parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) {
+        return `Stage ${fallbackStageNumber}`;
+      }
+
+      return parsed.toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit"
+      });
+    }
+
+    function normalizeRemoteMatch(raw, index) {
+      if (!raw || typeof raw !== "object") {
+        return null;
+      }
+
+      const teamAName = String(raw.team_a_name || "").trim();
+      const teamBName = String(raw.team_b_name || "").trim();
+      const teamAMeta = getTeamMeta(teamAName);
+      const teamBMeta = getTeamMeta(teamBName);
+      const stageNumber = Number(raw.stage_number) || Math.floor(index / 3) + 1;
+      const scoreOptions = Array.isArray(raw.score_options)
+        ? raw.score_options.map((value) => String(value)).filter(Boolean)
+        : [];
+
+      return {
+        id: String(raw.id || ""),
+        title: String(raw.title || `${teamAName} vs ${teamBName}`).trim(),
+        format: String(raw.format || "BO3").trim().toUpperCase(),
+        status: String(raw.status || "").trim().toLowerCase() || "upcoming",
+        stageLabel: String(raw.stage_label || "").trim() || `Round ${stageNumber}`,
+        date: formatMatchDate(raw.scheduled_at, stageNumber),
+        players: teamAMeta.slug && teamBMeta.slug ? `${teamAMeta.slug}+${teamBMeta.slug}` : [],
+        scoreOptions,
+        teamA: {
+          name: teamAName || "TBD",
+          subtitle: teamAMeta.subtitle || "",
+          logo: teamAMeta.logo || ""
+        },
+        teamB: {
+          name: teamBName || "TBD",
+          subtitle: teamBMeta.subtitle || "",
+          logo: teamBMeta.logo || ""
+        },
+        result: raw.result && typeof raw.result === "object"
+          ? {
+            winner: String(raw.result.winner || "").trim(),
+            score: String(raw.result.score || "").trim(),
+            best: String(raw.result.best || "").trim()
+          }
+          : null,
+        template: !teamAName || !teamBName || teamAName === "TBD" || teamBName === "TBD"
+      };
+    }
+
+    function rebuildMatchCaches() {
+      matchResults = Object.fromEntries(
+        matches
+          .map((match) => [match.id, normalizeMatchResult(match)])
+          .filter(([, result]) => result)
+      );
+
+      const previousState = state;
+      state = Object.fromEntries(
+        matches.map((match) => [
+          match.id,
+          {
+            ...createDefaultMatchState(),
+            ...(previousState[match.id] || {})
+          }
+        ])
+      );
+
+      matches.forEach((match) => {
+        normalizeMatchScoreState(match);
+      });
+
+      standingsTeamNames = Array.from(new Set(
+        matches.flatMap((match) => [match.teamA.name, match.teamB.name])
+      ))
+        .filter((teamName) => teamName && teamName !== "TBD")
+        .sort((a, b) => a.localeCompare(b, "ru"));
+
+      teamDirectory = new Map();
+      matches.forEach((match) => {
+        [match.teamA, match.teamB].forEach((team) => {
+          if (!team?.name || team.name === "TBD" || teamDirectory.has(team.name)) {
+            return;
+          }
+
+          teamDirectory.set(team.name, {
+            name: team.name,
+            subtitle: team.subtitle || "",
+            logo: team.logo || ""
+          });
+        });
+      });
+    }
 
     function getMatchFormat(match) {
       return String(match?.format || "").trim().toUpperCase();
@@ -2699,45 +2879,7 @@
       return getMatchFormat(match) !== "BO1";
     }
 
-    const matchResults = Object.fromEntries(
-      matches
-        .map((match) => [match.id, normalizeMatchResult(match)])
-        .filter(([, result]) => result)
-    );
-
-    const state = Object.fromEntries(
-      matches.map((match) => [
-        match.id,
-        {
-          winner: "",
-          score: "",
-          player: "",
-          locked: false,
-          submittedAt: ""
-        }
-      ])
-    );
-
-    const standingsTeamNames = Array.from(new Set(
-      matches.flatMap((match) => [match.teamA.name, match.teamB.name])
-    ))
-      .filter((teamName) => teamName && teamName !== "TBD")
-      .sort((a, b) => a.localeCompare(b, "ru"));
-
-    const teamDirectory = new Map();
-    matches.forEach((match) => {
-      [match.teamA, match.teamB].forEach((team) => {
-        if (!team?.name || team.name === "TBD" || teamDirectory.has(team.name)) {
-          return;
-        }
-
-        teamDirectory.set(team.name, {
-          name: team.name,
-          subtitle: team.subtitle || "",
-          logo: team.logo || ""
-        });
-      });
-    });
+    rebuildMatchCaches();
 
     function setMatchGridsHydrating(isHydrating) {
       [
@@ -2769,9 +2911,13 @@
       });
     }
 
-    const allPlayers = ["ImNotDima", "s1mp1k", "ds_swanson", "Zero", "Loss", "han4k", "WIN_Dizel", "KriKkK",
-      "Crazy_crib", "Mexa", "Egor T.", "lam4uk", "semen", "Klat4er", "strew", "igrok6574",
-      "Quzzix", "Dev1n", "Little", "Davidosik", "azbuca", "mamont_pirce", "Patoshka", "Megaglist"
+    const allPlayers = [
+    "Takumi", "s1mp1k", "igrok6574", "KSTR",
+    "crazy_crib", "loss", "Zero", "deadseeker7249",
+    "KriKkK", "lam4uk", "ZuuB", "strew",
+    "11mn0td", "plague", "FEBET", "Blessed",
+    "Klat4er", "sanoko", "Penne", "z3rtty",
+    "minor-", "han4k", "WIN_Dizel", "ds_swanson"
     ];
 
     const tournamentState = {
@@ -2805,7 +2951,7 @@
         key: "champion_team",
         label: "Победитель турнира",
         icon: "🏆",
-        options: ["LOSSTEAM", "PEPEVISION", "ZBc", "CZ9", "DQTEAM", "AMK"],
+        options: ["DDTEAM", "OFF9", "K7", "ALTZ", "KPM", "BURGER KING"],
         placeholder: "Выберите команду"
       },
       {
@@ -2869,7 +3015,17 @@
     };
 
     function areTournamentPredictionsOpen() {
-      return LIVE_PAGE_FLAGS.tournamentPredictionsOpen;
+      return Boolean(tournamentConfig.predictionsOpen);
+    }
+
+    async function loadTournamentConfig() {
+      try {
+        const data = await fetchJson(`${GOOGLE_SCRIPT_URL}?mode=tournament_config`);
+        tournamentConfig.predictionsOpen = Boolean(data?.predictions_open);
+      } catch (error) {
+        console.warn("Failed to load tournament config, using local fallback", error);
+        tournamentConfig.predictionsOpen = Boolean(LIVE_PAGE_FLAGS.tournamentPredictionsOpen);
+      }
     }
 
     function syncTournamentTabState() {
@@ -3610,9 +3766,7 @@
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
+          headers: buildApiPostHeaders(),
           body: JSON.stringify(payload)
         });
 
@@ -3936,7 +4090,7 @@
           <div class="flex items-center justify-between gap-4 flex-wrap">
             <div class="flex items-center gap-2 flex-wrap">
               <span class="pill">${escapeHtml(match.format)}</span>
-              <span class="pill">${escapeHtml(match.stage)}</span>
+              <span class="pill">${escapeHtml(match.stageLabel || "")}</span>
               <span class="pill">${escapeHtml(match.date)}</span>
             </div>
             <div class="match-result-pill" data-variant="${escapeHtml(status)}">${escapeHtml(getMatchStatusLabel(match.id))}</div>
@@ -4336,6 +4490,28 @@
       return await res.json();
     }
 
+    async function loadMatchesFromApi() {
+      try {
+        const data = await fetchJson(`${GOOGLE_SCRIPT_URL}?mode=matches`);
+        const rows = Array.isArray(data?.matches) ? data.matches : [];
+        const nextMatches = rows
+          .map((row, index) => normalizeRemoteMatch(row, index))
+          .filter((match) => match && match.id);
+
+        if (nextMatches.length) {
+          matches = nextMatches;
+          rebuildMatchCaches();
+        }
+      } catch (error) {
+        console.error("Failed to load matches from API", error);
+      }
+
+      renderMatches({ animate: false });
+      renderTeamStandings();
+      syncRenderedMatchCards();
+      syncUpcomingSubmitState();
+    }
+
     function extractPredictionRows(data) {
       if (Array.isArray(data?.predictions)) {
         return data.predictions;
@@ -4489,9 +4665,7 @@
         const payload = buildSubmissionPayload();
         const res = await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
+          headers: buildApiPostHeaders(),
           body: JSON.stringify(payload)
         });
 
@@ -4636,9 +4810,7 @@
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
+          headers: buildApiPostHeaders(),
           body: JSON.stringify(data)
         });
 
@@ -4770,9 +4942,7 @@
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
+          headers: buildApiPostHeaders(),
           body: JSON.stringify(payload)
         });
 
@@ -4916,7 +5086,7 @@
         try {
           const res = await fetch(GOOGLE_SCRIPT_URL, {
             method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            headers: buildApiPostHeaders(),
             body: JSON.stringify(payload)
           });
           const text = await res.text();
@@ -5132,18 +5302,23 @@
       renderAuth();
     }());
 
-    renderScoringSummary();
-    renderTournamentScoringSummary();
-    syncTournamentTabState();
-    setMatchGridsHydrating(true);
-    renderMatches({ animate: false });
-    renderTournamentResultCard();
-    renderTournamentPredictionCards();
-    syncUpcomingSubmitState();
-    syncRenderedMatchCards();
-    hydrateSavedPredictions();
-    loadTournamentPredictions();
-    loadLeaderboard();
+    async function initPredictsPage() {
+      await loadTournamentConfig();
+      renderScoringSummary();
+      renderTournamentScoringSummary();
+      syncTournamentTabState();
+      setMatchGridsHydrating(true);
+      renderTournamentResultCard();
+      renderTournamentPredictionCards();
+
+      await loadTeamsFromApi();
+      await loadMatchesFromApi();
+      await hydrateSavedPredictions();
+      await loadTournamentPredictions();
+      await loadLeaderboard();
+    }
+
+    initPredictsPage();
   </script>
   <script src="scripts/theme-switcher.js"></script>
 </body>
