@@ -2587,25 +2587,21 @@
     };
 
     const TEAM_PLAYERS = {
-      pv: ["ImNotDima", "Lam4uk"],
-      amk: ["han4k", "s1mp1k"],
-      cz9: ["Crazy_crib", "Mexa"],
-      loss: ["Loss", "WIN_Dizel"],
-      zbc: ["Takumi", "Pasha"],
-      klb: ["Klat4er", "Bulava"],
-      egz: ["Egor T.", "Zero"],
-      dq: ["KriKkK", "igrok6574"]
+      dd: ["Takumi", "s1mp1k", "igrok6574", "KSTR"],
+      off9: ["crazy_crib", "loss", "Zero", "deadseeker7249"],
+      k7: ["KriKkK", "lam4uk", "ZuuB", "strew"],
+      altz: ["11mn0td", "plague", "FEBET", "Blessed"],
+      kpm: ["Klat4er", "sanoko", "Penne", "z3rtty"],
+      bk: ["minor-", "han4k", "WIN_Dizel", "ds_swanson"],
     };
 
     const TEAM_META = {
-      PEPEVISION: { slug: "pv", subtitle: "", logo: "" },
-      LOSSTEAM: { slug: "loss", subtitle: "", logo: "" },
-      CZ9: { slug: "cz9", subtitle: "", logo: "" },
-      ZBc: { slug: "zbc", subtitle: "", logo: "" },
-      DQTEAM: { slug: "dq", subtitle: "", logo: "" },
-      AMK: { slug: "amk", subtitle: "", logo: "" },
-      KLB: { slug: "klb", subtitle: "", logo: "" },
-      EGZ: { slug: "egz", subtitle: "", logo: "" }
+      DDTEAM: { slug: "dd", subtitle: "", logo: "" },
+      OFF9: { slug: "off9", subtitle: "", logo: "" },
+      K7: { slug: "k7", subtitle: "", logo: "" },
+      ALTZ: { slug: "altz", subtitle: "", logo: "" },
+      KPM: { slug: "kpm", subtitle: "", logo: "" },
+      BURGERKING: { slug: "bk", subtitle: "", logo: "" },
     };
 
     function resolveMatchPlayers(players) {
@@ -2885,9 +2881,13 @@
       });
     }
 
-    const allPlayers = ["ImNotDima", "s1mp1k", "ds_swanson", "Zero", "Loss", "han4k", "WIN_Dizel", "KriKkK",
-      "Crazy_crib", "Mexa", "Egor T.", "lam4uk", "semen", "Klat4er", "strew", "igrok6574",
-      "Quzzix", "Dev1n", "Little", "Davidosik", "azbuca", "mamont_pirce", "Patoshka", "Megaglist"
+    const allPlayers = [
+    "Takumi", "s1mp1k", "igrok6574", "KSTR",
+    "crazy_crib", "loss", "Zero", "deadseeker7249",
+    "KriKkK", "lam4uk", "ZuuB", "strew",
+    "11mn0td", "plague", "FEBET", "Blessed",
+    "Klat4er", "sanoko", "Penne", "z3rtty",
+    "minor-", "han4k", "WIN_Dizel", "ds_swanson"
     ];
 
     const tournamentState = {
@@ -2921,7 +2921,7 @@
         key: "champion_team",
         label: "Победитель турнира",
         icon: "🏆",
-        options: ["LOSSTEAM", "PEPEVISION", "ZBc", "CZ9", "DQTEAM", "AMK"],
+        options: ["DDTEAM", "OFF9", "K7", "ALTZ", "KPM", "BURGERKING"],
         placeholder: "Выберите команду"
       },
       {
