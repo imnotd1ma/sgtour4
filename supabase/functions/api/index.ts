@@ -397,6 +397,68 @@ async function handleGet(request: Request, supabase: ReturnType<typeof createAdm
     });
   }
 
+  if (mode === "teams") {
+    const [teamsResult, playersResult] = await Promise.all([
+      supabase
+        .from("teams")
+        .select("id, slug, name, logo_url, subtitle, sort_order")
+        .order("sort_order", { ascending: true })
+        .order("name", { ascending: true }),
+      supabase
+        .from("players")
+        .select("id, slug, display_name, team_id, image_url, role, playtime, fav_weapon, roster_order")
+        .eq("active", true)
+        .order("roster_order", { ascending: true })
+        .order("display_name", { ascending: true }),
+    ]);
+
+    if (teamsResult.error) {
+      throw new Error(teamsResult.error.message);
+    }
+
+    if (playersResult.error) {
+      throw new Error(playersResult.error.message);
+    }
+
+    const playersByTeamId = new Map<string, Array<Record<string, unknown>>>();
+
+    for (const player of playersResult.data ?? []) {
+      const teamId = String(player.team_id ?? "").trim();
+      if (!teamId) {
+        continue;
+      }
+
+      if (!playersByTeamId.has(teamId)) {
+        playersByTeamId.set(teamId, []);
+      }
+
+      playersByTeamId.get(teamId)?.push({
+        id: player.id,
+        slug: player.slug,
+        display_name: player.display_name,
+        image_url: player.image_url,
+        role: player.role,
+        playtime: player.playtime,
+        fav_weapon: player.fav_weapon,
+        roster_order: player.roster_order,
+      });
+    }
+
+    return jsonResponse({
+      teams: (teamsResult.data ?? [])
+        .map((team) => ({
+          id: team.id,
+          slug: team.slug,
+          name: team.name,
+          logo_url: team.logo_url,
+          subtitle: team.subtitle,
+          sort_order: team.sort_order,
+          players: playersByTeamId.get(team.id) ?? [],
+        }))
+        .filter((team) => team.players.length > 0),
+    });
+  }
+
   if (mode === "tournament_config") {
     const { data, error } = await supabase
       .from("tournament_settings")

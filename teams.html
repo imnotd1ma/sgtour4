@@ -553,6 +553,10 @@
     .ZBC { --accent:#7070e0; --accent-rgb:112 112 224; }
     .KLB { --accent:#14def8; --accent-rgb:20 222 248; }
     .BK  { --accent:#a75d19; --accent-rgb:167 93 25; }
+    .DD { --accent:#38bdf8; --accent-rgb:56 189 248; }
+    .OFF9 { --accent:#A53DBA; --accent-rgb:165 61 186; }
+    .ALTZ { --accent:#ffffff; --accent-rgb:255 255 255; }
+    .KPM { --accent:#14def8; --accent-rgb:20 222 248; }
     
     /* ===== TEAM EFFECTS ===== */
     .team .team-accent{
@@ -673,25 +677,8 @@
       const DEFAULT_PLAYER_STATS = {
         rating: "0.00",
         playtime: "??? hrs",
-        signature: "???"
+        favWeapon: "???"
       };
-
-      // Edit team rosters here, similar to `matches` in live.html.
-      const teams = [
-        {
-          key: "PV",
-          name: "???",
-          titleMain: "",
-          titleAccent: "???",
-          logo: "images/pv.png",
-          players: [
-            { name: "???", image: "images/imnotdima.png", role: "стреляет раз в год", rating: "0.00", playtime: "", signature: "" },
-            { name: "???", image: "images/egor_lam.png", role: "ванёк лучший", rating: "0.00", playtime: "", signature: "" },
-            { name: "???", image: "images/zeros.png", role: "", rating: "0.00", playtime: "", signature: "" },
-            { name: "???", image: "images/ds_swanson.png", role: "", rating: "0.00", playtime: "", signature: "" }
-          ]
-        }
-      ];
 
       function escapeHtml(value) {
         return String(value ?? "")
@@ -708,6 +695,13 @@
           .replace(/[\u0300-\u036f]/g, "")
           .replace(/[^0-9a-zа-яё]+/gi, "")
           .toLowerCase();
+      }
+
+      function buildTeamKey(value) {
+        return String(value ?? "")
+          .trim()
+          .replace(/[^0-9a-z]+/gi, "")
+          .toUpperCase();
       }
 
       function formatRating(value) {
@@ -753,6 +747,41 @@
         }, {});
       }
 
+      async function loadTeamsFromApi() {
+        const data = await fetchJson(`${GOOGLE_SCRIPT_URL}?mode=teams`);
+        if (data?.status === "error") {
+          throw new Error(data.error || "Failed to load teams");
+        }
+
+        const rows = Array.isArray(data?.teams) ? data.teams : [];
+
+        return rows.map((team) => ({
+          key: buildTeamKey(team?.slug || team?.name),
+          name: String(team?.name || "").trim() || "Unknown Team",
+          logo: String(team?.logo_url || "").trim(),
+          players: Array.isArray(team?.players)
+            ? team.players.map((player) => ({
+              name: String(player?.display_name || "").trim() || "Unknown Player",
+              image: String(player?.image_url || "").trim(),
+              role: String(player?.role || "").trim(),
+              playtime: String(player?.playtime || "").trim(),
+              favWeapon: String(player?.fav_weapon || "").trim(),
+              rating: DEFAULT_PLAYER_STATS.rating
+            }))
+            : []
+        }));
+      }
+
+      function applyRatingsToTeams(teams, ratingsByPlayer) {
+        return teams.map((team) => ({
+          ...team,
+          players: team.players.map((player) => ({
+            ...player,
+            rating: ratingsByPlayer[normalizePlayerName(player.name)] || DEFAULT_PLAYER_STATS.rating
+          }))
+        }));
+      }
+
       function renderPlayerCard(team, player, playerIndex) {
         const animationDelay = `${(playerIndex * 0.12).toFixed(2)}s`;
         const imageSrc = escapeHtml(player.image || team.logo || "images/icon.png");
@@ -762,7 +791,7 @@
         const role = escapeHtml(player.role || "Player");
         const rating = escapeHtml(player.rating || DEFAULT_PLAYER_STATS.rating);
         const playtime = escapeHtml(player.playtime || DEFAULT_PLAYER_STATS.playtime);
-        const signature = escapeHtml(player.signature || DEFAULT_PLAYER_STATS.signature);
+        const favWeapon = escapeHtml(player.favWeapon || DEFAULT_PLAYER_STATS.favWeapon);
 
         return `
           <div class="player-card rounded-3xl p-6 group animate__animated animate__fadeInUp${player.captain ? " captain-ring" : ""}" style="animation-delay: ${animationDelay};">
@@ -777,7 +806,7 @@
             <div class="space-y-3 text-sm">
               <div class="flex justify-between stat-badge"><span class="text-gray-400">Average K/D</span><span class="font-semibold stat-value" data-player-rating="${playerKey}">${rating}</span></div>
               <div class="flex justify-between stat-badge"><span class="text-gray-400">Playtime</span><span class="font-mono stat-value">${playtime}</span></div>
-              <div class="flex justify-between stat-badge"><span class="text-gray-400">Main gun</span><span class="font-mono stat-value">${signature}</span></div>
+              <div class="flex justify-between stat-badge"><span class="text-gray-400">Favorite Weapon</span><span class="font-mono stat-value">${favWeapon}</span></div>
             </div>
           </div>
         `;
@@ -790,10 +819,10 @@
           <section class="team ${escapeHtml(team.key)}">
             <div class="text-center mb-8">
               <p class="uppercase tracking-[0.45em] text-[10px]" style="color: var(--accent); text-shadow: 0 0 10px rgba(var(--accent-rgb)/0.5);">
-                Team ${teamNumber} • Duo
+                Team ${teamNumber} • Squad
               </p>
               <h2 class="mt-3 text-5xl font-black tracking-tighter team-glow">
-                ${escapeHtml(team.titleMain)}<span class="team-accent">${escapeHtml(team.titleAccent)}</span>
+                <span class="team-accent">${escapeHtml(team.name)}</span>
               </h2>
               <div class="h-1 w-24 team-line mx-auto mt-4 rounded-full"></div>
             </div>
@@ -805,27 +834,42 @@
         `;
       }
 
-      function updateRenderedRatings(ratingsByPlayer) {
-        Object.entries(ratingsByPlayer).forEach(([playerKey, rating]) => {
-          const ratingNodes = teamsContainer.querySelectorAll(`[data-player-rating="${playerKey}"]`);
-          ratingNodes.forEach((node) => {
-            node.textContent = rating;
-          });
-        });
-      }
+      async function initTeams() {
+        teamsContainer.innerHTML = `
+          <div class="text-center text-white/60 uppercase tracking-[0.3em] text-xs">
+            Loading teams...
+          </div>
+        `;
 
-      async function hydrateRatings() {
-        try {
-          const ratingsByPlayer = await loadRatingsByPlayer();
-          updateRenderedRatings(ratingsByPlayer);
-        } catch (error) {
-          console.error("Failed to load player ratings:", error);
+        const [teamsResult, ratingsResult] = await Promise.allSettled([
+          loadTeamsFromApi(),
+          loadRatingsByPlayer()
+        ]);
+
+        if (teamsResult.status !== "fulfilled") {
+          console.error("Failed to load teams:", teamsResult.reason);
+          teamsContainer.innerHTML = `
+            <div class="text-center text-white/60 uppercase tracking-[0.3em] text-xs">
+              Failed to load teams
+            </div>
+          `;
+          return;
         }
-      }
 
-      function initTeams() {
-        teamsContainer.innerHTML = teams.map(renderTeamSection).join("");
-        hydrateRatings();
+        if (ratingsResult.status !== "fulfilled") {
+          console.error("Failed to load player ratings:", ratingsResult.reason);
+        }
+
+        const ratingsByPlayer = ratingsResult.status === "fulfilled" ? ratingsResult.value : {};
+        const teams = applyRatingsToTeams(teamsResult.value, ratingsByPlayer);
+
+        teamsContainer.innerHTML = teams.length
+          ? teams.map(renderTeamSection).join("")
+          : `
+            <div class="text-center text-white/60 uppercase tracking-[0.3em] text-xs">
+              No teams available
+            </div>
+          `;
       }
 
       initTeams();
