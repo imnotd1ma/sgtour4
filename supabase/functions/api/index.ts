@@ -406,7 +406,7 @@ async function handleGet(request: Request, supabase: ReturnType<typeof createAdm
         .order("name", { ascending: true }),
       supabase
         .from("players")
-        .select("id, slug, display_name, team_id, image_url, role, playtime, fav_weapon, roster_order")
+        .select("id, slug, display_name, team_id, image_url, role, playtime, fav_weapon, roster_order, is_captain")
         .eq("active", true)
         .order("roster_order", { ascending: true })
         .order("display_name", { ascending: true }),
@@ -441,6 +441,7 @@ async function handleGet(request: Request, supabase: ReturnType<typeof createAdm
         playtime: player.playtime,
         fav_weapon: player.fav_weapon,
         roster_order: player.roster_order,
+        is_captain: player.is_captain,
       });
     }
 

@@ -766,6 +766,7 @@
               role: String(player?.role || "").trim(),
               playtime: String(player?.playtime || "").trim(),
               favWeapon: String(player?.fav_weapon || "").trim(),
+              captain: Boolean(player?.is_captain),
               rating: DEFAULT_PLAYER_STATS.rating
             }))
             : []
