@@ -31,6 +31,7 @@
 - `matches`: матчи и результаты
 - `match_predictions`: обычные предикты
 - `tournament_predictions`: турнирные предикты
+- `tournament_settings`: настройки турнирных предиктов, включая open/close
 - `player_ratings`: оценки игроков по раундам
 - `match_scoring_rules`: очки за обычные предикты
 - `tournament_scoring_rules`: очки за турнирные предикты
@@ -39,6 +40,7 @@
 ## Что станет источником истины
 
 - Матчи и статусы живут в `matches`
+- Текст для match pill живёт в `matches.stage_label`
 - Результаты матчей живут в `matches.result_*`
 - Лидерборды считаются из `view`, а не сохраняются отдельной таблицей
 - Рейтинги игроков считаются из `player_ratings`
@@ -119,6 +121,18 @@ const GOOGLE_SCRIPT_URL = "https://<project-ref>.supabase.co/functions/v1/api";
 - Перенести `matches` из `predicts.html` в Supabase полностью, чтобы матчи создавались без редактирования HTML.
 - Перенести `allPlayers` и `TEAM_PLAYERS` в таблицы `players` и `teams`, а фронт загружать из базы.
 - Привязать сайт к Supabase Auth или верифицировать Discord user серверно, если захочешь убрать доверие к `user_id` из клиента.
+
+## Что теперь можно менять прямо в базе
+
+- В `matches`:
+  - `format` можно ставить `BO1` или `BO3`
+  - `stage_label` — это произвольный текст для pill на карточке матча
+  - `status` управляет тем, где матч показывается и открыт ли он для предиктов
+  - `result_*` задают итог матча для подсчёта очков
+- В `tournament_settings`:
+  - `predictions_open = true/false` открывает или закрывает турнирные предикты на сайте
+- В `tournament_predictions`:
+  - можно вручную посмотреть или даже проставить турнирный предикт конкретному пользователю
 
 ## Минимальный переход без переписывания сайта
 

@@ -47,6 +47,7 @@ create table public.matches (
   title text not null,
   sort_order integer not null unique,
   stage_number smallint not null check (stage_number >= 1),
+  stage_label text not null default '',
   status text not null default 'upcoming' check (status in ('upcoming', 'scheduled', 'active', 'completed')),
   format text not null default 'BO3' check (format in ('BO1', 'BO3')),
   team_a_name text not null,
@@ -102,6 +103,12 @@ create table public.tournament_results (
   assist_leader text,
   most_frequent_map text,
   most_infrequent_map text,
+  updated_at timestamptz not null default now()
+);
+
+create table public.tournament_settings (
+  tournament_key text primary key default 'default',
+  predictions_open boolean not null default false,
   updated_at timestamptz not null default now()
 );
 
@@ -169,6 +176,9 @@ values
 insert into public.tournament_results (tournament_key)
 values ('default');
 
+insert into public.tournament_settings (tournament_key, predictions_open)
+values ('default', false);
+
 insert into public.teams (slug, name)
 values
   ('pv', 'PEPEVISION'),
@@ -219,27 +229,28 @@ insert into public.matches (
   title,
   sort_order,
   stage_number,
+  stage_label,
   status,
   format,
   team_a_name,
   team_b_name
 )
 values
-  ('pv-loss', 'PEPEVISION vs LOSSTEAM', 1, 1, 'upcoming', 'BO3', 'PEPEVISION', 'LOSSTEAM'),
-  ('cz9-zbc', 'CZ9 vs ZBc', 2, 1, 'upcoming', 'BO3', 'CZ9', 'ZBc'),
-  ('dq-amk', 'DQTEAM vs AMK', 3, 1, 'upcoming', 'BO3', 'DQTEAM', 'AMK'),
-  ('loss-zbc', 'LOSSTEAM vs ZBc', 4, 2, 'upcoming', 'BO3', 'LOSSTEAM', 'ZBc'),
-  ('pv-dq', 'PEPEVISION vs DQTEAM', 5, 2, 'upcoming', 'BO3', 'PEPEVISION', 'DQTEAM'),
-  ('cz9-amk', 'CZ9 vs AMK', 6, 2, 'upcoming', 'BO3', 'CZ9', 'AMK'),
-  ('loss-cz9', 'LOSSTEAM vs CZ9', 7, 3, 'upcoming', 'BO3', 'LOSSTEAM', 'CZ9'),
-  ('pv-amk', 'PEPEVISION vs AMK', 8, 3, 'upcoming', 'BO3', 'PEPEVISION', 'AMK'),
-  ('zbc-dq', 'ZBc vs DQTEAM', 9, 3, 'upcoming', 'BO3', 'ZBc', 'DQTEAM'),
-  ('loss-dq', 'LOSSTEAM vs DQTEAM', 10, 4, 'upcoming', 'BO3', 'LOSSTEAM', 'DQTEAM'),
-  ('pv-cz9', 'PEPEVISION vs CZ9', 11, 4, 'upcoming', 'BO3', 'PEPEVISION', 'CZ9'),
-  ('zbc-amk', 'ZBc vs AMK', 12, 4, 'upcoming', 'BO3', 'ZBc', 'AMK'),
-  ('loss-amk', 'LOSSTEAM vs AMK', 13, 5, 'upcoming', 'BO3', 'LOSSTEAM', 'AMK'),
-  ('pv-zbc', 'PEPEVISION vs ZBc', 14, 5, 'upcoming', 'BO3', 'PEPEVISION', 'ZBc'),
-  ('cz9-dq', 'CZ9 vs DQTEAM', 15, 5, 'upcoming', 'BO3', 'CZ9', 'DQTEAM');
+  ('pv-loss', 'PEPEVISION vs LOSSTEAM', 1, 1, 'Round 1', 'upcoming', 'BO3', 'PEPEVISION', 'LOSSTEAM'),
+  ('cz9-zbc', 'CZ9 vs ZBc', 2, 1, 'Round 1', 'upcoming', 'BO3', 'CZ9', 'ZBc'),
+  ('dq-amk', 'DQTEAM vs AMK', 3, 1, 'Round 1', 'upcoming', 'BO3', 'DQTEAM', 'AMK'),
+  ('loss-zbc', 'LOSSTEAM vs ZBc', 4, 2, 'Round 2', 'upcoming', 'BO3', 'LOSSTEAM', 'ZBc'),
+  ('pv-dq', 'PEPEVISION vs DQTEAM', 5, 2, 'Round 2', 'upcoming', 'BO3', 'PEPEVISION', 'DQTEAM'),
+  ('cz9-amk', 'CZ9 vs AMK', 6, 2, 'Round 2', 'upcoming', 'BO3', 'CZ9', 'AMK'),
+  ('loss-cz9', 'LOSSTEAM vs CZ9', 7, 3, 'Round 3', 'upcoming', 'BO3', 'LOSSTEAM', 'CZ9'),
+  ('pv-amk', 'PEPEVISION vs AMK', 8, 3, 'Round 3', 'upcoming', 'BO3', 'PEPEVISION', 'AMK'),
+  ('zbc-dq', 'ZBc vs DQTEAM', 9, 3, 'Round 3', 'upcoming', 'BO3', 'ZBc', 'DQTEAM'),
+  ('loss-dq', 'LOSSTEAM vs DQTEAM', 10, 4, 'Round 4', 'upcoming', 'BO3', 'LOSSTEAM', 'DQTEAM'),
+  ('pv-cz9', 'PEPEVISION vs CZ9', 11, 4, 'Round 4', 'upcoming', 'BO3', 'PEPEVISION', 'CZ9'),
+  ('zbc-amk', 'ZBc vs AMK', 12, 4, 'Round 4', 'upcoming', 'BO3', 'ZBc', 'AMK'),
+  ('loss-amk', 'LOSSTEAM vs AMK', 13, 5, 'Round 5', 'upcoming', 'BO3', 'LOSSTEAM', 'AMK'),
+  ('pv-zbc', 'PEPEVISION vs ZBc', 14, 5, 'Round 5', 'upcoming', 'BO3', 'PEPEVISION', 'ZBc'),
+  ('cz9-dq', 'CZ9 vs DQTEAM', 15, 5, 'Round 5', 'upcoming', 'BO3', 'CZ9', 'DQTEAM');
 
 create or replace view public.v_match_prediction_feed as
 select
@@ -438,5 +449,6 @@ alter table public.match_predictions enable row level security;
 alter table public.match_scoring_rules enable row level security;
 alter table public.tournament_scoring_rules enable row level security;
 alter table public.tournament_results enable row level security;
+alter table public.tournament_settings enable row level security;
 alter table public.tournament_predictions enable row level security;
 alter table public.player_ratings enable row level security;

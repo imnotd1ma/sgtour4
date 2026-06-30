@@ -366,7 +366,7 @@ async function handleGet(request: Request, supabase: ReturnType<typeof createAdm
   if (mode === "matches") {
     const { data, error } = await supabase
       .from("matches")
-      .select("id, title, sort_order, stage_number, status, format, team_a_name, team_b_name, score_options, scheduled_at, result_winner, result_score, result_best_player")
+      .select("id, title, sort_order, stage_number, stage_label, status, format, team_a_name, team_b_name, score_options, scheduled_at, result_winner, result_score, result_best_player")
       .order("sort_order", { ascending: true });
 
     if (error) {
@@ -379,6 +379,7 @@ async function handleGet(request: Request, supabase: ReturnType<typeof createAdm
         title: match.title,
         sort_order: match.sort_order,
         stage_number: match.stage_number,
+        stage_label: match.stage_label,
         status: match.status,
         format: match.format,
         team_a_name: match.team_a_name,
@@ -393,6 +394,24 @@ async function handleGet(request: Request, supabase: ReturnType<typeof createAdm
           }
           : null,
       })),
+    });
+  }
+
+  if (mode === "tournament_config") {
+    const { data, error } = await supabase
+      .from("tournament_settings")
+      .select("tournament_key, predictions_open, updated_at")
+      .eq("tournament_key", "default")
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return jsonResponse({
+      tournament_key: data.tournament_key,
+      predictions_open: Boolean(data.predictions_open),
+      updated_at: data.updated_at,
     });
   }
 

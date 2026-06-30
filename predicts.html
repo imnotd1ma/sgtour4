@@ -2537,7 +2537,7 @@
   <script>
     const GOOGLE_SCRIPT_URL = "https://dcrhwrcdpcnzqtxhqgwb.supabase.co/functions/v1/api";
     const LIVE_PAGE_FLAGS = {
-      tournamentPredictionsOpen: false // Fast switch: set to false to instantly close tournament predictions.
+      tournamentPredictionsOpen: false
     };
     const leaderboardTable = document.getElementById("leaderboardTable");
     const leaderboardHead = document.getElementById("leaderboardHead");
@@ -2642,6 +2642,9 @@
     let state = {};
     let standingsTeamNames = [];
     let teamDirectory = new Map();
+    let tournamentConfig = {
+      predictionsOpen: LIVE_PAGE_FLAGS.tournamentPredictionsOpen
+    };
 
     function createDefaultMatchState() {
       return {
@@ -2702,7 +2705,7 @@
         title: String(raw.title || `${teamAName} vs ${teamBName}`).trim(),
         format: String(raw.format || "BO3").trim().toUpperCase(),
         status: String(raw.status || "").trim().toLowerCase() || "upcoming",
-        stage: `Stage ${stageNumber}`,
+        stageLabel: String(raw.stage_label || "").trim() || `Round ${stageNumber}`,
         date: formatMatchDate(raw.scheduled_at, stageNumber),
         players: teamAMeta.slug && teamBMeta.slug ? `${teamAMeta.slug}+${teamBMeta.slug}` : [],
         scoreOptions,
@@ -2982,7 +2985,17 @@
     };
 
     function areTournamentPredictionsOpen() {
-      return LIVE_PAGE_FLAGS.tournamentPredictionsOpen;
+      return Boolean(tournamentConfig.predictionsOpen);
+    }
+
+    async function loadTournamentConfig() {
+      try {
+        const data = await fetchJson(`${GOOGLE_SCRIPT_URL}?mode=tournament_config`);
+        tournamentConfig.predictionsOpen = Boolean(data?.predictions_open);
+      } catch (error) {
+        console.warn("Failed to load tournament config, using local fallback", error);
+        tournamentConfig.predictionsOpen = Boolean(LIVE_PAGE_FLAGS.tournamentPredictionsOpen);
+      }
     }
 
     function syncTournamentTabState() {
@@ -4047,7 +4060,7 @@
           <div class="flex items-center justify-between gap-4 flex-wrap">
             <div class="flex items-center gap-2 flex-wrap">
               <span class="pill">${escapeHtml(match.format)}</span>
-              <span class="pill">${escapeHtml(match.stage)}</span>
+              <span class="pill">${escapeHtml(match.stageLabel || "")}</span>
               <span class="pill">${escapeHtml(match.date)}</span>
             </div>
             <div class="match-result-pill" data-variant="${escapeHtml(status)}">${escapeHtml(getMatchStatusLabel(match.id))}</div>
@@ -5260,6 +5273,7 @@
     }());
 
     async function initPredictsPage() {
+      await loadTournamentConfig();
       renderScoringSummary();
       renderTournamentScoringSummary();
       syncTournamentTabState();
