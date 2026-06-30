@@ -83,6 +83,13 @@
       return token ? { Authorization: `Bearer ${token}` } : {};
     }
 
+    function buildApiPostHeaders() {
+      return {
+        "Content-Type": "text/plain;charset=utf-8",
+        ...buildAuthHeaders()
+      };
+    }
+
     function showPage() {
       document.documentElement.dataset.authState = "ready";
       document.body?.style.setProperty("visibility", "visible");
@@ -2528,7 +2535,7 @@
   </footer>
   
   <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyILFKyqrVxOQkwT2k9a_YGdSy0jb6-YsUwga3gC2ahD31u98jvv0VL5A99Rccnc-w/exec";
+    const GOOGLE_SCRIPT_URL = "https://dcrhwrcdpcnzqtxhqgwb.supabase.co/functions/v1/api";
     const LIVE_PAGE_FLAGS = {
       tournamentPredictionsOpen: false // Fast switch: set to false to instantly close tournament predictions.
     };
@@ -3610,9 +3617,7 @@
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
+          headers: buildApiPostHeaders(),
           body: JSON.stringify(payload)
         });
 
@@ -4489,9 +4494,7 @@
         const payload = buildSubmissionPayload();
         const res = await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
+          headers: buildApiPostHeaders(),
           body: JSON.stringify(payload)
         });
 
@@ -4636,9 +4639,7 @@
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
+          headers: buildApiPostHeaders(),
           body: JSON.stringify(data)
         });
 
@@ -4770,9 +4771,7 @@
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
+          headers: buildApiPostHeaders(),
           body: JSON.stringify(payload)
         });
 
@@ -4916,7 +4915,7 @@
         try {
           const res = await fetch(GOOGLE_SCRIPT_URL, {
             method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            headers: buildApiPostHeaders(),
             body: JSON.stringify(payload)
           });
           const text = await res.text();
