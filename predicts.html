@@ -2586,23 +2586,53 @@
       loss: 0
     };
 
-    const TEAM_PLAYERS = {
-      dd: ["Takumi", "s1mp1k", "igrok6574", "KSTR"],
-      off9: ["crazy_crib", "loss", "Zero", "deadseeker7249"],
-      k7: ["KriKkK", "lam4uk", "ZuuB", "strew"],
-      altz: ["11mn0td", "plague", "FEBET", "Blessed"],
-      kpm: ["Klat4er", "sanoko", "Penne", "z3rtty"],
-      bk: ["minor-", "han4k", "WIN_Dizel", "ds_swanson"],
-    };
+    const TEAM_PLAYERS = {};
 
-    const TEAM_META = {
-      DDTEAM: { slug: "dd", subtitle: "", logo: "" },
-      OFF9: { slug: "off9", subtitle: "", logo: "" },
-      K7: { slug: "k7", subtitle: "", logo: "" },
-      ALTZ: { slug: "altz", subtitle: "", logo: "" },
-      KPM: { slug: "kpm", subtitle: "", logo: "" },
-      BURGERKING: { slug: "bk", subtitle: "", logo: "" },
-    };
+    const TEAM_META = {};
+
+    function replaceObjectContents(target, nextValues) {
+      Object.keys(target).forEach((key) => {
+        delete target[key];
+      });
+
+      Object.assign(target, nextValues);
+    }
+
+    async function loadTeamsFromApi() {
+      try {
+        const data = await fetchJson(`${GOOGLE_SCRIPT_URL}?mode=teams`);
+        const rows = Array.isArray(data?.teams) ? data.teams : [];
+
+        const nextTeamMeta = {};
+        const nextTeamPlayers = {};
+
+        rows.forEach((team) => {
+          const teamName = String(team?.name || "").trim();
+          const teamSlug = String(team?.slug || "").trim().toLowerCase();
+
+          if (!teamName || !teamSlug) {
+            return;
+          }
+
+          nextTeamMeta[teamName] = {
+            slug: teamSlug,
+            subtitle: String(team?.subtitle || "").trim(),
+            logo: String(team?.logo_url || "").trim()
+          };
+
+          nextTeamPlayers[teamSlug] = Array.isArray(team?.players)
+            ? team.players
+              .map((player) => String(player?.display_name || "").trim())
+              .filter(Boolean)
+            : [];
+        });
+
+        replaceObjectContents(TEAM_META, nextTeamMeta);
+        replaceObjectContents(TEAM_PLAYERS, nextTeamPlayers);
+      } catch (error) {
+        console.error("Failed to load teams from API", error);
+      }
+    }
 
     function resolveMatchPlayers(players) {
       if (Array.isArray(players)) {
@@ -2921,7 +2951,7 @@
         key: "champion_team",
         label: "Победитель турнира",
         icon: "🏆",
-        options: ["DDTEAM", "OFF9", "K7", "ALTZ", "KPM", "BURGERKING"],
+        options: ["DDTEAM", "OFF9", "K7", "ALTZ", "KPM", "BURGER KING"],
         placeholder: "Выберите команду"
       },
       {
@@ -5281,6 +5311,7 @@
       renderTournamentResultCard();
       renderTournamentPredictionCards();
 
+      await loadTeamsFromApi();
       await loadMatchesFromApi();
       await hydrateSavedPredictions();
       await loadTournamentPredictions();

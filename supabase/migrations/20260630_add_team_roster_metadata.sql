@@ -20,7 +20,7 @@ values
   ('k7', 'K7', '', '', 3),
   ('altz', 'ALTZ', '', '', 4),
   ('kpm', 'KPM', '', '', 5),
-  ('bk', 'BURGERKING', '', '', 6)
+  ('bk', 'BURGER KING', '', '', 6)
 on conflict (slug) do update
 set
   name = excluded.name,
