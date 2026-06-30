@@ -2597,6 +2597,17 @@
       dq: ["KriKkK", "igrok6574"]
     };
 
+    const TEAM_META = {
+      PEPEVISION: { slug: "pv", subtitle: "", logo: "" },
+      LOSSTEAM: { slug: "loss", subtitle: "", logo: "" },
+      CZ9: { slug: "cz9", subtitle: "", logo: "" },
+      ZBc: { slug: "zbc", subtitle: "", logo: "" },
+      DQTEAM: { slug: "dq", subtitle: "", logo: "" },
+      AMK: { slug: "amk", subtitle: "", logo: "" },
+      KLB: { slug: "klb", subtitle: "", logo: "" },
+      EGZ: { slug: "egz", subtitle: "", logo: "" }
+    };
+
     function resolveMatchPlayers(players) {
       if (Array.isArray(players)) {
         return players;
@@ -2612,7 +2623,7 @@
         .flatMap((teamKey) => TEAM_PLAYERS[teamKey] || []);
     }
 
-    const matches = [
+    let matches = [
       // `format` controls score behavior:
       // BO1 -> score is set automatically to 1:0, no score buttons
       // BO3 -> 2:0 / 2:1
@@ -2626,6 +2637,139 @@
       // BO1 results can omit `score`; "1:0" is still used internally for saved predictions and Google Sheet data.
       
     ];
+
+    let matchResults = {};
+    let state = {};
+    let standingsTeamNames = [];
+    let teamDirectory = new Map();
+
+    function createDefaultMatchState() {
+      return {
+        winner: "",
+        score: "",
+        player: "",
+        locked: false,
+        submittedAt: "",
+        statusText: "",
+        statusState: ""
+      };
+    }
+
+    function ensureMatchState(matchId) {
+      if (!state[matchId]) {
+        state[matchId] = createDefaultMatchState();
+      }
+
+      return state[matchId];
+    }
+
+    function getTeamMeta(teamName) {
+      return TEAM_META[String(teamName || "").trim()] || { slug: "", subtitle: "", logo: "" };
+    }
+
+    function formatMatchDate(value, fallbackStageNumber) {
+      if (!value) {
+        return `Stage ${fallbackStageNumber}`;
+      }
+
+      const parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) {
+        return `Stage ${fallbackStageNumber}`;
+      }
+
+      return parsed.toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit"
+      });
+    }
+
+    function normalizeRemoteMatch(raw, index) {
+      if (!raw || typeof raw !== "object") {
+        return null;
+      }
+
+      const teamAName = String(raw.team_a_name || "").trim();
+      const teamBName = String(raw.team_b_name || "").trim();
+      const teamAMeta = getTeamMeta(teamAName);
+      const teamBMeta = getTeamMeta(teamBName);
+      const stageNumber = Number(raw.stage_number) || Math.floor(index / 3) + 1;
+      const scoreOptions = Array.isArray(raw.score_options)
+        ? raw.score_options.map((value) => String(value)).filter(Boolean)
+        : [];
+
+      return {
+        id: String(raw.id || ""),
+        title: String(raw.title || `${teamAName} vs ${teamBName}`).trim(),
+        format: String(raw.format || "BO3").trim().toUpperCase(),
+        status: String(raw.status || "").trim().toLowerCase() || "upcoming",
+        stage: `Stage ${stageNumber}`,
+        date: formatMatchDate(raw.scheduled_at, stageNumber),
+        players: teamAMeta.slug && teamBMeta.slug ? `${teamAMeta.slug}+${teamBMeta.slug}` : [],
+        scoreOptions,
+        teamA: {
+          name: teamAName || "TBD",
+          subtitle: teamAMeta.subtitle || "",
+          logo: teamAMeta.logo || ""
+        },
+        teamB: {
+          name: teamBName || "TBD",
+          subtitle: teamBMeta.subtitle || "",
+          logo: teamBMeta.logo || ""
+        },
+        result: raw.result && typeof raw.result === "object"
+          ? {
+            winner: String(raw.result.winner || "").trim(),
+            score: String(raw.result.score || "").trim(),
+            best: String(raw.result.best || "").trim()
+          }
+          : null,
+        template: !teamAName || !teamBName || teamAName === "TBD" || teamBName === "TBD"
+      };
+    }
+
+    function rebuildMatchCaches() {
+      matchResults = Object.fromEntries(
+        matches
+          .map((match) => [match.id, normalizeMatchResult(match)])
+          .filter(([, result]) => result)
+      );
+
+      const previousState = state;
+      state = Object.fromEntries(
+        matches.map((match) => [
+          match.id,
+          {
+            ...createDefaultMatchState(),
+            ...(previousState[match.id] || {})
+          }
+        ])
+      );
+
+      matches.forEach((match) => {
+        normalizeMatchScoreState(match);
+      });
+
+      standingsTeamNames = Array.from(new Set(
+        matches.flatMap((match) => [match.teamA.name, match.teamB.name])
+      ))
+        .filter((teamName) => teamName && teamName !== "TBD")
+        .sort((a, b) => a.localeCompare(b, "ru"));
+
+      teamDirectory = new Map();
+      matches.forEach((match) => {
+        [match.teamA, match.teamB].forEach((team) => {
+          if (!team?.name || team.name === "TBD" || teamDirectory.has(team.name)) {
+            return;
+          }
+
+          teamDirectory.set(team.name, {
+            name: team.name,
+            subtitle: team.subtitle || "",
+            logo: team.logo || ""
+          });
+        });
+      });
+    }
 
     function getMatchFormat(match) {
       return String(match?.format || "").trim().toUpperCase();
@@ -2706,45 +2850,7 @@
       return getMatchFormat(match) !== "BO1";
     }
 
-    const matchResults = Object.fromEntries(
-      matches
-        .map((match) => [match.id, normalizeMatchResult(match)])
-        .filter(([, result]) => result)
-    );
-
-    const state = Object.fromEntries(
-      matches.map((match) => [
-        match.id,
-        {
-          winner: "",
-          score: "",
-          player: "",
-          locked: false,
-          submittedAt: ""
-        }
-      ])
-    );
-
-    const standingsTeamNames = Array.from(new Set(
-      matches.flatMap((match) => [match.teamA.name, match.teamB.name])
-    ))
-      .filter((teamName) => teamName && teamName !== "TBD")
-      .sort((a, b) => a.localeCompare(b, "ru"));
-
-    const teamDirectory = new Map();
-    matches.forEach((match) => {
-      [match.teamA, match.teamB].forEach((team) => {
-        if (!team?.name || team.name === "TBD" || teamDirectory.has(team.name)) {
-          return;
-        }
-
-        teamDirectory.set(team.name, {
-          name: team.name,
-          subtitle: team.subtitle || "",
-          logo: team.logo || ""
-        });
-      });
-    });
+    rebuildMatchCaches();
 
     function setMatchGridsHydrating(isHydrating) {
       [
@@ -4341,6 +4447,28 @@
       return await res.json();
     }
 
+    async function loadMatchesFromApi() {
+      try {
+        const data = await fetchJson(`${GOOGLE_SCRIPT_URL}?mode=matches`);
+        const rows = Array.isArray(data?.matches) ? data.matches : [];
+        const nextMatches = rows
+          .map((row, index) => normalizeRemoteMatch(row, index))
+          .filter((match) => match && match.id);
+
+        if (nextMatches.length) {
+          matches = nextMatches;
+          rebuildMatchCaches();
+        }
+      } catch (error) {
+        console.error("Failed to load matches from API", error);
+      }
+
+      renderMatches({ animate: false });
+      renderTeamStandings();
+      syncRenderedMatchCards();
+      syncUpcomingSubmitState();
+    }
+
     function extractPredictionRows(data) {
       if (Array.isArray(data?.predictions)) {
         return data.predictions;
@@ -5131,18 +5259,21 @@
       renderAuth();
     }());
 
-    renderScoringSummary();
-    renderTournamentScoringSummary();
-    syncTournamentTabState();
-    setMatchGridsHydrating(true);
-    renderMatches({ animate: false });
-    renderTournamentResultCard();
-    renderTournamentPredictionCards();
-    syncUpcomingSubmitState();
-    syncRenderedMatchCards();
-    hydrateSavedPredictions();
-    loadTournamentPredictions();
-    loadLeaderboard();
+    async function initPredictsPage() {
+      renderScoringSummary();
+      renderTournamentScoringSummary();
+      syncTournamentTabState();
+      setMatchGridsHydrating(true);
+      renderTournamentResultCard();
+      renderTournamentPredictionCards();
+
+      await loadMatchesFromApi();
+      await hydrateSavedPredictions();
+      await loadTournamentPredictions();
+      await loadLeaderboard();
+    }
+
+    initPredictsPage();
   </script>
   <script src="scripts/theme-switcher.js"></script>
 </body>
