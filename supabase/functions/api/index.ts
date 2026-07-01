@@ -199,7 +199,7 @@ async function getTournamentResultStatus(supabase: ReturnType<typeof createAdmin
   return data;
 }
 
-function resolveRatingRound(data: JsonRecord, matches: Array<{ id: string; stage_number: number }>) {
+function resolveRatingRound(data: JsonRecord, matches: Array<{ id: string; round_number: number }>) {
   const direct = String(data.match ?? data.match_key ?? data.match_column ?? "").trim().toLowerCase();
   if (/^match[1-5]$/.test(direct)) {
     return Number(direct.replace("match", ""));
@@ -217,8 +217,8 @@ function resolveRatingRound(data: JsonRecord, matches: Array<{ id: string; stage
   const matchId = String(data.match_id ?? data.matchId ?? "").trim();
   if (matchId) {
     const match = matches.find((item) => item.id === matchId);
-    if (match?.stage_number) {
-      return match.stage_number;
+    if (match?.round_number) {
+      return match.round_number;
     }
   }
 
@@ -366,7 +366,7 @@ async function handleGet(request: Request, supabase: ReturnType<typeof createAdm
   if (mode === "matches") {
     const { data, error } = await supabase
       .from("matches")
-      .select("id, title, sort_order, stage_number, stage_label, status, format, team_a_name, team_b_name, score_options, scheduled_at, result_winner, result_score, result_best_player")
+      .select("id, title, sort_order, round_number, status, format, team_a_name, team_b_name, score_options, scheduled_at, result_winner, result_score, result_best_player, modal_data")
       .order("sort_order", { ascending: true });
 
     if (error) {
@@ -378,14 +378,14 @@ async function handleGet(request: Request, supabase: ReturnType<typeof createAdm
         id: match.id,
         title: match.title,
         sort_order: match.sort_order,
-        stage_number: match.stage_number,
-        stage_label: match.stage_label,
+        round_number: match.round_number,
         status: match.status,
         format: match.format,
         team_a_name: match.team_a_name,
         team_b_name: match.team_b_name,
         score_options: match.score_options,
         scheduled_at: match.scheduled_at,
+        modal_data: match.modal_data,
         result: match.result_winner
           ? {
             winner: match.result_winner,
@@ -715,7 +715,7 @@ async function handleSubmitPlayerRatings(request: Request, payload: JsonRecord, 
 
   const { data: matches, error: matchesError } = await supabase
     .from("matches")
-    .select("id, stage_number");
+    .select("id, round_number");
 
   if (matchesError) {
     throw new Error(matchesError.message);
@@ -746,7 +746,7 @@ async function handleSubmitPlayerRatings(request: Request, payload: JsonRecord, 
     (players ?? []).map((player) => [normalizePlayerName(player.display_name), player]),
   );
 
-  const targetMatch = (matches ?? []).find((item) => item.stage_number === ratingRound);
+  const targetMatch = (matches ?? []).find((item) => item.round_number === ratingRound);
   const missingPlayers: string[] = [];
   let updatedCount = 0;
 
