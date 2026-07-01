@@ -40,7 +40,7 @@
 ## Что станет источником истины
 
 - Матчи и статусы живут в `matches`
-- Текст для match pill живёт в `matches.stage_label`
+- Текст для match pill берётся из `matches.modal_data` по карте матча
 - Результаты матчей живут в `matches.result_*`
 - Лидерборды считаются из `view`, а не сохраняются отдельной таблицей
 - Рейтинги игроков считаются из `player_ratings`
@@ -126,7 +126,8 @@ const GOOGLE_SCRIPT_URL = "https://<project-ref>.supabase.co/functions/v1/api";
 
 - В `matches`:
   - `format` можно ставить `BO1` или `BO3`
-  - `stage_label` — это произвольный текст для pill на карточке матча
+  - `round_number` управляет подписью `Round N`, а pill на карточке матча берёт карту из `modal_data.map` или `modal_data.maps[0].map`
+  - `modal_data.team_a_stats` и `modal_data.team_b_stats` можно хранить как объект вида `{ "player-slug": { "k": 10, "d": 8, "a": 3 } }`, а состав подтянется из `teams/players`
   - `status` управляет тем, где матч показывается и открыт ли он для предиктов
   - `result_*` задают итог матча для подсчёта очков
 - В `tournament_settings`:
