@@ -2590,12 +2590,29 @@
 
     const TEAM_META = {};
 
+    const TOURNAMENT_MAP_OPTIONS = ["Anubis", "Overpass", "Inferno", "Mirage", "Dust2", "Nuke", "Ancient", "Train", "Vertigo", "Cache"];
+
     function replaceObjectContents(target, nextValues) {
       Object.keys(target).forEach((key) => {
         delete target[key];
       });
 
       Object.assign(target, nextValues);
+    }
+
+    function getTournamentTeamOptions() {
+      return Object.keys(TEAM_META).sort((a, b) => a.localeCompare(b, "ru"));
+    }
+
+    function getTournamentPlayerOptions() {
+      return Array.from(
+        new Set(
+          Object.values(TEAM_PLAYERS)
+            .flat()
+            .map((player) => String(player || "").trim())
+            .filter(Boolean)
+        )
+      ).sort((a, b) => a.localeCompare(b, "ru"));
     }
 
     async function loadTeamsFromApi() {
@@ -2911,14 +2928,6 @@
       });
     }
 
-    const allPlayers = [
-    "Takumi", "s1mp1k", "igrok6574", "KSTR",
-    "crazy_crib", "loss", "Zero", "deadseeker",
-    "KriKkK", "Lam4uk", "ZuuB", "strew",
-    "11mn0td", "plague", "FEBET", "Aahnna",
-    "Klat4er", "sanoko", "Penne", "z3rtty",
-    "minor-", "han4k", "WIN_Dizel", "ds_swanson"
-    ];
 
     const tournamentState = {
       champion_team: "",
@@ -2951,56 +2960,56 @@
         key: "champion_team",
         label: "Победитель турнира",
         icon: "🏆",
-        options: ["DDTEAM", "OFF9", "K7", "ALTZ", "KPM", "BURGER KING"],
+        options: getTournamentTeamOptions,
         placeholder: "Выберите команду"
       },
       {
         key: "mvp_player",
         label: "MVP турнира",
         icon: "⭐",
-        options: allPlayers,
+        options: getTournamentPlayerOptions,
         placeholder: "Выберите игрока"
       },
       {
         key: "best_kd_player",
         label: "Лучший K/D турнира",
         icon: "📈",
-        options: allPlayers,
+        options: getTournamentPlayerOptions,
         placeholder: "Выберите игрока"
       },
       {
         key: "worst_kd_player",
         label: "Худший K/D турнира",
         icon: "📉",
-        options: allPlayers,
+        options: getTournamentPlayerOptions,
         placeholder: "Выберите игрока"
       },
       {
         key: "frag_leader",
         label: "Топ-фрагер турнира",
         icon: "🔫",
-        options: allPlayers,
+        options: getTournamentPlayerOptions,
         placeholder: "Выберите игрока"
       },
       {
         key: "assist_leader",
         label: "Топ-ассист турнира",
         icon: "🤝",
-        options: allPlayers,
+        options: getTournamentPlayerOptions,
         placeholder: "Выберите игрока"
       },
       {
         key: "most_frequent_map",
         label: "Самая популярная карта",
         icon: "🗺️",
-        options: ["Anubis", "Overpass", "Inferno", "Mirage", "Dust2", "Nuke", "Ancient", "Train", "Vertigo", "Cache"],
+        options: TOURNAMENT_MAP_OPTIONS,
         placeholder: "Выберите карту"
       },
       {
         key: "most_infrequent_map",
         label: "Самая непопулярная карта",
         icon: "🗺️",
-        options: ["Anubis", "Overpass", "Inferno", "Mirage", "Dust2", "Nuke", "Ancient", "Train", "Vertigo", "Cache"],
+        options: TOURNAMENT_MAP_OPTIONS,
         placeholder: "Выберите карту"
       }
     ];
@@ -3046,6 +3055,15 @@
       return tournamentPredictionKeys.every((key) => Boolean(tournamentPersistence.persistedFields[key]));
     }
 
+    function getTournamentCategoryOptions(category) {
+      if (typeof category?.options === "function") {
+        const resolvedOptions = category.options();
+        return Array.isArray(resolvedOptions) ? resolvedOptions : [];
+      }
+
+      return Array.isArray(category?.options) ? category.options : [];
+    }
+
     function renderTournamentPredictionCards() {
       const grid = document.getElementById("tournamentPredictionGrid");
       if (!grid) {
@@ -3055,6 +3073,7 @@
       const predictionsOpen = areTournamentPredictionsOpen();
 
       grid.innerHTML = tournamentCategories.map((category) => {
+        const options = getTournamentCategoryOptions(category);
         const fieldLocked = isTournamentFieldLocked(category.key);
         const controlDisabled = fieldLocked || !predictionsOpen;
         const selected = tournamentState[category.key];
@@ -3086,7 +3105,7 @@
               </div>
               <div class="player-dropdown" data-dropdown-key="${escapeHtml(category.key)}">
                 <div class="player-grid">
-                  ${category.options.map((value) => `
+                  ${options.map((value) => `
                     <button type="button" class="player-btn" data-key="${escapeHtml(category.key)}" data-value="${escapeHtml(value)}" data-action="select-player"${disabledAttr}>${escapeHtml(value)}</button>
                   `).join("")}
                 </div>
@@ -5312,6 +5331,7 @@
       renderTournamentPredictionCards();
 
       await loadTeamsFromApi();
+      renderTournamentPredictionCards();
       await loadMatchesFromApi();
       await hydrateSavedPredictions();
       await loadTournamentPredictions();
