@@ -200,6 +200,10 @@
       color: #ffffff;
     }
 
+    body.modal-open{
+      overflow: hidden;
+    }
+
     .glow{
       text-shadow:
         0 0 10px rgba(var(--accent-rgb) / 0.6),
@@ -1257,6 +1261,364 @@
       align-items: center;
       gap: 10px;
       width: 100%;
+    }
+
+    .match-details-trigger{
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 54px;
+      padding: 14px 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: linear-gradient(180deg, rgba(236, 241, 247, 0.78), rgba(206, 214, 227, 0.72));
+      color: #203149;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      box-shadow:
+        0 12px 32px rgba(10, 16, 28, 0.18),
+        inset 0 1px 0 rgba(255,255,255,0.65);
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease, filter .2s ease;
+    }
+
+    .match-details-trigger:hover{
+      transform: translateY(-1px);
+      border-color: rgba(var(--accent-rgb) / 0.55);
+      box-shadow:
+        0 16px 36px rgba(10, 16, 28, 0.22),
+        0 0 22px rgba(var(--accent-rgb) / 0.16);
+      filter: brightness(1.02);
+    }
+
+    .match-details-trigger:focus-visible{
+      outline: none;
+      box-shadow:
+        0 0 0 3px rgba(var(--accent-rgb) / 0.24),
+        0 16px 36px rgba(10, 16, 28, 0.22);
+    }
+
+    .match-modal-overlay{
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      background:
+        radial-gradient(circle at top, rgba(var(--accent-rgb) / 0.2), transparent 32%),
+        rgba(8, 8, 15, 0.82);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .24s ease;
+    }
+
+    .match-modal-overlay[data-state="open"]{
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .match-modal-panel{
+      width: min(1120px, 100%);
+      max-height: calc(100vh - 48px);
+      overflow: auto;
+      border-radius: 30px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(180deg, rgba(36, 22, 33, 0.98), rgba(16, 11, 20, 0.98));
+      box-shadow:
+        0 32px 90px rgba(0,0,0,0.42),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+      transform: translateY(18px) scale(0.98);
+      transition: transform .24s ease;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.18) transparent;
+    }
+
+    .match-modal-overlay[data-state="open"] .match-modal-panel{
+      transform: translateY(0) scale(1);
+    }
+
+    .match-modal-topbar{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .match-modal-icon-btn,
+    .match-modal-action{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.86);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      transition: background .2s ease, color .2s ease, transform .2s ease, border-color .2s ease;
+    }
+
+    .match-modal-icon-btn{
+      width: 44px;
+      padding: 0;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .match-modal-icon-btn:hover,
+    .match-modal-action:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.1);
+      color: #ffffff;
+    }
+
+    .match-modal-pills{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .match-modal-pill{
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.7);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+    }
+
+    .match-modal-scoreboard{
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(220px, 320px) minmax(0, 1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .match-modal-score-card,
+    .match-modal-map-card,
+    .match-modal-team-panel{
+      position: relative;
+      overflow: hidden;
+      border-radius: 26px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 20px 46px rgba(0,0,0,0.18);
+    }
+
+    .match-modal-score-card::before,
+    .match-modal-map-card::before,
+    .match-modal-team-panel::before{
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(var(--accent-rgb) / 0.22), transparent 55%);
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .match-modal-score-card::after,
+    .match-modal-map-card::after{
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: var(--modal-card-image, none);
+      background-size: cover;
+      background-position: center;
+      opacity: 0.12;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .match-modal-score-card > *,
+    .match-modal-map-card > *,
+    .match-modal-team-panel > *{
+      position: relative;
+      z-index: 1;
+    }
+
+    .match-modal-score-card.is-winning{
+      border-color: rgba(111, 255, 145, 0.42);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 22px 48px rgba(45, 112, 61, 0.18);
+    }
+
+    .match-modal-score-card.is-losing{
+      border-color: rgba(255, 111, 145, 0.32);
+    }
+
+    .match-modal-map-card{
+      background:
+        radial-gradient(circle at top, rgba(var(--accent-rgb) / 0.28), transparent 38%),
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    }
+
+    .match-modal-map-list{
+      display: grid;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .match-modal-map-row{
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 64px;
+      padding: 16px 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .match-modal-map-row::after{
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: var(--modal-row-map-image, none);
+      background-size: cover;
+      background-position: center;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    .match-modal-map-row > *{
+      position: relative;
+      z-index: 1;
+    }
+
+    .match-modal-map-label{
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: .02em;
+      color: #ffffff;
+    }
+
+    .match-modal-map-score{
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 900;
+      color: rgba(255,255,255,0.92);
+    }
+
+    .match-modal-map-score-win{
+      color: #8bf0a9;
+    }
+
+    .match-modal-map-score-loss{
+      color: #ff9ab7;
+    }
+
+    .match-modal-map-separator{
+      color: rgba(255,255,255,0.32);
+    }
+
+    .match-modal-team-grid{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .match-modal-player-row + .match-modal-player-row{
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .match-modal-player-row{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 2px;
+    }
+
+    .match-modal-player-meta{
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .match-modal-avatar{
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.78);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      flex: 0 0 auto;
+    }
+
+    .match-modal-avatar img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .match-modal-player-name{
+      min-width: 0;
+      font-size: 15px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.94);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .match-modal-kda{
+      flex: 0 0 auto;
+      font-size: 14px;
+      font-weight: 900;
+      color: rgba(255,255,255,0.92);
+      letter-spacing: .02em;
+    }
+
+    .match-modal-empty{
+      padding: 22px 4px 8px;
+      color: rgba(255,255,255,0.46);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 980px){
+      .match-modal-scoreboard{
+        grid-template-columns: 1fr;
+      }
+
+      .match-modal-team-grid{
+        grid-template-columns: 1fr;
+      }
     }
 
     .player-select-clear{
@@ -2530,6 +2892,64 @@
     </div>
   </main>
 
+  <div id="matchDetailsModal" class="match-modal-overlay" data-state="closed" hidden>
+    <div class="match-modal-panel p-5 md:p-7">
+      <div class="match-modal-topbar">
+        <button id="matchDetailsBack" type="button" class="match-modal-action">Назад</button>
+        <div class="flex items-center gap-3 flex-wrap">
+          <a id="matchDetailsReplay" href="#" target="_blank" rel="noopener noreferrer" class="match-modal-action" hidden>Смотреть повтор</a>
+          <button id="matchDetailsClose" type="button" class="match-modal-icon-btn" aria-label="Закрыть детали матча">×</button>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <h3 id="matchDetailsTitle" class="text-3xl md:text-4xl font-black tracking-tight text-white">Матч</h3>
+        <div class="match-modal-pills mt-4">
+          <span id="matchDetailsRound" class="match-modal-pill">Round</span>
+          <span id="matchDetailsFormat" class="match-modal-pill">BO3</span>
+          <span id="matchDetailsDate" class="match-modal-pill">TBD</span>
+          <span id="matchDetailsStatus" class="match-modal-pill">TBD</span>
+        </div>
+      </div>
+
+      <section class="match-modal-scoreboard mt-6">
+        <div id="matchDetailsLeftCard" class="match-modal-score-card px-5 py-7 text-center">
+          <div id="matchDetailsLeftName" class="text-[11px] font-black uppercase tracking-[0.24em] text-white/50">TBD</div>
+          <div id="matchDetailsLeftScore" class="mt-3 text-5xl md:text-6xl font-black tracking-[-0.05em] text-white">-</div>
+        </div>
+
+        <div id="matchDetailsMapCard" class="match-modal-map-card px-5 py-7 text-center">
+          <div id="matchDetailsMapTitle" class="text-[11px] font-black uppercase tracking-[0.32em] text-white/42">Карта</div>
+          <div id="matchDetailsMapName" class="mt-4 text-2xl md:text-4xl font-black tracking-[-0.04em] text-white">TBD</div>
+          <div id="matchDetailsMapList" class="match-modal-map-list mt-5 hidden"></div>
+        </div>
+
+        <div id="matchDetailsRightCard" class="match-modal-score-card px-5 py-7 text-center">
+          <div id="matchDetailsRightName" class="text-[11px] font-black uppercase tracking-[0.24em] text-white/50">TBD</div>
+          <div id="matchDetailsRightScore" class="mt-3 text-5xl md:text-6xl font-black tracking-[-0.05em] text-white">-</div>
+        </div>
+      </section>
+
+      <section class="match-modal-team-grid mt-6">
+        <div class="match-modal-team-panel p-5">
+          <div class="flex items-end justify-between gap-4">
+            <div id="matchDetailsTeamLeft" class="text-lg md:text-xl font-black tracking-[0.02em] text-white">TBD</div>
+            <div class="text-[11px] font-black uppercase tracking-[0.28em] text-white/42">K/D/A</div>
+          </div>
+          <div id="matchDetailsPlayersLeft" class="mt-4"></div>
+        </div>
+
+        <div class="match-modal-team-panel p-5">
+          <div class="flex items-end justify-between gap-4">
+            <div id="matchDetailsTeamRight" class="text-lg md:text-xl font-black tracking-[0.02em] text-white">TBD</div>
+            <div class="text-[11px] font-black uppercase tracking-[0.28em] text-white/42">K/D/A</div>
+          </div>
+          <div id="matchDetailsPlayersRight" class="mt-4"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
   <footer class="text-center py-12 mt-10 border-t border-white/5 text-[10px] tracking-[0.4em] uppercase" style="color: var(--footer-color);">
     © 2026 SG TOURNAMENT №4<span class="mx-3 opacity-20">|</span> SECRET GATE CORP.
   </footer>
@@ -2564,6 +2984,29 @@
     const upcomingSubmitShell = document.getElementById("upcomingSubmitShell");
     const upcomingSubmitStatus = document.getElementById("upcomingSubmitStatus");
     const submitUpcomingButton = document.getElementById("submitUpcomingButton");
+    const matchDetailsModal = document.getElementById("matchDetailsModal");
+    const matchDetailsBack = document.getElementById("matchDetailsBack");
+    const matchDetailsClose = document.getElementById("matchDetailsClose");
+    const matchDetailsReplay = document.getElementById("matchDetailsReplay");
+    const matchDetailsTitle = document.getElementById("matchDetailsTitle");
+    const matchDetailsRound = document.getElementById("matchDetailsRound");
+    const matchDetailsFormat = document.getElementById("matchDetailsFormat");
+    const matchDetailsDate = document.getElementById("matchDetailsDate");
+    const matchDetailsStatus = document.getElementById("matchDetailsStatus");
+    const matchDetailsLeftCard = document.getElementById("matchDetailsLeftCard");
+    const matchDetailsRightCard = document.getElementById("matchDetailsRightCard");
+    const matchDetailsMapCard = document.getElementById("matchDetailsMapCard");
+    const matchDetailsLeftName = document.getElementById("matchDetailsLeftName");
+    const matchDetailsRightName = document.getElementById("matchDetailsRightName");
+    const matchDetailsLeftScore = document.getElementById("matchDetailsLeftScore");
+    const matchDetailsRightScore = document.getElementById("matchDetailsRightScore");
+    const matchDetailsMapTitle = document.getElementById("matchDetailsMapTitle");
+    const matchDetailsMapName = document.getElementById("matchDetailsMapName");
+    const matchDetailsMapList = document.getElementById("matchDetailsMapList");
+    const matchDetailsTeamLeft = document.getElementById("matchDetailsTeamLeft");
+    const matchDetailsTeamRight = document.getElementById("matchDetailsTeamRight");
+    const matchDetailsPlayersLeft = document.getElementById("matchDetailsPlayersLeft");
+    const matchDetailsPlayersRight = document.getElementById("matchDetailsPlayersRight");
 
     const SCORING_RULES = {
       winner: 2,
@@ -2587,10 +3030,94 @@
     };
 
     const TEAM_PLAYERS = {};
+    const PLAYER_META = {};
 
     const TEAM_META = {};
+    let matchDetailsHideTimer = 0;
 
     const TOURNAMENT_MAP_OPTIONS = ["Anubis", "Overpass", "Inferno", "Mirage", "Dust2", "Nuke", "Ancient", "Train", "Vertigo", "Cache"];
+    const MAP_IMAGE_BY_KEY = {
+      anubis: "anubis",
+      ancient: "ancient",
+      cache: "cache",
+      dust2: "dust2",
+      inferno: "inferno",
+      mirage: "mirage",
+      nuke: "nuke",
+      overpass: "overpass",
+      train: "train",
+      vertigo: "vertigo"
+    };
+    const MAP_LABEL_BY_KEY = {
+      anubis: "Anubis",
+      ancient: "Ancient",
+      cache: "Cache",
+      dust2: "Dust2",
+      inferno: "Inferno",
+      mirage: "Mirage",
+      nuke: "Nuke",
+      overpass: "Overpass",
+      train: "Train",
+      vertigo: "Vertigo"
+    };
+
+    function normalizePlayerMetaKey(value) {
+      return String(value || "").trim().toLowerCase();
+    }
+
+    function normalizeMapKey(value) {
+      const compact = String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/^de_/, "")
+        .replace(/[\s_-]+/g, "");
+
+      if (compact === "dustii" || compact === "dedust2") {
+        return "dust2";
+      }
+
+      return compact;
+    }
+
+    function getMapBackground(value) {
+      const key = normalizeMapKey(value);
+      const slug = MAP_IMAGE_BY_KEY[key];
+      return slug ? `images/maps/${slug}.webp` : "";
+    }
+
+    function formatMapLabel(value) {
+      const key = normalizeMapKey(value);
+      if (MAP_LABEL_BY_KEY[key]) {
+        return MAP_LABEL_BY_KEY[key];
+      }
+
+      const text = String(value || "").trim();
+      if (!text) {
+        return "TBD";
+      }
+
+      return text
+        .replace(/^de_/i, "")
+        .replace(/[_-]+/g, " ")
+        .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    }
+
+    function getPlayerMeta(playerName) {
+      return PLAYER_META[normalizePlayerMetaKey(playerName)] || null;
+    }
+
+    function getPlayerAvatar(playerName) {
+      return String(getPlayerMeta(playerName)?.imageUrl || "").trim();
+    }
+
+    function getPlayerInitials(playerName) {
+      return String(playerName || "")
+        .split(/\s+/)
+        .map((word) => word[0] || "")
+        .join("")
+        .slice(0, 2)
+        .toUpperCase() || "??";
+    }
 
     function replaceObjectContents(target, nextValues) {
       Object.keys(target).forEach((key) => {
@@ -2622,6 +3149,7 @@
 
         const nextTeamMeta = {};
         const nextTeamPlayers = {};
+        const nextPlayerMeta = {};
 
         rows.forEach((team) => {
           const teamName = String(team?.name || "").trim();
@@ -2639,13 +3167,26 @@
 
           nextTeamPlayers[teamSlug] = Array.isArray(team?.players)
             ? team.players
-              .map((player) => String(player?.display_name || "").trim())
+              .map((player) => {
+                const displayName = String(player?.display_name || "").trim();
+                if (displayName) {
+                  nextPlayerMeta[normalizePlayerMetaKey(displayName)] = {
+                    name: displayName,
+                    imageUrl: String(player?.image_url || "").trim(),
+                    teamName,
+                    teamSlug
+                  };
+                }
+
+                return displayName;
+              })
               .filter(Boolean)
             : [];
         });
 
         replaceObjectContents(TEAM_META, nextTeamMeta);
         replaceObjectContents(TEAM_PLAYERS, nextTeamPlayers);
+        replaceObjectContents(PLAYER_META, nextPlayerMeta);
       } catch (error) {
         console.error("Failed to load teams from API", error);
       }
@@ -2748,6 +3289,7 @@
         title: String(raw.title || `${teamAName} vs ${teamBName}`).trim(),
         format: String(raw.format || "BO3").trim().toUpperCase(),
         status: String(raw.status || "").trim().toLowerCase() || "upcoming",
+        stageNumber,
         stageLabel: String(raw.stage_label || "").trim() || `Round ${stageNumber}`,
         date: formatMatchDate(raw.scheduled_at, stageNumber),
         players: teamAMeta.slug && teamBMeta.slug ? `${teamAMeta.slug}+${teamBMeta.slug}` : [],
@@ -2769,6 +3311,7 @@
             best: String(raw.result.best || "").trim()
           }
           : null,
+        modalData: raw.modal_data && typeof raw.modal_data === "object" ? raw.modal_data : {},
         template: !teamAName || !teamBName || teamAName === "TBD" || teamBName === "TBD"
       };
     }
@@ -4079,6 +4622,309 @@
       return `<div class="team-logo fallback">${escapeHtml(initials)}</div>`;
     }
 
+    function normalizeModalStatValue(value) {
+      const normalized = String(value ?? "").trim();
+      return normalized || "-";
+    }
+
+    function normalizeMatchModalPlayer(entry) {
+      if (!entry || typeof entry !== "object") {
+        return null;
+      }
+
+      const name = String(entry.player ?? entry.name ?? "").trim();
+      if (!name) {
+        return null;
+      }
+
+      return {
+        name,
+        kills: normalizeModalStatValue(entry.kills ?? entry.k),
+        deaths: normalizeModalStatValue(entry.deaths ?? entry.d),
+        assists: normalizeModalStatValue(entry.assists ?? entry.a),
+        avatar: String(entry.avatar ?? entry.image_url ?? getPlayerAvatar(name) ?? "").trim()
+      };
+    }
+
+    function normalizeMatchModalPlayers(entries) {
+      if (!Array.isArray(entries)) {
+        return [];
+      }
+
+      return entries
+        .map((entry) => normalizeMatchModalPlayer(entry))
+        .filter(Boolean);
+    }
+
+    function normalizeMatchModalMap(entry, index) {
+      if (!entry || typeof entry !== "object") {
+        return null;
+      }
+
+      const mapName = String(entry.map ?? entry.map_name ?? entry.name ?? "").trim();
+      const label = String(entry.label ?? "").trim() || formatMapLabel(mapName) || `Map ${index + 1}`;
+      const scoreA = normalizeModalStatValue(entry.score_a ?? entry.scoreA ?? entry.left_score ?? entry.leftScore);
+      const scoreB = normalizeModalStatValue(entry.score_b ?? entry.scoreB ?? entry.right_score ?? entry.rightScore);
+
+      return {
+        map: mapName,
+        label,
+        scoreA,
+        scoreB,
+        image: getMapBackground(mapName)
+      };
+    }
+
+    function normalizeMatchModalMaps(match) {
+      const source = Array.isArray(match?.modalData?.maps)
+        ? match.modalData.maps
+        : [];
+
+      return source
+        .map((entry, index) => normalizeMatchModalMap(entry, index))
+        .filter(Boolean);
+    }
+
+    function parseAbsoluteMatchScore(match) {
+      const score = String(match?.result?.score || "").trim();
+      if (!/^\d+\s*:\s*\d+$/.test(score)) {
+        return null;
+      }
+
+      const [winnerScoreRaw, loserScoreRaw] = score.split(":");
+      const winnerScore = String(winnerScoreRaw || "").trim();
+      const loserScore = String(loserScoreRaw || "").trim();
+      if (!winnerScore || !loserScore || !match?.result?.winner) {
+        return null;
+      }
+
+      if (match.result.winner === match.teamA.name) {
+        return { left: winnerScore, right: loserScore };
+      }
+
+      if (match.result.winner === match.teamB.name) {
+        return { left: loserScore, right: winnerScore };
+      }
+
+      return null;
+    }
+
+    function deriveScoreFromModalMaps(maps) {
+      if (!Array.isArray(maps) || !maps.length) {
+        return null;
+      }
+
+      if (maps.length === 1) {
+        return {
+          left: maps[0].scoreA,
+          right: maps[0].scoreB
+        };
+      }
+
+      let leftWins = 0;
+      let rightWins = 0;
+
+      maps.forEach((map) => {
+        const left = Number(map.scoreA);
+        const right = Number(map.scoreB);
+        if (Number.isNaN(left) || Number.isNaN(right)) {
+          return;
+        }
+
+        if (left > right) {
+          leftWins++;
+        } else if (right > left) {
+          rightWins++;
+        }
+      });
+
+      if (!leftWins && !rightWins) {
+        return null;
+      }
+
+      return {
+        left: String(leftWins),
+        right: String(rightWins)
+      };
+    }
+
+    function getMatchModalSummary(match) {
+      const modalData = match?.modalData && typeof match.modalData === "object" ? match.modalData : {};
+      const maps = normalizeMatchModalMaps(match);
+      const featuredMap = String(modalData.map ?? modalData.map_name ?? maps[0]?.map ?? "").trim();
+      const explicitLeft = String(modalData.score_a ?? modalData.scoreA ?? "").trim();
+      const explicitRight = String(modalData.score_b ?? modalData.scoreB ?? "").trim();
+      const explicitScore = explicitLeft && explicitRight
+        ? { left: explicitLeft, right: explicitRight }
+        : null;
+      const derivedScore = deriveScoreFromModalMaps(maps) || parseAbsoluteMatchScore(match);
+
+      return {
+        replayUrl: String(modalData.replay_url ?? modalData.replayUrl ?? "").trim(),
+        featuredMap,
+        maps,
+        leftPlayers: normalizeMatchModalPlayers(modalData.team_a_stats ?? modalData.teamAStats),
+        rightPlayers: normalizeMatchModalPlayers(modalData.team_b_stats ?? modalData.teamBStats),
+        score: explicitScore || derivedScore || { left: "-", right: "-" }
+      };
+    }
+
+    function renderMatchDetailsPlayers(players) {
+      if (!players.length) {
+        return `<div class="match-modal-empty">Статистика появится позже.</div>`;
+      }
+
+      return players.map((player) => `
+        <div class="match-modal-player-row">
+          <div class="match-modal-player-meta">
+            <div class="match-modal-avatar">
+              ${player.avatar
+                ? `<img src="${escapeHtml(player.avatar)}" alt="${escapeHtml(player.name)} avatar">`
+                : escapeHtml(getPlayerInitials(player.name))}
+            </div>
+            <div class="match-modal-player-name">${escapeHtml(player.name)}</div>
+          </div>
+          <div class="match-modal-kda">${escapeHtml(`${player.kills}/${player.deaths}/${player.assists}`)}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderMatchDetailsMaps(maps) {
+      return maps.map((map) => {
+        const left = Number(map.scoreA);
+        const right = Number(map.scoreB);
+        const hasNumbers = !Number.isNaN(left) && !Number.isNaN(right);
+        const leftClass = hasNumbers
+          ? (left > right ? " match-modal-map-score-win" : left < right ? " match-modal-map-score-loss" : "")
+          : "";
+        const rightClass = hasNumbers
+          ? (right > left ? " match-modal-map-score-win" : right < left ? " match-modal-map-score-loss" : "")
+          : "";
+        const style = map.image ? ` style="--modal-row-map-image:url('${escapeHtml(map.image)}')"` : "";
+
+        return `
+          <div class="match-modal-map-row"${style}>
+            <span class="match-modal-map-label">${escapeHtml(map.label)}</span>
+            <span class="match-modal-map-score">
+              <span class="${(`match-modal-map-score-value${leftClass}`).trim()}">${escapeHtml(map.scoreA)}</span>
+              <span class="match-modal-map-separator">:</span>
+              <span class="${(`match-modal-map-score-value${rightClass}`).trim()}">${escapeHtml(map.scoreB)}</span>
+            </span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function setMatchDetailsCardImage(element, imageUrl) {
+      if (!element) {
+        return;
+      }
+
+      element.style.setProperty("--modal-card-image", imageUrl ? `url("${imageUrl}")` : "none");
+    }
+
+    function setMatchDetailsCardState(element, isWinner, isLoser) {
+      if (!element) {
+        return;
+      }
+
+      element.classList.remove("is-winning", "is-losing");
+
+      if (isWinner) {
+        element.classList.add("is-winning");
+      } else if (isLoser) {
+        element.classList.add("is-losing");
+      }
+    }
+
+    function fillMatchDetailsModal(match) {
+      if (!match) {
+        return;
+      }
+
+      const summary = getMatchModalSummary(match);
+      const leftScoreValue = Number(summary.score.left);
+      const rightScoreValue = Number(summary.score.right);
+      const hasNumericScore = !Number.isNaN(leftScoreValue) && !Number.isNaN(rightScoreValue);
+      const hasSeriesMaps = summary.maps.length > 1;
+      const highlightedMap = summary.featuredMap || summary.maps[0]?.map || "";
+
+      matchDetailsTitle.textContent = match.title || `${match.teamA.name} vs ${match.teamB.name}`;
+      matchDetailsRound.textContent = `Round ${match.stageNumber || "-"}`;
+      matchDetailsFormat.textContent = match.format || "BO3";
+      matchDetailsDate.textContent = match.date || "TBD";
+      matchDetailsStatus.textContent = getMatchStatusLabel(match.id);
+      matchDetailsLeftName.textContent = match.teamA.name || "TBD";
+      matchDetailsRightName.textContent = match.teamB.name || "TBD";
+      matchDetailsLeftScore.textContent = summary.score.left;
+      matchDetailsRightScore.textContent = summary.score.right;
+      matchDetailsTeamLeft.textContent = match.teamA.name || "TBD";
+      matchDetailsTeamRight.textContent = match.teamB.name || "TBD";
+      matchDetailsPlayersLeft.innerHTML = renderMatchDetailsPlayers(summary.leftPlayers);
+      matchDetailsPlayersRight.innerHTML = renderMatchDetailsPlayers(summary.rightPlayers);
+
+      if (hasSeriesMaps) {
+        matchDetailsMapTitle.textContent = `Карты ${match.format || "BO3"}`;
+        matchDetailsMapName.textContent = "";
+        matchDetailsMapName.classList.add("hidden");
+        matchDetailsMapList.innerHTML = renderMatchDetailsMaps(summary.maps);
+        matchDetailsMapList.classList.remove("hidden");
+      } else {
+        matchDetailsMapTitle.textContent = "Карта";
+        matchDetailsMapName.textContent = formatMapLabel(highlightedMap);
+        matchDetailsMapName.classList.remove("hidden");
+        matchDetailsMapList.innerHTML = "";
+        matchDetailsMapList.classList.add("hidden");
+      }
+
+      if (summary.replayUrl) {
+        matchDetailsReplay.href = summary.replayUrl;
+        matchDetailsReplay.hidden = false;
+      } else {
+        matchDetailsReplay.removeAttribute("href");
+        matchDetailsReplay.hidden = true;
+      }
+
+      setMatchDetailsCardImage(matchDetailsMapCard, hasSeriesMaps ? "" : getMapBackground(highlightedMap));
+      setMatchDetailsCardImage(matchDetailsLeftCard, match.teamA.logo || "");
+      setMatchDetailsCardImage(matchDetailsRightCard, match.teamB.logo || "");
+      setMatchDetailsCardState(matchDetailsLeftCard, hasNumericScore && leftScoreValue > rightScoreValue, hasNumericScore && leftScoreValue < rightScoreValue);
+      setMatchDetailsCardState(matchDetailsRightCard, hasNumericScore && rightScoreValue > leftScoreValue, hasNumericScore && rightScoreValue < leftScoreValue);
+    }
+
+    function openMatchDetailsModal(matchId) {
+      if (!matchDetailsModal) {
+        return;
+      }
+
+      const match = getMatchById(matchId);
+      if (!match) {
+        return;
+      }
+
+      window.clearTimeout(matchDetailsHideTimer);
+      fillMatchDetailsModal(match);
+      matchDetailsModal.hidden = false;
+
+      requestAnimationFrame(() => {
+        document.body.classList.add("modal-open");
+        matchDetailsModal.dataset.state = "open";
+      });
+    }
+
+    function closeMatchDetailsModal() {
+      if (!matchDetailsModal || matchDetailsModal.hidden) {
+        return;
+      }
+
+      matchDetailsModal.dataset.state = "closed";
+      document.body.classList.remove("modal-open");
+      window.clearTimeout(matchDetailsHideTimer);
+      matchDetailsHideTimer = window.setTimeout(() => {
+        matchDetailsModal.hidden = true;
+      }, 240);
+    }
+
     function renderMatches(options = {}) {
       const animateCards = options.animate !== false;
       const markupByStatus = {
@@ -4155,6 +5001,8 @@
                 </div>
               `;
             })()}
+
+            <button type="button" class="match-details-trigger" data-action="open-match-modal">Подробнее о матче</button>
 
             ${renderPredictionFooter(match.id)}
           </div>
@@ -4309,7 +5157,7 @@
       card.dataset.matchStatus = matchStatus;
 
       card.querySelectorAll("button").forEach((button) => {
-        if (button.dataset.action === "submit") {
+        if (button.dataset.action === "submit" || button.dataset.action === "open-match-modal") {
           return;
         }
 
@@ -5174,6 +6022,11 @@
           return;
         }
 
+        if (action === "open-match-modal") {
+          openMatchDetailsModal(match.id);
+          return;
+        }
+
         const result = getMatchResult(match.id);
         const matchStatus = getMatchStatus(match.id);
         if (state[match.id].locked || result || matchStatus !== "upcoming" || isMatchTemplate(match)) {
@@ -5244,6 +6097,20 @@
     if (submitUpcomingButton) {
       submitUpcomingButton.addEventListener("click", sendAllUpcomingPredictions);
     }
+
+    matchDetailsBack?.addEventListener("click", closeMatchDetailsModal);
+    matchDetailsClose?.addEventListener("click", closeMatchDetailsModal);
+    matchDetailsModal?.addEventListener("click", (event) => {
+      if (event.target === matchDetailsModal) {
+        closeMatchDetailsModal();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeMatchDetailsModal();
+      }
+    });
 
     (function () {
       const authChip = document.getElementById("authChip");

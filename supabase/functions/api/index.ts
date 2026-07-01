@@ -366,7 +366,7 @@ async function handleGet(request: Request, supabase: ReturnType<typeof createAdm
   if (mode === "matches") {
     const { data, error } = await supabase
       .from("matches")
-      .select("id, title, sort_order, stage_number, stage_label, status, format, team_a_name, team_b_name, score_options, scheduled_at, result_winner, result_score, result_best_player")
+      .select("id, title, sort_order, stage_number, stage_label, status, format, team_a_name, team_b_name, score_options, scheduled_at, result_winner, result_score, result_best_player, modal_data")
       .order("sort_order", { ascending: true });
 
     if (error) {
@@ -386,6 +386,7 @@ async function handleGet(request: Request, supabase: ReturnType<typeof createAdm
         team_b_name: match.team_b_name,
         score_options: match.score_options,
         scheduled_at: match.scheduled_at,
+        modal_data: match.modal_data,
         result: match.result_winner
           ? {
             winner: match.result_winner,
