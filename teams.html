@@ -408,140 +408,421 @@
     }
     }
 
-    /* ===== CARDS ===== */
-    .player-card{
+    /* ===== HERO ===== */
+    .teams-hero{
     position: relative;
-
-    background: var(--card-bg);
-    backdrop-filter: blur(18px);
-
-    border: 1px solid var(--card-border);
-    border-radius: 24px;
-
-    transition: all .4s ease;
-    overflow: hidden;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding-left: 24px;
+    padding-right: 24px;
     }
 
-    /* GLOW */
+    .teams-hero-panel{
+    position: relative;
+    overflow: hidden;
+    padding: 32px 24px;
+    border-radius: 32px;
+    border: 1px solid rgba(var(--accent-rgb) / 0.2);
+    background:
+        radial-gradient(circle at top, rgba(var(--accent-rgb) / 0.18), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    backdrop-filter: blur(16px);
+    box-shadow:
+        0 28px 80px rgba(0,0,0,0.24),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+    }
+
+    .teams-hero-panel::after{
+    content:"";
+    position:absolute;
+    inset:auto -80px -120px auto;
+    width:280px;
+    height:280px;
+    border-radius:999px;
+    background: radial-gradient(circle, rgba(var(--accent-rgb) / 0.28), transparent 70%);
+    pointer-events:none;
+    }
+
+    .teams-hero-title{
+    font-size: clamp(3.25rem, 7vw, 6rem);
+    font-weight: 950;
+    letter-spacing: -0.08em;
+    line-height: 0.9;
+    text-transform: uppercase;
+    }
+
+    .teams-hero-subtitle{
+    max-width: 700px;
+    margin: 18px auto 0;
+    color: rgba(255,255,255,0.72);
+    font-size: 0.98rem;
+    line-height: 1.7;
+    }
+
+    .teams-hero-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 16px;
+    border-radius:999px;
+    border:1px solid rgba(var(--accent-rgb) / 0.26);
+    background: rgba(255,255,255,0.06);
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    }
+
+    .teams-hero-chip::before{
+    content:"";
+    width:9px;
+    height:9px;
+    border-radius:999px;
+    background: currentColor;
+    box-shadow: 0 0 16px rgba(var(--accent-rgb) / 0.75);
+    }
+
+    /* ===== TEAM PANELS ===== */
+    .team-panel{
+    position: relative;
+    overflow: hidden;
+    padding: 30px;
+    border-radius: 32px;
+    border: 1px solid rgba(var(--accent-rgb) / 0.18);
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
+        rgba(8, 10, 18, 0.32);
+    backdrop-filter: blur(18px);
+    box-shadow:
+        0 22px 70px rgba(0,0,0,0.26),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    .team-panel::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+        radial-gradient(circle at top right, rgba(var(--accent-rgb) / 0.18), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(var(--accent-rgb) / 0.12), transparent 26%);
+    opacity: 0.9;
+    pointer-events:none;
+    }
+
+    .team-head{
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.9fr);
+    gap: 28px;
+    align-items: center;
+    margin-bottom: 28px;
+    }
+
+    .team-identity{
+    display:flex;
+    align-items:center;
+    gap:22px;
+    min-width:0;
+    }
+
+    .team-logo-shell{
+    position: relative;
+    flex: 0 0 auto;
+    width: 112px;
+    height: 112px;
+    padding: 16px;
+    border-radius: 30px;
+    border: 1px solid rgba(var(--accent-rgb) / 0.26);
+    background:
+        radial-gradient(circle at top, rgba(var(--accent-rgb) / 0.28), transparent 62%),
+        linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04));
+    box-shadow:
+        0 18px 40px rgba(0,0,0,0.22),
+        0 0 32px rgba(var(--accent-rgb) / 0.16);
+    }
+
+    .team-logo-shell::after{
+    content:"";
+    position:absolute;
+    inset:-1px;
+    border-radius:inherit;
+    border: 1px solid rgba(255,255,255,0.08);
+    pointer-events:none;
+    }
+
+    .team-logo{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    filter: drop-shadow(0 0 20px rgba(var(--accent-rgb) / 0.28));
+    }
+
+    .team-copy{
+    min-width:0;
+    }
+
+    .team-kicker{
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    }
+
+    .team-title{
+    margin-top: 12px;
+    font-size: clamp(2.5rem, 4vw, 4.2rem);
+    line-height: 0.92;
+    font-weight: 950;
+    letter-spacing: -0.08em;
+    text-transform: uppercase;
+    }
+
+    .team-summary{
+    margin-top: 14px;
+    color: rgba(255,255,255,0.68);
+    font-size: 0.94rem;
+    line-height: 1.6;
+    }
+
+    .team-meta{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    }
+
+    .team-meta-card{
+    padding: 16px 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(var(--accent-rgb) / 0.14);
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(8px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .team-meta-label{
+    display:block;
+    color: rgba(255,255,255,0.54);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    }
+
+    .team-meta-value{
+    display:block;
+    margin-top: 8px;
+    color: #ffffff;
+    font-size: 1.3rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    }
+
+    .team-roster{
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    }
+
+    /* ===== PLAYER CARDS ===== */
+    .player-card{
+    position: relative;
+    overflow: hidden;
+    padding: 20px;
+    border-radius: 26px;
+    border: 1px solid rgba(var(--accent-rgb) / 0.16);
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)),
+        rgba(8, 10, 18, 0.34);
+    backdrop-filter: blur(16px);
+    transition:
+        transform .35s ease,
+        border-color .35s ease,
+        box-shadow .35s ease,
+        background .35s ease;
+    }
+
     .player-card::before{
     content:"";
     position:absolute;
     inset:0;
-
-    background: radial-gradient(
-        circle at var(--x,50%) var(--y,50%),
-        rgba(var(--accent-rgb) / 0.35),
-        transparent 70%
-    );
-
-    opacity:0;
-    transition:.4s;
-    }
-
-    .player-card:hover::before{
-    opacity:1;
+    background: radial-gradient(circle at top right, rgba(var(--accent-rgb) / 0.2), transparent 38%);
+    opacity: 0;
+    transition: opacity .35s ease;
+    pointer-events:none;
     }
 
     .player-card:hover{
-    transform: translateY(-10px) scale(1.02);
-
-    border-color: rgba(var(--accent-rgb) / 0.6);
-
+    transform: translateY(-8px);
+    border-color: rgba(var(--accent-rgb) / 0.44);
     box-shadow:
-        0 20px 60px rgba(var(--accent-rgb) / 0.25),
-        0 0 40px rgba(var(--accent-rgb) / 0.2);
+        0 18px 42px rgba(0,0,0,0.22),
+        0 0 34px rgba(var(--accent-rgb) / 0.16);
     }
 
-    /* IMG ANIMATION */
-    .player-card img{
-        transition: transform .6s ease;
-        box-shadow: 0 0 25px rgba(var(--accent-rgb)/0.25);
-        filter: brightness(0.9) contrast(1.05);
+    .player-card:hover::before{
+    opacity: 1;
     }
 
-    .player-card:hover img{
-        transform: scale(1.08) rotate(1deg);
-        box-shadow: 0 0 40px rgba(var(--accent-rgb)/0.5);
+    .captain-ring{
+    border-color: rgba(var(--accent-rgb) / 0.42);
+    box-shadow:
+        0 0 0 1px rgba(var(--accent-rgb) / 0.18),
+        0 18px 42px rgba(0,0,0,0.24);
     }
 
-    /* ===== TEXT ===== */
+    .player-top{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+    }
+
+    .player-avatar-shell{
+    position:relative;
+    width:128px;
+    height:128px;
+    flex:0 0 auto;
+    }
+
+    .player-avatar{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    border-radius:30px;
+    border:1px solid rgba(var(--accent-rgb) / 0.22);
+    background: rgba(255,255,255,0.08);
+    box-shadow:
+        0 12px 28px rgba(0,0,0,0.22),
+        0 0 24px rgba(var(--accent-rgb) / 0.12);
+    transition: transform .4s ease, box-shadow .4s ease;
+    }
+
+    .player-card:hover .player-avatar{
+    transform: scale(1.04) rotate(-2deg);
+    box-shadow:
+        0 16px 36px rgba(0,0,0,0.24),
+        0 0 30px rgba(var(--accent-rgb) / 0.22);
+    }
+
+    .player-team-badge{
+    position:absolute;
+    right:-6px;
+    bottom:-6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:34px;
+    height:34px;
+    padding:6px;
+    border-radius:14px;
+    border:1px solid rgba(var(--accent-rgb) / 0.28);
+    background: rgba(5, 8, 18, 0.92);
+    box-shadow: 0 10px 22px rgba(0,0,0,0.24);
+    }
+
+    .player-team-badge img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    }
+
+    .player-copy{
+    min-width:0;
+    flex:1 1 auto;
+    }
+
+    .player-role{
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    }
+
     .player-name{
-    color: white;
-
-    transition: 
-        color .35s ease,
-        text-shadow .45s ease,
-        transform .35s ease;
+    margin-top: 8px;
+    color: #ffffff;
+    font-size: 2.3rem;
+    line-height: 1;
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    transition: color .35s ease, text-shadow .35s ease;
     }
 
     .team .player-card:hover .player-name{
     color: var(--accent);
-
     text-shadow:
-        0 0 6px rgba(var(--accent-rgb) / 0.4),
-        0 0 14px rgba(var(--accent-rgb) / 0.5),
-        0 0 28px rgba(var(--accent-rgb) / 0.35);
-
-    transform: translateY(-1px);
+        0 0 10px rgba(var(--accent-rgb) / 0.34),
+        0 0 22px rgba(var(--accent-rgb) / 0.18);
     }
 
-    /* ===== ROLE BAR ===== */
-    .role-bar{
-    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+    .player-note{
+    margin-top: 10px;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.85rem;
+    line-height: 1.5;
     }
 
-    /* ===== STATS ===== */
+    .badge-captain{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding: 8px 10px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #ffffff, var(--accent));
+    color: #08111f;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    box-shadow:
+        0 10px 25px rgba(var(--accent-rgb) / 0.28),
+        inset 0 1px 0 rgba(255,255,255,0.82);
+    }
+
+    .player-stats{
+    margin-top: 16px;
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    }
+
     .stat-badge{
+    padding: 10px 11px;
+    border-radius: 16px;
+    border: 1px solid rgba(var(--accent-rgb) / 0.12);
     background: var(--stat-bg);
-    border: 1px solid var(--stat-border);
     backdrop-filter: blur(8px);
-
-    border-radius: 12px;
-    padding: 8px 12px;
-
-    transition: 0.3s;
+    transition: background .3s ease, border-color .3s ease, transform .3s ease;
     }
 
     .player-card:hover .stat-badge{
-    background: rgba(255,255,255,0.3);
+    transform: translateY(-2px);
+    background: rgba(255,255,255,0.14);
+    border-color: rgba(var(--accent-rgb) / 0.26);
     }
 
-    /* ===== CAPTAIN ===== */
-    .badge-captain{
-    background: linear-gradient(135deg, #fff, var(--accent));
-    color: #000;
-
-    border-radius: 999px;
-    padding: 5px 10px;
-
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: .12em;
-
-    box-shadow:
-        0 0 15px rgba(var(--accent-rgb)/0.8),
-        0 0 35px rgba(var(--accent-rgb)/0.4);
-
-    transition: .3s;
+    .stat-label{
+    display:block;
+    color: rgba(255,255,255,0.48);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     }
 
-    .player-card:hover .badge-captain{
-    transform: scale(1.1);
-    }
-
-    .captain-ring{
-    border: 1px solid rgba(var(--accent-rgb)/0.5);
-
-    box-shadow:
-        0 0 30px rgba(var(--accent-rgb)/0.25),
-        inset 0 0 10px rgba(var(--accent-rgb)/0.1);
-    }
-
-    .team-roster{
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 360px));
-    justify-content: center;
-    gap: 32px;
+    .stat-value{
+    display:block;
+    margin-top: 6px;
+    color: #ffffff;
+    font-size: 0.84rem;
+    font-weight: 800;
+    line-height: 1.28;
+    word-break: break-word;
     }
 
     /* ===== TEAM COLORS ===== */
@@ -556,7 +837,7 @@
     .DD { --accent:#38bdf8; --accent-rgb:56 189 248; }
     .OFF9 { --accent:#A53DBA; --accent-rgb:165 61 186; }
     .ALTZ { --accent:#ffffff; --accent-rgb:255 255 255; }
-    .KPM { --accent:#14def8; --accent-rgb:20 222 248; }
+    .KPM { --accent:#f4f74f; --accent-rgb:244 247 79; }
     
     /* ===== TEAM EFFECTS ===== */
     .team .team-accent{
@@ -573,9 +854,62 @@
     color: var(--accent);
     }
 
+    @media (max-width: 1024px){
+    .team-head{
+        grid-template-columns: 1fr;
+    }
+    }
+
+    @media (max-width: 720px){
+    .teams-hero{
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .teams-hero-panel,
+    .team-panel{
+        padding: 22px 18px;
+        border-radius: 28px;
+    }
+
+    .team-identity{
+        align-items:flex-start;
+        gap:16px;
+    }
+
+    .team-logo-shell{
+        width: 88px;
+        height: 88px;
+        padding: 12px;
+        border-radius: 24px;
+    }
+
+    .player-avatar-shell{
+        width: 92px;
+        height: 92px;
+    }
+
+    .team-meta,
+    .player-stats{
+        grid-template-columns: 1fr;
+    }
+
+    .player-top{
+        flex-wrap: wrap;
+    }
+
+    .badge-captain{
+        margin-left: 104px;
+    }
+
+    .player-name{
+        font-size: 1.5rem;
+    }
+    }
+
     /* ===== SCROLL ===== */
-    html[data-theme="original"] .player-card img,
-    html[data-theme="dark"] .player-card img{
+    html[data-theme="original"] .player-avatar,
+    html[data-theme="dark"] .player-avatar{
     filter: brightness(0.82) contrast(1.08);
     }
 
@@ -646,16 +980,19 @@
   </div>
 
   <!-- TOURNAMENT HEADER -->
-  <header class="text-center py-16">
-    <h1 class="text-6xl font-black tracking-tighter">
-        <span class="theme-accent-text theme-title-glow">SUMMER BREAKOUT</span>
-    </h1>
-    <div class="h-1 w-28 mx-auto mt-4 rounded-full glow"
-        style="background: rgb(var(--accent-rgb));">
+  <header class="teams-hero text-center py-16">
+    <div class="teams-hero-panel">
+      <span class="teams-hero-chip">SUMMER BREAKOUT</span>
+      <h1 class="teams-hero-title mt-6">
+        <span class="theme-accent-text theme-title-glow">TEAMS</span>
+      </h1>
+      <div class="h-1 w-28 mx-auto mt-5 rounded-full glow"
+          style="background: rgb(var(--accent-rgb));">
+      </div>
+      <p class="teams-hero-subtitle">
+        Tournament squads, captains and full lineups in one place.
+      </p>
     </div>
-    <p class="theme-accent-text mt-4 text-xs uppercase tracking-[0.3em]">
-    SECRET GATE TOURNAMENT №4
-    </p>
   </header>
 
   <main class="max-w-[1800px] mx-auto px-6 pb-16">
@@ -783,49 +1120,115 @@
         }));
       }
 
+      function getCaptainName(team) {
+        const captain = team.players.find((player) => player.captain);
+        return captain?.name || "Not assigned";
+      }
+
+      function calculateAverageRating(team) {
+        const numericRatings = team.players
+          .map((player) => Number(player.rating))
+          .filter((rating) => Number.isFinite(rating));
+
+        if (!numericRatings.length) {
+          return DEFAULT_PLAYER_STATS.rating;
+        }
+
+        const total = numericRatings.reduce((sum, rating) => sum + rating, 0);
+        return (total / numericRatings.length).toFixed(2);
+      }
+
       function renderPlayerCard(team, player, playerIndex) {
         const animationDelay = `${(playerIndex * 0.12).toFixed(2)}s`;
         const imageSrc = escapeHtml(player.image || team.logo || "images/icon.png");
         const fallbackImage = escapeHtml(team.logo || "images/icon.png");
+        const teamBadge = escapeHtml(team.logo || "images/icon.png");
         const playerKey = escapeHtml(normalizePlayerName(player.name));
         const playerName = escapeHtml(player.name);
         const role = escapeHtml(player.role || "Player");
         const rating = escapeHtml(player.rating || DEFAULT_PLAYER_STATS.rating);
         const playtime = escapeHtml(player.playtime || DEFAULT_PLAYER_STATS.playtime);
-        const favWeapon = escapeHtml(player.favWeapon || DEFAULT_PLAYER_STATS.favWeapon);
+        const favWeaponValue = player.favWeapon || DEFAULT_PLAYER_STATS.favWeapon;
+        const favWeapon = escapeHtml(favWeaponValue);
+        const playerNote = player.captain
+          ? "Captain of the roster"
+          : `Favorite weapon: ${favWeaponValue}`;
 
         return `
-          <div class="player-card rounded-3xl p-6 group animate__animated animate__fadeInUp${player.captain ? " captain-ring" : ""}" style="animation-delay: ${animationDelay};">
-            <div class="relative overflow-hidden rounded-2xl mb-6">
-              <img src="${imageSrc}" alt="${playerName}" class="w-full h-72 object-cover group-hover:scale-110 transition duration-700" onerror="this.onerror=null;this.src='${fallbackImage}';">
-              ${player.captain ? '<div class="absolute top-4 right-4 badge-captain text-[10px] px-2 py-1 rounded font-black uppercase">Captain</div>' : ""}
-              <div class="absolute bottom-0 left-0 right-0 role-bar p-4">
-                <span class="text-[10px] font-black uppercase role-text">${role}</span>
+          <article class="player-card animate__animated animate__fadeInUp${player.captain ? " captain-ring" : ""}" style="animation-delay: ${animationDelay};">
+            <div class="player-top">
+              <div class="player-avatar-shell">
+                <img src="${imageSrc}" alt="${playerName}" class="player-avatar" onerror="this.onerror=null;this.src='${fallbackImage}';">
+                <span class="player-team-badge">
+                  <img src="${teamBadge}" alt="${escapeHtml(team.name)} logo" onerror="this.onerror=null;this.src='images/icon.png';">
+                </span>
+              </div>
+              <div class="player-copy">
+                <span class="player-role">${role}</span>
+                <h3 class="player-name">${playerName}</h3>
+                
+              </div>
+              ${player.captain ? '<span class="badge-captain">Captain</span>' : ""}
+            </div>
+            <div class="player-stats">
+              <div class="stat-badge">
+                <span class="stat-label">Average K/D</span>
+                <span class="stat-value" data-player-rating="${playerKey}">${rating}</span>
+              </div>
+              <div class="stat-badge">
+                <span class="stat-label">Playtime</span>
+                <span class="stat-value">${playtime}</span>
+              </div>
+              <div class="stat-badge">
+                <span class="stat-label">Favorite Weapon</span>
+                <span class="stat-value">${favWeapon}</span>
               </div>
             </div>
-            <h3 class="player-name text-3xl font-black mb-4 tracking-tight">${playerName}</h3>
-            <div class="space-y-3 text-sm">
-              <div class="flex justify-between stat-badge"><span class="text-gray-400">Average K/D</span><span class="font-semibold stat-value" data-player-rating="${playerKey}">${rating}</span></div>
-              <div class="flex justify-between stat-badge"><span class="text-gray-400">Playtime</span><span class="font-mono stat-value">${playtime}</span></div>
-              <div class="flex justify-between stat-badge"><span class="text-gray-400">Favorite Weapon</span><span class="font-mono stat-value">${favWeapon}</span></div>
-            </div>
-          </div>
+          </article>
         `;
       }
 
       function renderTeamSection(team, teamIndex) {
         const teamNumber = String(teamIndex + 1).padStart(2, "0");
+        const teamLogo = escapeHtml(team.logo || "images/icon.png");
+        const teamName = escapeHtml(team.name);
+        const captainName = escapeHtml(getCaptainName(team));
+        const averageRating = escapeHtml(calculateAverageRating(team));
+        const teamKey = escapeHtml(team.key);
+        const rosterCount = team.players.length;
 
         return `
-          <section class="team ${escapeHtml(team.key)}">
-            <div class="text-center mb-8">
-              <p class="uppercase tracking-[0.45em] text-[10px]" style="color: var(--accent); text-shadow: 0 0 10px rgba(var(--accent-rgb)/0.5);">
-                Team ${teamNumber} • Squad
-              </p>
-              <h2 class="mt-3 text-5xl font-black tracking-tighter team-glow">
-                <span class="team-accent">${escapeHtml(team.name)}</span>
-              </h2>
-              <div class="h-1 w-24 team-line mx-auto mt-4 rounded-full"></div>
+          <section class="team team-panel ${teamKey}">
+            <div class="team-head">
+              <div class="team-identity">
+                <div class="team-logo-shell">
+                  <img src="${teamLogo}" alt="${teamName} logo" class="team-logo" onerror="this.onerror=null;this.src='images/icon.png';">
+                </div>
+                <div class="team-copy">
+                  <p class="team-kicker">Team ${teamNumber} &bull; Tournament Squad</p>
+                  <h2 class="team-title">
+                    <span class="team-accent">${teamName}</span>
+                  </h2>
+                  <div class="h-1 w-24 team-line mt-5 rounded-full"></div>
+                  <p class="team-summary">
+                    Captain: <span class="team-accent">${captainName}</span>. 
+                  </p>
+                </div>
+              </div>
+              <div class="team-meta">
+                <div class="team-meta-card" hidden>
+                  <span class="team-meta-label">Кол-во игроков</span>
+                  <span class="team-meta-value">${rosterCount}</span>
+                </div>
+                <div class="team-meta-card">
+                  <span class="team-meta-label">Среднее K/D</span>
+                  <span class="team-meta-value">${averageRating}</span>
+                </div>
+                <div class="team-meta-card">
+                  <span class="team-meta-label">Код команды</span>
+                  <span class="team-meta-value">${teamKey || "TEAM"}</span>
+                </div>
+              </div>
             </div>
 
             <div class="team-roster">
