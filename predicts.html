@@ -1309,9 +1309,7 @@
       align-items: center;
       justify-content: center;
       padding: 24px 16px;
-      background:
-        radial-gradient(circle at top, rgba(var(--accent-rgb) / 0.2), transparent 32%),
-        rgba(8, 8, 15, 0.82);
+      background: var(--modal-overlay-bg, radial-gradient(circle at top, rgba(var(--accent-rgb) / 0.2), transparent 32%), rgba(8, 8, 15, 0.82));
       opacity: 0;
       pointer-events: none;
       transition: opacity .24s ease;
@@ -1327,15 +1325,13 @@
       max-height: calc(100vh - 48px);
       overflow: auto;
       border-radius: 30px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: linear-gradient(180deg, rgba(36, 22, 33, 0.98), rgba(16, 11, 20, 0.98));
-      box-shadow:
-        0 32px 90px rgba(0,0,0,0.42),
-        inset 0 1px 0 rgba(255,255,255,0.08);
+      border: 1px solid var(--modal-panel-border, rgba(255,255,255,0.08));
+      background: var(--modal-panel-bg, linear-gradient(180deg, rgba(36, 22, 33, 0.98), rgba(16, 11, 20, 0.98)));
+      box-shadow: var(--modal-panel-shadow, 0 32px 90px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.08));
       transform: translateY(18px) scale(0.98);
       transition: transform .24s ease;
       scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.18) transparent;
+      scrollbar-color: var(--scrollbar-thumb, rgba(255,255,255,0.18)) transparent;
     }
 
     .match-modal-overlay[data-state="open"] .match-modal-panel{
@@ -1359,14 +1355,15 @@
       min-height: 44px;
       padding: 0 16px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.06);
-      color: rgba(255,255,255,0.86);
+      border: 1px solid var(--modal-action-border, rgba(255,255,255,0.1));
+      background: var(--modal-action-bg, rgba(255,255,255,0.06));
+      color: var(--modal-action-color, rgba(255,255,255,0.86));
       font-size: 11px;
       font-weight: 900;
       letter-spacing: .2em;
       text-transform: uppercase;
-      transition: background .2s ease, color .2s ease, transform .2s ease, border-color .2s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+      transition: background .2s ease, color .2s ease, transform .2s ease, border-color .2s ease, box-shadow .2s ease;
     }
 
     .match-modal-icon-btn{
@@ -1379,8 +1376,12 @@
     .match-modal-icon-btn:hover,
     .match-modal-action:hover{
       transform: translateY(-1px);
-      background: rgba(255,255,255,0.1);
-      color: #ffffff;
+      background: var(--modal-action-hover-bg, rgba(255,255,255,0.1));
+      border-color: var(--modal-action-hover-border, rgba(var(--accent-rgb) / 0.34));
+      color: var(--ink, #ffffff);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.14),
+        0 14px 32px rgba(var(--accent-rgb) / 0.12);
     }
 
     .match-modal-pills{
@@ -1396,13 +1397,30 @@
       min-height: 34px;
       padding: 0 14px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.05);
-      color: rgba(255,255,255,0.7);
+      border: 1px solid var(--modal-pill-border, rgba(255,255,255,0.1));
+      background: var(--modal-pill-bg, rgba(255,255,255,0.05));
+      color: var(--modal-pill-color, rgba(255,255,255,0.7));
       font-size: 11px;
       font-weight: 900;
       letter-spacing: .22em;
       text-transform: uppercase;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .match-modal-title,
+    .match-modal-score-value,
+    .match-modal-map-name,
+    .match-modal-team-name{
+      color: var(--ink);
+    }
+
+    .match-modal-title{
+      text-shadow: 0 0 24px rgba(var(--accent-rgb) / 0.14);
+    }
+
+    .match-modal-eyebrow,
+    .match-modal-kda-label{
+      color: var(--modal-muted-text, rgba(255,255,255,0.5));
     }
 
     .match-modal-scoreboard{
@@ -1418,11 +1436,9 @@
       position: relative;
       overflow: hidden;
       border-radius: 26px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025));
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 20px 46px rgba(0,0,0,0.18);
+      border: 1px solid var(--modal-card-border, rgba(255,255,255,0.08));
+      background: var(--modal-card-bg, linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025)));
+      box-shadow: var(--modal-card-shadow, inset 0 1px 0 rgba(255,255,255,0.08), 0 20px 46px rgba(0,0,0,0.18));
     }
 
     .match-modal-score-card::before,
@@ -1431,7 +1447,7 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at top left, rgba(var(--accent-rgb) / 0.22), transparent 55%);
+      background: var(--modal-card-glow, radial-gradient(circle at top left, rgba(var(--accent-rgb) / 0.22), transparent 55%));
       opacity: 0.9;
       pointer-events: none;
     }
@@ -1457,20 +1473,16 @@
     }
 
     .match-modal-score-card.is-winning{
-      border-color: rgba(111, 255, 145, 0.42);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 22px 48px rgba(45, 112, 61, 0.18);
+      border-color: var(--modal-win-border, rgba(111, 255, 145, 0.42));
+      box-shadow: var(--modal-win-shadow, inset 0 1px 0 rgba(255,255,255,0.08), 0 22px 48px rgba(45, 112, 61, 0.18));
     }
 
     .match-modal-score-card.is-losing{
-      border-color: rgba(255, 111, 145, 0.32);
+      border-color: var(--modal-loss-border, rgba(255, 111, 145, 0.32));
     }
 
     .match-modal-map-card{
-      background:
-        radial-gradient(circle at top, rgba(var(--accent-rgb) / 0.28), transparent 38%),
-        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      background: var(--modal-map-card-bg, radial-gradient(circle at top, rgba(var(--accent-rgb) / 0.28), transparent 38%), linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)));
     }
 
     .match-modal-map-list{
@@ -1489,8 +1501,9 @@
       min-height: 64px;
       padding: 16px 18px;
       border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--modal-map-row-border, rgba(255,255,255,0.08));
+      background: var(--modal-map-row-bg, rgba(255,255,255,0.04));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
     }
 
     .match-modal-map-row::after{
@@ -1513,7 +1526,7 @@
       font-size: 15px;
       font-weight: 900;
       letter-spacing: .02em;
-      color: #ffffff;
+      color: var(--ink);
     }
 
     .match-modal-map-score{
@@ -1522,19 +1535,19 @@
       gap: 10px;
       font-size: 20px;
       font-weight: 900;
-      color: rgba(255,255,255,0.92);
+      color: var(--ink);
     }
 
     .match-modal-map-score-win{
-      color: #8bf0a9;
+      color: var(--modal-map-score-win, #8bf0a9);
     }
 
     .match-modal-map-score-loss{
-      color: #ff9ab7;
+      color: var(--modal-map-score-loss, #ff9ab7);
     }
 
     .match-modal-map-separator{
-      color: rgba(255,255,255,0.32);
+      color: var(--modal-muted-text, rgba(255,255,255,0.32));
     }
 
     .match-modal-team-grid{
@@ -1544,7 +1557,7 @@
     }
 
     .match-modal-player-row + .match-modal-player-row{
-      border-top: 1px solid rgba(255,255,255,0.06);
+      border-top: 1px solid var(--modal-divider, rgba(255,255,255,0.06));
     }
 
     .match-modal-player-row{
@@ -1567,12 +1580,12 @@
       height: 40px;
       border-radius: 999px;
       overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--modal-avatar-border, rgba(255,255,255,0.12));
+      background: var(--modal-avatar-bg, rgba(255,255,255,0.08));
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: rgba(255,255,255,0.78);
+      color: var(--modal-subtle-text, rgba(255,255,255,0.78));
       font-size: 12px;
       font-weight: 900;
       letter-spacing: .04em;
@@ -1590,7 +1603,7 @@
       min-width: 0;
       font-size: 15px;
       font-weight: 800;
-      color: rgba(255,255,255,0.94);
+      color: var(--ink);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -1600,13 +1613,13 @@
       flex: 0 0 auto;
       font-size: 14px;
       font-weight: 900;
-      color: rgba(255,255,255,0.92);
+      color: var(--modal-subtle-text, rgba(255,255,255,0.92));
       letter-spacing: .02em;
     }
 
     .match-modal-empty{
       padding: 22px 4px 8px;
-      color: rgba(255,255,255,0.46);
+      color: var(--modal-empty-text, rgba(255,255,255,0.46));
       font-size: 14px;
       font-weight: 700;
     }
@@ -2903,7 +2916,7 @@
       </div>
 
       <div class="mt-6">
-        <h3 id="matchDetailsTitle" class="text-3xl md:text-4xl font-black tracking-tight text-white">Матч</h3>
+        <h3 id="matchDetailsTitle" class="match-modal-title text-3xl md:text-4xl font-black tracking-tight text-white">Матч</h3>
         <div class="match-modal-pills mt-4">
           <span id="matchDetailsRound" class="match-modal-pill">Round</span>
           <span id="matchDetailsFormat" class="match-modal-pill">BO3</span>
@@ -2914,35 +2927,35 @@
 
       <section class="match-modal-scoreboard mt-6">
         <div id="matchDetailsLeftCard" class="match-modal-score-card px-5 py-7 text-center">
-          <div id="matchDetailsLeftName" class="text-[11px] font-black uppercase tracking-[0.24em] text-white/50">TBD</div>
-          <div id="matchDetailsLeftScore" class="mt-3 text-5xl md:text-6xl font-black tracking-[-0.05em] text-white">-</div>
+          <div id="matchDetailsLeftName" class="match-modal-eyebrow text-[11px] font-black uppercase tracking-[0.24em] text-white/50">TBD</div>
+          <div id="matchDetailsLeftScore" class="match-modal-score-value mt-3 text-5xl md:text-6xl font-black tracking-[-0.05em] text-white">-</div>
         </div>
 
         <div id="matchDetailsMapCard" class="match-modal-map-card px-5 py-7 text-center">
-          <div id="matchDetailsMapTitle" class="text-[11px] font-black uppercase tracking-[0.32em] text-white/42">Карта</div>
-          <div id="matchDetailsMapName" class="mt-4 text-2xl md:text-4xl font-black tracking-[-0.04em] text-white">TBD</div>
+          <div id="matchDetailsMapTitle" class="match-modal-eyebrow text-[11px] font-black uppercase tracking-[0.32em] text-white/42">Карта</div>
+          <div id="matchDetailsMapName" class="match-modal-map-name mt-4 text-2xl md:text-4xl font-black tracking-[-0.04em] text-white">TBD</div>
           <div id="matchDetailsMapList" class="match-modal-map-list mt-5 hidden"></div>
         </div>
 
         <div id="matchDetailsRightCard" class="match-modal-score-card px-5 py-7 text-center">
-          <div id="matchDetailsRightName" class="text-[11px] font-black uppercase tracking-[0.24em] text-white/50">TBD</div>
-          <div id="matchDetailsRightScore" class="mt-3 text-5xl md:text-6xl font-black tracking-[-0.05em] text-white">-</div>
+          <div id="matchDetailsRightName" class="match-modal-eyebrow text-[11px] font-black uppercase tracking-[0.24em] text-white/50">TBD</div>
+          <div id="matchDetailsRightScore" class="match-modal-score-value mt-3 text-5xl md:text-6xl font-black tracking-[-0.05em] text-white">-</div>
         </div>
       </section>
 
       <section class="match-modal-team-grid mt-6">
         <div class="match-modal-team-panel p-5">
           <div class="flex items-end justify-between gap-4">
-            <div id="matchDetailsTeamLeft" class="text-lg md:text-xl font-black tracking-[0.02em] text-white">TBD</div>
-            <div class="text-[11px] font-black uppercase tracking-[0.28em] text-white/42">K/D/A</div>
+            <div id="matchDetailsTeamLeft" class="match-modal-team-name text-lg md:text-xl font-black tracking-[0.02em] text-white">TBD</div>
+            <div class="match-modal-kda-label text-[11px] font-black uppercase tracking-[0.28em] text-white/42">K/D/A</div>
           </div>
           <div id="matchDetailsPlayersLeft" class="mt-4"></div>
         </div>
 
         <div class="match-modal-team-panel p-5">
           <div class="flex items-end justify-between gap-4">
-            <div id="matchDetailsTeamRight" class="text-lg md:text-xl font-black tracking-[0.02em] text-white">TBD</div>
-            <div class="text-[11px] font-black uppercase tracking-[0.28em] text-white/42">K/D/A</div>
+            <div id="matchDetailsTeamRight" class="match-modal-team-name text-lg md:text-xl font-black tracking-[0.02em] text-white">TBD</div>
+            <div class="match-modal-kda-label text-[11px] font-black uppercase tracking-[0.28em] text-white/42">K/D/A</div>
           </div>
           <div id="matchDetailsPlayersRight" class="mt-4"></div>
         </div>
